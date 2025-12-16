@@ -1,0 +1,172 @@
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12rem 0;
+    min-height: 70vh;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 50%;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-get-uniq {
+    position: relative;
+    background: transparent;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: transform 0.2s;
+    overflow: hidden;
+    z-index: 1;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-get-uniq::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background-color: #3b4e7a;
+    border-radius: 2rem;
+    z-index: -1;
+}
+
+.btn-get-uniq::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: conic-gradient(transparent 0deg, transparent 270deg, var(--soft-gradient-blue) 360deg);
+    transform: translate(-50%, -50%);
+    z-index: -2;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn-get-uniq:hover {
+    transform: translateY(-2px);
+}
+
+.btn-get-uniq:hover::before {
+    opacity: 1;
+    animation: rotateBeam 2s linear infinite;
+}
+
+@keyframes rotateBeam {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.btn-watch-demo {
+    background-color: transparent;
+    color: var(--text-color);
+    padding: 0.8rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-watch-demo:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.hero-image-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-placeholder {
+    width: 400px;
+    height: 400px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 992px) {
+    .hero {
+        flex-direction: column-reverse;
+        padding: 8rem 0 4rem 0;
+        text-align: center;
+    }
+
+    .hero-content {
+        max-width: 100%;
+        margin-top: 2rem;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+    
+    .hero-image-container {
+        width: 100%;
+    }
+
+    .image-placeholder {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-get-uniq,
+    .btn-watch-demo {
+        width: 100%;
+    }
+}

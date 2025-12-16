@@ -1,0 +1,115 @@
+:root {
+  /* Color Palette */
+  --deep-banner-blue: #3b4e7a;
+  --medium-ui-blue-purple: #6c7a9c;
+  --soft-gradient-blue: #a0b4d6;
+  --main-bg-off-white: #f5f7fa;
+  --card-bg-gray: #eff2f6;
+  --dark-heading-text: #222222;
+  --body-text-gray: #666666;
+  --white: #ffffff;
+  --accent-gold: #d9c086;
+  --accent-cyan: #6fd6e8;
+
+  /* Semantic Variables */
+  --primary-color: var(--deep-banner-blue);
+  --secondary-color: var(--medium-ui-blue-purple);
+  --heading-color: var(--dark-heading-text);
+  --text-color: var(--body-text-gray);
+  --bg-color: var(--main-bg-off-white);
+
+  --button-bg: var(--medium-ui-blue-purple);
+  --button-text: var(--white);
+
+  --font-family: 'Outfit', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+/* Animations */
+@keyframes fadeInUpBlur {
+  0% {
+    opacity: 0.01;
+    transform: translateY(40px);
+    filter: blur(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Initial state for scroll animation elements */
+.reveal-on-scroll {
+  opacity: 0.01;
+  transform: translateY(40px);
+  filter: blur(8px);
+  will-change: opacity, transform, filter;
+}
+
+/* Class added by JS when in viewport */
+.reveal-on-scroll.is-visible {
+  animation: fadeInUpBlur 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-600 {
+  animation-delay: 0.6s;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
+}
+
+.delay-800 {
+  animation-delay: 0.8s;
+}

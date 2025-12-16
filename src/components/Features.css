@@ -1,0 +1,123 @@
+.features-section {
+    padding: 4rem 2rem;
+    background-color: var(--bg-color);
+    overflow-x: hidden;
+}
+
+.features-heading {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 4rem;
+}
+
+.features-masonry {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    width: 90%;
+    background-color: var(--white);
+    border-radius: 2rem;
+    padding: 3rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3rem;
+    position: relative;
+    border: 2px solid var(--soft-gradient-blue);
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+
+    background-image:
+        radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+            rgba(220, 230, 255, 0.5),
+            transparent 10%),
+        linear-gradient(var(--white), var(--white)),
+        linear-gradient(135deg, var(--soft-gradient-blue), var(--medium-ui-blue-purple));
+
+    z-index: 1;
+    overflow: hidden;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-30px) scale(1.5);
+    box-shadow: 0 20px 50px rgba(31, 83, 255, 0.2);
+
+    background-image:
+        radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+            rgba(220, 230, 255, .7),
+            transparent 70%),
+        linear-gradient(var(--white), var(--white)),
+        linear-gradient(159deg, #ffffff, #f0f0f0);
+}
+
+/* Alternating Layout */
+.feature-card:nth-child(odd) {
+    align-self: flex-start;
+}
+
+.feature-card:nth-child(even) {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+.feature-image {
+    flex: 0 0 45%;
+    margin-bottom: 0;
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+.feature-img-element {
+    width: 100%;
+    height: auto;
+    max-height: 350px;
+    object-fit: contain;
+    display: block;
+    border-radius: 1.5rem;
+}
+
+.feature-content {
+    flex: 1;
+}
+
+.feature-content h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 1rem;
+}
+
+.feature-content p {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .feature-card {
+        width: 100%;
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    .feature-image {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card:nth-child(odd),
+    .feature-card:nth-child(even) {
+        align-self: center;
+    }
+}

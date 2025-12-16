@@ -1,0 +1,83 @@
+.how-it-works-section {
+    padding: 6rem 2rem;
+    background-color: var(--white);
+    text-align: center;
+    border-radius: 2rem;
+}
+
+.section-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 4rem;
+}
+
+.steps-container {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.step-card {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.step-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background-color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 25px rgba(59, 78, 122, 0.15);
+    z-index: 2;
+    border: 1px solid var(--soft-gradient-blue);
+    transition: transform 0.3s ease;
+}
+
+.step-card:hover .step-icon-wrapper {
+    transform: scale(1.1);
+    color: var(--secondary-color);
+}
+
+.step-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 1rem;
+}
+
+.step-description {
+    font-size: 1rem;
+    color: var(--text-color);
+    line-height: 1.6;
+    max-width: 300px;
+}
+
+/* Connector Line (Desktop Only) */
+@media (min-width: 768px) {
+    .step-connector {
+        position: absolute;
+        top: 40px;
+        left: 50%;
+        width: calc(100% + 4rem);
+        height: 2px;
+        background-color: var(--soft-gradient-blue);
+        z-index: 1;
+    }
+
+    .step-card:last-child .step-connector {
+        display: none;
+    }
+}
