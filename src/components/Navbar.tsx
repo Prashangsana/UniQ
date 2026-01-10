@@ -93,9 +93,9 @@ const Navbar: React.FC = () => {
                         </button>
 
                         <div className="signup-footer">
-                            By clicking on Sign up, you agree to our <a href="#">Terms and Conditions</a>  of Use.
+                            By clicking on Sign up, you agree to UniQ's <a href="#">Terms and Conditions</a>  of Use.
                             <br /><br />
-                            To learn more about how we collect, use, shares and protect your personal data please read our <a href="#">Privacy Policy</a>.
+                            To learn more about how we collect, use, shares and protect your personal data please read UniQ's <a href="#">Privacy Policy</a>.
                         </div>
                     </div>
                 </div>
