@@ -21,6 +21,18 @@
   --button-bg: var(--medium-ui-blue-purple);
   --button-text: var(--white);
 
+  /* Footer Color Palette */
+  --footer-bg: #f0f8ff;
+  --footer-text-main: #333333;
+  --footer-text-muted: #4b5563;
+  --footer-text-header: #111827;
+  --footer-accent: #1f2937;
+  --footer-border: #e5e7eb;
+  
+  /* Brand Gradient */
+  --brand-dark: #021024;
+  --brand-primary: #052659;
+
   --font-family: 'Outfit', sans-serif;
 }
 

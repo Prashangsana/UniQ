@@ -3,14 +3,15 @@ import React from 'react';
 import './Footer.css';
 
 const Footer: React.FC = () => {
+    const currentYear = new Date().getFullYear();
+
     return (
         <footer className="footer-section">
             <div className="footer-container">
                 <div className="footer-content">
-                    {/* Left Side: Brand & About */}
+                    {/* Left Side: Brand & Socials */}
                     <div className="footer-brand-section reveal-on-scroll">
                         <div className="footer-logo">UniQ</div>
-                        <h3 className="footer-heading">About Us</h3>
                         <p className="footer-description">
                             A unified social-academic ecosystem designed to bring collaboration, mentoring, and event management into one digital space.
                         </p>
@@ -47,9 +48,9 @@ const Footer: React.FC = () => {
                         <div className="footer-column reveal-on-scroll delay-400">
                             <h4>Quick Links</h4>
                             <ul>
-                                <li><a href="#">Features</a></li>
-                                <li><a href="#">Pricing</a></li>
-                                <li><a href="#">Team</a></li>
+                                <li><a href="#features">Features</a></li>
+                                <li><a href="#pricing">Pricing</a></li>
+                                <li><a href="#team">Team</a></li>
                                 <li><a href="#">Book a Demo</a></li>
                             </ul>
                         </div>
@@ -65,16 +66,15 @@ const Footer: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Footer Bottom Section */}
                 <div className="footer-bottom reveal-on-scroll delay-800">
                     <p className="copyright">
-                        &copy; 2025 UniQ Team CS-97. All rights reserved.
+                        &copy; {currentYear} UniQ by Team CS-97. All rights reserved.
                     </p>
                     <div className="footer-legal-links">
-                        <a href="#">Cookies</a>
-                        <span className="separator">|</span>
-                        <a href="#">Terms</a>
-                        <span className="separator">|</span>
-                        <a href="#">Privacy</a>
+                        <a href="#">Cookie Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">Privacy Policy</a>
                     </div>
                 </div>
             </div>
