@@ -19,12 +19,17 @@ const Navbar: React.FC = () => {
         e.preventDefault();
         console.log("Sign up submitted");
     };
+    
+    const handleLogoClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     return (
         <>
             <nav className="navbar">
                 <div className="navbar-logo">
-                    <a href="#" onClick={() => window.scrollTo(0, 0)}>
+                    <a href="/" onClick={handleLogoClick}>
                         <img 
                             src="/logo.png" 
                             alt="UniQ logo" 
@@ -45,11 +50,16 @@ const Navbar: React.FC = () => {
                     </button>
                 </div>
 
-                <div className={`hamburger ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}>
+                <button 
+                    className={`hamburger ${isMenuOpen ? 'active' : ''}`} 
+                    onClick={toggleMenu}
+                    aria-label="Toggle navigation menu"
+                    aria-expanded={isMenuOpen}
+                >
                     <span className="bar"></span>
                     <span className="bar"></span>
                     <span className="bar"></span>
-                </div>
+                </button>
             </nav>
 
             {isSignUpOpen && (
@@ -93,9 +103,9 @@ const Navbar: React.FC = () => {
                         </button>
 
                         <div className="signup-footer">
-                            By clicking on Sign up, you agree to UniQ's <a href="#">Terms and Conditions</a>  of Use.
+                            By clicking on Sign up, you agree to UniQ's <a href="#">Terms and Conditions</a> of Use.
                             <br /><br />
-                            To learn more about how we collect, use, shares and protect your personal data please read UniQ's <a href="#">Privacy Policy</a>.
+                            To learn more about how we collect, use, share and protect your personal data please read UniQ's <a href="#">Privacy Policy</a>.
                         </div>
                     </div>
                 </div>

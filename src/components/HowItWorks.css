@@ -2,7 +2,6 @@
     padding: 6rem 2rem;
     background-color: var(--white);
     text-align: center;
-    border-radius: 2rem;
 }
 
 .section-heading {
@@ -65,8 +64,7 @@
     max-width: 300px;
 }
 
-/* Connector Line (Desktop Only) */
-@media (min-width: 768px) {
+@media (min-width: 992px) {
     .step-connector {
         position: absolute;
         top: 40px;
@@ -75,9 +73,5 @@
         height: 2px;
         background-color: var(--soft-gradient-blue);
         z-index: 1;
-    }
-
-    .step-card:last-child .step-connector {
-        display: none;
     }
 }

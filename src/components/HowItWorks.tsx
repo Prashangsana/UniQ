@@ -1,3 +1,4 @@
+import React from 'react';
 import { Icon } from '@iconify/react';
 import './HowItWorks.css';
 
@@ -9,7 +10,7 @@ const steps = [
     },
     {
         title: "Connect",
-        description: "Join a project group, book a mentor, register for an event.",
+        description: "Join a project group, book a mentor, or register for an event.",
         icon: "lucide:users"
     },
     {
@@ -31,6 +32,7 @@ const HowItWorks: React.FC = () => {
                         </div>
                         <h3 className="step-title">{step.title}</h3>
                         <p className="step-description">{step.description}</p>
+                        
                         {index < steps.length - 1 && <div className="step-connector"></div>}
                     </div>
                 ))}
