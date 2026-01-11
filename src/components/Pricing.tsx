@@ -21,29 +21,30 @@ const pricingPlans = [
     },
     {
         title: "Pro Mentor",
-        subtitle: "For Alumni",
-        price: "$10.99",
+        subtitle: "For Alumni & Tutors",
+        price: "$20",
         period: "USD/month",
         features: [
             "Everything in Student Basic",
             "Verified \"Top Mentor\" Badge",
             "Cross-Institution Networking",
-            "Advanced Profile Analytics"
+            "Advanced Mentee Analytics"
         ],
-        isPopular: false,
+        isPopular: true,
         buttonStyle: "filled",
         buttonText: "Start Free Trial"
     },
     {
         title: "Institution",
         subtitle: "For Universities & Organizations",
-        price: "$990.99",
+        price: "$1,200",
         period: "USD/month",
         features: [
             "Unlimited Users & Sites",
             "Dedicated Server Deployment",
             "Google Calendar API Integration",
-            "Lecturer Dashboard Panel"
+            "Lecturer Dashboard Panel",
+            "24/7 Priority Support",
         ],
         isPopular: false,
         buttonStyle: "outline",
