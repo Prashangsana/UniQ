@@ -5,44 +5,44 @@ import './Team.css';
 const teamMembers = [
     {
         name: "Prabhavi Solomon",
-        role: "Lead Full Stack & API Engineer",
+        role: "Full Stack Developer",
         image: "teammember1.jpg",
-        bio: "The vision keeper who bridges design and functionality, ensuring the platform feels complete and unified",
+        bio: "Working on both the front and back end to bring the whole vision to life.",
         linkedin: "https://www.linkedin.com/feed/"
     },
     {
         name: "Yahani Dissanayake",
-        role: "Core Feature Engineer",
+        role: "Feature Developer",
         image: "teammember1.jpg",
-        bio: "The builder behind the platform's core activities, powering the events and community tools you use most.",
+        bio: "Building the core features like events and community tools you use everyday.",
         linkedin: "https://www.linkedin.com/feed/"
     },
     {
         name: "Sewmini Senevirathna",
-        role: "Integration & Systems Developer",
+        role: "System Developer",
         image: "teammember1.jpg",
-        bio: "The bridge between user actions and system responses, ensuring that navigation and access flow smoothly.",
+        bio: "Ensuring the system connects smoothly so everything runs without a hitch.",
         linkedin: "https://www.linkedin.com/feed/"
     },
     {
         name: "Upeshi Sorajapathi",
-        role: "UI/UX & Visuals Developer",
+        role: "UI/UX Designer",
         image: "teammember1.jpg",
-        bio: "The detail-oriented eye who ensures the interface is polished, consistent, and looks great on every screen.",
+        bio: "Crafting the designs to make sure the app looks good and feels right.",
         linkedin: "https://www.linkedin.com/feed/"
     },
     {
         name: "Dinuli Hangawaththa",
-        role: "Interactive Modules Developer",
+        role: "Frontend Developer",
         image: "teammember1.jpg",
-        bio: "The interaction specialist focused on making the platform engaging, dynamic, and fun to interact with.",
+        bio: "Creating the interactive parts that make the site engaging and fun to use.",
         linkedin: "https://www.linkedin.com/feed/"
     },
     {
         name: "Prashangsana Dissanayake",
-        role: "Backend & API Architect",
+        role: "Backend Developer",
         image: "teammember.jpg",
-        bio: "The structural anchor who manages the data and operations running behind the scenes to keep everything fast and stable.",
+        bio: "Handling the data and logic behind the scenes to keep things fast.",
         linkedin: "https://www.linkedin.com/feed/"
     }
 ];

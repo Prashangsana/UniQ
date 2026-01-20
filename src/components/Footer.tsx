@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
                                 <li><a href="#features">Features</a></li>
                                 <li><a href="#pricing">Pricing</a></li>
                                 <li><a href="#team">Team</a></li>
-                                <li><a href="#">Book a Demo</a></li>
+                                <li><a href="#">Watch Demo</a></li>
                             </ul>
                         </div>
 
@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
                 {/* Footer Bottom Section */}
                 <div className="footer-bottom reveal-on-scroll delay-800">
                     <p className="copyright">
-                        &copy; {currentYear} UniQ by Team CS-97. All rights reserved.
+                        &copy; {currentYear} UniQ by Team Csypher. All rights reserved.
                     </p>
                     <div className="footer-legal-links">
                         <a href="#">Cookie Policy</a>

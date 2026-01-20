@@ -64,16 +64,16 @@ const Navbar: React.FC = () => {
 
             {isSignUpOpen && (
                 <div className="modal-overlay" onClick={() => setIsSignUpOpen(false)}>
-                    <div className="modal-content signup-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content size-sm" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close" onClick={() => setIsSignUpOpen(false)} aria-label="Close">
                             <Icon icon="lucide:x" width="24" height="24" />
                         </button>
 
-                        <div className="signup-header">
+                        <div className="modal-header">
                             <h2>Sign Up</h2>
                         </div>
 
-                        <form onSubmit={handleSignUpSubmit} className="signup-form">
+                        <form onSubmit={handleSignUpSubmit} className="modal-form">
                             <div className="form-group">
                                 <label htmlFor="signup-email">Email address</label>
                                 <input
@@ -86,23 +86,23 @@ const Navbar: React.FC = () => {
                                 />
                             </div>
 
-                            <button type="submit" className="btn-signup-submit">
+                            <button type="submit" className="btn-modal primary">
                                 Continue
                             </button>
                         </form>
 
-                        <div className="divider-container">
+                        <div className="modal-divider">
                             <span className="line"></span>
                             <span className="text">or</span>
                             <span className="line"></span>
                         </div>
 
-                        <button className="btn-google-signup">
+                        <button className="btn-modal google">
                             <Icon icon="devicon:google" width="18" height="18" />
                             <span>Sign up with Google</span>
                         </button>
 
-                        <div className="signup-footer">
+                        <div className="modal-footer">
                             By clicking on Sign up, you agree to UniQ's <a href="#">Terms and Conditions</a> of Use.
                             <br /><br />
                             To learn more about how we collect, use, share and protect your personal data please read UniQ's <a href="#">Privacy Policy</a>.

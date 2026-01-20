@@ -102,6 +102,7 @@
 .btn-watch-demo:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
+    transform: translateY(-2px);
 }
 
 .hero-image-container {

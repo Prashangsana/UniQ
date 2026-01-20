@@ -26,11 +26,10 @@ const pricingPlans = [
         period: "USD/month",
         features: [
             "Everything in Student Basic",
-            "Verified \"Top Mentor\" Badge",
             "Cross-Institution Networking",
             "Advanced Mentee Analytics"
         ],
-        isPopular: true,
+        isPopular: false,
         buttonStyle: "filled",
         buttonText: "Start Free Trial"
     },
@@ -123,17 +122,17 @@ const Pricing: React.FC = () => {
 
             {isModalOpen && (
                 <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content size-md" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close" onClick={closeModal} aria-label="Close">
                             <Icon icon="lucide:x" width="24" height="24" />
                         </button>
                         
                         <div className="modal-header">
-                            <h2 className="modal-heading">Get in Touch</h2>
-                            <p className="modal-subheading">Fill out the form below and we'll get back to you soon.</p>
+                            <h2>Get in Touch</h2>
+                            <p>Fill out the form below and we'll get back to you soon.</p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="contact-form">
+                        <form onSubmit={handleSubmit} className="modal-form">
                             <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="name">Name</label>
@@ -188,7 +187,7 @@ const Pricing: React.FC = () => {
                                 />
                             </div>
                             
-                            <button type="submit" className="btn-submit">
+                            <button type="submit" className="btn-modal primary">
                                 <Icon icon="lucide:send" width="18" height="18" />
                                 <span>Send Message</span>
                             </button>
