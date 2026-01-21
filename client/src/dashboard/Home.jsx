@@ -42,6 +42,9 @@ const SettingsView = () => (
 const Home = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
 
+    // Define the API URL
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': return <DashboardView />;
@@ -120,7 +123,7 @@ const Home = () => {
                             </a>
                         </li>
                         <li className="logout-item">
-                            <a href="http://localhost:5000/auth/logout">
+                            <a href={`${API_URL}/auth/logout`}>
                                 <Icon icon="lucide:log-out" width="20" />
                                 <span>Logout</span>
                             </a>

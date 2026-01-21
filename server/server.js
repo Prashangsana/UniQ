@@ -8,19 +8,28 @@ const cors = require('cors');
 const app = express();
 
 // Configuration
-// Reads "iit.ac.lk" from .env file
 const ALLOWED_DOMAIN = process.env.ORG_DOMAIN; 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+// Essential for Render/Heroku behind a proxy
+app.set('trust proxy', 1);
 
 app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true
+    origin: [FRONTEND_URL, 'http://uniq.lk', 'http://www.uniq.lk'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Set to true if using https later
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // true on Render, false on localhost
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-site
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    } 
 }));
 
 app.use(passport.initialize());
@@ -30,28 +39,22 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
+    // Dynamic callback URL based on environment
+    callbackURL: `${BACKEND_URL}/auth/google/callback`
   },
   function(accessToken, refreshToken, profile, done) {
     const userEmail = profile.emails[0].value;
     const userDomain = userEmail.split('@')[1];
 
-    // Security Check (Is this user from the allowed university)
     if (userDomain !== ALLOWED_DOMAIN) {
-        console.log(`Blocked login attempt from: ${userEmail}`);
         return done(null, false, { message: 'Unauthorized University Domain' });
     }
 
-    // Role Assignment
-    let role = 'lecturer'; // Default to lecturer
-    
-    const isStudentPattern = /\.\d{8,}/.test(userEmail);
-
-    if (isStudentPattern) {
+    let role = 'lecturer'; 
+    if (/\.\d{8,}/.test(userEmail)) {
         role = 'student';
     }
 
-    // Create the user object to save in session
     const user = {
         googleId: profile.id,
         email: userEmail,
@@ -60,12 +63,10 @@ passport.use(new GoogleStrategy({
         photo: profile.photos ? profile.photos[0].value : null
     };
 
-    console.log(`User Logged In: ${user.email} as ${user.role}`);
     return done(null, user);
   }
 ));
 
-// Session Handling
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
@@ -79,14 +80,13 @@ app.get('/auth/google',
 
 // Google Callback
 app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/' }),
+  passport.authenticate('google', { failureRedirect: FRONTEND_URL }),
   function(req, res) {
-    // Login Success Redirect to the frontend dashboard
-    res.redirect('http://localhost:5173/');
+    // Successful authentication, redirect to frontend
+    res.redirect(FRONTEND_URL);
   }
 );
 
-// Check Session Frontend calls this
 app.get('/auth/me', (req, res) => {
     if (req.isAuthenticated()) {
         res.json({ authenticated: true, user: req.user });
@@ -95,11 +95,12 @@ app.get('/auth/me', (req, res) => {
     }
 });
 
-// Logout
 app.get('/auth/logout', (req, res) => {
     req.logout(() => {
-        res.redirect('http://localhost:5173/');
+        res.clearCookie('connect.sid'); 
+        res.redirect(FRONTEND_URL);
     });
 });
 
-app.listen(5000, () => console.log(`Server running for domain: ${ALLOWED_DOMAIN}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

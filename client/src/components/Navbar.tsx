@@ -10,6 +10,9 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
+    // Define the API URL
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -28,9 +31,9 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
         }
     };
 
-    // Redirect to Backend Auth
+    // Redirect to dynamic Backend Auth URL
     const handleGoogleLogin = () => {
-        window.open("http://localhost:5000/auth/google", "_self");
+        window.open(`${API_URL}/auth/google`, "_self");
     };
     
     const handleLogoClick = (e: React.MouseEvent) => {

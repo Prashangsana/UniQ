@@ -12,17 +12,18 @@ import './App.css';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const handleLogin = () => {
     setIsLoggedIn(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Check if user is already logged in Returning from Google OAuth
+  // Check if user is already logged in / Returning from Google OAuth
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Send "credentials: include" so the browser sends the cookie to backend
-        const response = await fetch('http://localhost:5000/auth/me', {
+        const response = await fetch(`${API_URL}/auth/me`, {
            credentials: 'include' 
         });
         const data = await response.json();
