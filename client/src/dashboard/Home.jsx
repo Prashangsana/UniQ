@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import './Home.css';
-
-const DashboardView = () => (
-    <div className="content-section fade-in">
-        <h2>Dashboard Overview</h2>
-        <p>Welcome to your main feed. Recent updates and announcements appear here.</p>
-    </div>
-);
+import DashboardView from './DashboardView';
 
 const SocietyView = () => (
     <div className="content-section fade-in">
