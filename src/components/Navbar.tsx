@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import './Navbar.css';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+    onSignUpSuccess?: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
@@ -18,6 +22,15 @@ const Navbar: React.FC = () => {
     const handleSignUpSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Sign up submitted");
+        
+        if (onSignUpSuccess) {
+            onSignUpSuccess();
+        }
+    };
+
+    // Redirect to Backend Auth
+    const handleGoogleLogin = () => {
+        window.open("http://localhost:5000/auth/google", "_self");
     };
     
     const handleLogoClick = (e: React.MouseEvent) => {
@@ -97,7 +110,7 @@ const Navbar: React.FC = () => {
                             <span className="line"></span>
                         </div>
 
-                        <button className="btn-modal google">
+                        <button className="btn-modal google" onClick={handleGoogleLogin}>
                             <Icon icon="devicon:google" width="18" height="18" />
                             <span>Sign up with Google</span>
                         </button>
