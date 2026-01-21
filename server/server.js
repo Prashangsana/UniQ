@@ -16,7 +16,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 app.set('trust proxy', 1);
 
 app.use(cors({
-    origin: [FRONTEND_URL, 'http://uniq.lk', 'http://www.uniq.lk'],
+    origin: [FRONTEND_URL, 'https://uniq.lk', 'https://www.uniq.lk'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
