@@ -18,11 +18,8 @@ html, body {
   color: var(--text-dark);
 }
 
-.app-container {
-  width: 100%;     
-  max-width: none;    
-  margin: 0;          
-  padding: 15px 25px; 
+.app-inner-container {
+  width: 100%;                  
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -42,7 +39,7 @@ html, body {
   align-items: center;
   padding: 0 40px;
   color: white;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   overflow: hidden;
 }
@@ -100,12 +97,12 @@ html, body {
 }
 
 /* --- DASHBOARD LAYOUT --- */
-.dashboard-layout {
+.dashboard-grid {
   display: grid;
-  grid-template-columns: 60% 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 25px;
   flex-grow: 1; 
-  align-items: stretch; 
+  align-items: start; 
 }
 
 .content-panel {

@@ -1,5 +1,5 @@
 import React from 'react';
-// import './DashboardView.css';
+import './DashboardView.css';
 
 const groupsData = [
   { id: 1, name: 'CS - 97', img: '' },
@@ -11,7 +11,7 @@ const groupsData = [
 
 const DashboardView = () => {
     return (
-       <div className="app-container">
+       <div className="app-inner-container">
       
       {/* Hero Banner */}
       <header className="hero-banner">
@@ -28,7 +28,7 @@ const DashboardView = () => {
       </header>
 
       {/* Main Content Grid */}
-      <div className="dashboard-layout">
+      <div className="dashboard-grid">
         
         {/* LEFT COLUMN: Groups */}
         <section className="content-panel groups-panel">
