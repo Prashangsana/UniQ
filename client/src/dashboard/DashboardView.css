@@ -19,9 +19,10 @@ html, body {
 }
 
 .app-container {
-  max-width: 98%;
-  margin: 0 auto;
-  padding: 15px 0;
+  width: 100%;     
+  max-width: none;    
+  margin: 0;          
+  padding: 15px 25px; 
   min-height: 100vh;
   display: flex;
   flex-direction: column;
