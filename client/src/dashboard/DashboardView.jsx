@@ -4,7 +4,7 @@ const DashboardView = () => {
     return (
         <div className="content-section fade-in">
             <h2>Dashboard Overview</h2>
-            <p>Welcome to your main feed.</p>
+            <h4>Welcome to your main feed.</h4>
         </div>
     );
 };
