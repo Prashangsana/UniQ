@@ -1,12 +1,14 @@
 import React from 'react';
-// import './DashboardView.css';
+import './DashboardView.css';
+import { Icon } from '@iconify/react';
 
 const groupsData = [
-  { id: 1, name: 'CS - 97', img: '' },
-  { id: 2, name: 'Design Club', img: '' },
-  { id: 3, name: 'Robotics', img: '' },
-  { id: 4, name: 'AI Research', img: '' },
-  { id: 5, name: 'Game Dev', img: '' },
+  { id: 1, name: 'CS - 97', img: '/images-d/gp.jpg' },
+  { id: 2, name: 'Design Club', img: '/images-d/design.jpg' },
+  { id: 3, name: 'Robotics', img: '/images-d/robotics.jpg' },
+  { id: 4, name: 'AI Research', img: '/images-d/ai.png' },
+  { id: 5, name: 'Game Dev', img: '/images-d/gd.jpg' },
+  { id: 6, name: 'Machine Learning', img: '/images-d/ml.jpg' },
 ];
 
 const DashboardView = () => {
@@ -56,16 +58,16 @@ const DashboardView = () => {
           
           <div className="tiles-grid">
             <button className="tile-btn blue">
-              <span className="icon">📅</span> Bookings
+              <span className="icon"><Icon icon="lucide:calendar-days" width="32"/></span> Bookings
             </button>
             <button className="tile-btn blue">
-              <span className="icon">👥</span> Community
+              <span className="icon"><Icon icon="lucide:users" width="32"/></span> Community
             </button>
             <button className="tile-btn blue">
-              <span className="icon">🏆</span> Rankings
+              <span className="icon"><Icon icon="lucide:trophy" width="32"/></span> Rankings
             </button>
             <button className="tile-btn blue">
-              <span className="icon">🎟️</span> My Events
+              <span className="icon"><Icon icon="lucide:ticket" width="32"/></span> My Events
             </button>
           </div>
 

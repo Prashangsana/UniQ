@@ -214,19 +214,17 @@ html, body {
   box-shadow: 0 8px 20px rgba(91, 124, 189, 0.4);
 }
 
-/* --- SIDEBAR PANEL (Balanced Logic) --- */
+/* --- SIDEBAR PANEL --- */
 .sidebar-panel {
   display: flex;
   flex-direction: column;
   gap: 25px; 
 }
 
-/* PART 1: Top Half (50%) */
 .tiles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-  /* Grow to take exactly half the available space */
   flex: 1; 
 }
 
@@ -246,7 +244,7 @@ html, body {
   gap: 12px;
   box-shadow: 0 4px 10px rgba(91, 124, 189, 0.3);
   transition: transform 0.2s;
-  height: 100%; /* Fill the grid cell */
+  height: 100%;
 }
 
 .tile-btn:hover {
@@ -258,12 +256,10 @@ html, body {
   font-size: 2.2rem;
 }
 
-/* PART 2: Bottom Half (50%) */
 .register-stack {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  /* Grow to take the other half of the space */
   flex: 1; 
 }
 
@@ -272,7 +268,6 @@ html, body {
   color: white;
   border: none;
   border-radius: 16px;
-  /* Padding can be moderate since we are stretching height now */
   padding: 0 25px; 
   display: flex;
   justify-content: space-between;
@@ -281,7 +276,6 @@ html, body {
   box-shadow: 0 4px 15px rgba(30, 41, 59, 0.3);
   text-align: left;
   transition: transform 0.2s;
-  /* Stretch to fill the split container */
   height: 100%; 
 }
 
@@ -293,12 +287,12 @@ html, body {
 .reg-title {
   display: block;
   font-weight: 700;
-  font-size: 1.3rem; /* Restored size */
+  font-size: 1.3rem; 
   letter-spacing: 0.5px;
 }
 
 .reg-sub {
-  font-size: 1rem; /* Restored size */
+  font-size: 1rem;
   opacity: 0.9;
   margin-top: 5px;
 }
@@ -314,47 +308,109 @@ html, body {
   border-radius: 50%;
 }
 
+/* --- RESPONSIVE DESIGN ---*/
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; 
+    gap: 30px;
+  }
+
+  .groups-panel {
+    order: 1; 
+  }
+
+  .groups-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+  }
+
+  .sidebar-panel {
+    order: 2; 
+    flex-direction: row; 
+    align-items: stretch;
+  }
+
+  .tiles-grid {
+    flex: 1;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .register-stack {
+    flex: 1;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-layout {
     grid-template-columns: 1fr;
     gap: 30px;
   }
-  .sidebar-panel {
-    gap: 15px;
+
+  .hero-banner {
+    height: 180px;
+    padding: 0 20px;
   }
-  
-  /* Reset flexible heights on mobile */
-  .tile-btn {
-    height: 120px; 
-    font-size: 1rem;
+
+  .event-title {
+    font-size: 2.2rem;
   }
-  .tiles-grid, .register-stack {
-    flex: 0; /* Stop 50/50 split behavior on mobile */
-  }
-  
-  .register-btn {
-    height: auto;
-    padding: 25px 20px;
-  }
-  
-  .groups-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8px;
-    align-content: start;
-  }
-  .group-card {
-    height: 140px; 
-  }
-  .group-gradient {
-    padding: 8px;
-    font-size: 0.85rem;
-  }
+
   .ticket-info {
     padding: 10px;
     right: 15px;
     bottom: 15px;
   }
-  .event-title {
-    font-size: 2.5rem;
+
+  .groups-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px;
+    align-content: start;
+  }
+
+  .group-card {
+    height: 140px; 
+  }
+  
+  .group-gradient {
+    padding: 8px;
+    font-size: 0.85rem; 
+  }
+
+  .view-more-btn {
+    margin-top: 15px;
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .sidebar-panel {
+    flex-direction: column; 
+    gap: 15px;
+  }
+
+  .tiles-grid, .register-stack {
+    flex: 0; 
+  }
+
+  .tiles-grid {
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px;
+  }
+
+  .tile-btn {
+    height: 120px;
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .register-btn {
+    height: auto;
+    padding: 25px 20px;
+  }
+
+  .reg-title {
+    font-size: 1.1rem;
+  }
+
+  .reg-sub {
+    font-size: 0.85rem;
   }
 }
