@@ -1,5 +1,5 @@
 import React from 'react';
-import './DashboardView.css';
+// import './DashboardView.css';
 
 const groupsData = [
   { id: 1, name: 'CS - 97', img: '' },
