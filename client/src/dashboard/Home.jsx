@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
+import SettingsView from '../components/SettingsView';
 
 const SocietyView = () => (
     <div className="content-section fade-in">
@@ -31,12 +32,12 @@ const ArticlesView = () => (
     </div>
 );
 
-const SettingsView = () => (
-    <div className="content-section fade-in">
-        <h2>Account Settings</h2>
-        <p>Manage your profile, privacy, and notification preferences.</p>
-    </div>
-);
+// const SettingsView = () => (
+//     <div className="content-section fade-in">
+//         <h2>Account Settings</h2>
+//         <p>Manage your profile, privacy, and notification preferences.</p>
+//     </div>
+// );
 
 
 const Home = () => {
