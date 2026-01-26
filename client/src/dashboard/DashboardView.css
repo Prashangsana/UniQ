@@ -4,10 +4,11 @@
   --bg-color: #f8fafc;
   --card-bg: #ffffff;
   --text-dark: #334155;
-  --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   background-color: var(--bg-color);
@@ -15,7 +16,7 @@ html, body {
 }
 
 .app-inner-container {
-  width: 100%;                  
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -24,8 +25,10 @@ html, body {
 
 /* --- HERO BANNER --- */
 .hero-banner {
-  position: relative; 
-  background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1514525253440-b393452e8d26?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+  position: relative;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.8)),
+    url("https://images.unsplash.com/photo-1514525253440-b393452e8d26?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80");
   background-size: cover;
   background-position: center;
   height: 240px;
@@ -36,7 +39,7 @@ html, body {
   padding: 0 40px;
   color: white;
   margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   overflow: hidden;
 }
 
@@ -60,11 +63,11 @@ html, body {
 }
 
 .ticket-info {
-  position: absolute; 
+  position: absolute;
   bottom: 20px;
   right: 30px;
   text-align: right;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   padding: 15px;
   border-radius: 12px;
   backdrop-filter: blur(5px);
@@ -96,8 +99,8 @@ html, body {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 25px;
-  flex-grow: 1; 
-  align-items: start; 
+  flex-grow: 1;
+  align-items: start;
 }
 
 .content-panel {
@@ -130,7 +133,7 @@ html, body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .see-all:hover {
@@ -145,12 +148,12 @@ html, body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 15px;
-  align-content: stretch; 
-  flex-grow: 1; 
+  align-content: stretch;
+  flex-grow: 1;
 }
 
 .group-card {
-  height: 100%; 
+  height: 100%;
   min-height: 180px;
   border-radius: 16px;
   overflow: hidden;
@@ -162,7 +165,7 @@ html, body {
 
 .group-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .group-card img {
@@ -177,7 +180,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 60%;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   display: flex;
   align-items: flex-end;
   padding: 15px;
@@ -187,7 +190,7 @@ html, body {
 }
 
 .view-more-btn {
-  margin-top: 25px; 
+  margin-top: 25px;
   width: 100%;
   background-color: white;
   color: var(--primary-blue);
@@ -198,8 +201,8 @@ html, body {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  flex-shrink: 0; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .view-more-btn:hover {
@@ -213,14 +216,14 @@ html, body {
 .sidebar-panel {
   display: flex;
   flex-direction: column;
-  gap: 25px; 
+  gap: 25px;
 }
 
 .tiles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-  flex: 1; 
+  flex: 1;
 }
 
 .tile-btn {
@@ -255,7 +258,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  flex: 1; 
+  flex: 1;
 }
 
 .register-btn {
@@ -263,7 +266,7 @@ html, body {
   color: white;
   border: none;
   border-radius: 16px;
-  padding: 0 25px; 
+  padding: 0 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -271,7 +274,7 @@ html, body {
   box-shadow: 0 4px 15px rgba(30, 41, 59, 0.3);
   text-align: left;
   transition: transform 0.2s;
-  height: 100%; 
+  height: 100%;
 }
 
 .register-btn:hover {
@@ -282,7 +285,7 @@ html, body {
 .reg-title {
   display: block;
   font-weight: 700;
-  font-size: 1.3rem; 
+  font-size: 1.3rem;
   letter-spacing: 0.5px;
 }
 
@@ -294,7 +297,7 @@ html, body {
 
 .arrow {
   font-size: 1.4rem;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   width: 40px;
   height: 40px;
   display: flex;
@@ -306,21 +309,21 @@ html, body {
 /* --- RESPONSIVE DESIGN ---*/
 @media (max-width: 1024px) {
   .dashboard-grid {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
     gap: 30px;
   }
 
   .groups-panel {
-    order: 1; 
+    order: 1;
   }
 
   .groups-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 
   .sidebar-panel {
-    order: 2; 
-    flex-direction: row; 
+    order: 2;
+    flex-direction: row;
     align-items: stretch;
   }
 
@@ -362,12 +365,12 @@ html, body {
   }
 
   .group-card {
-    height: 140px; 
+    height: 140px;
   }
-  
+
   .group-gradient {
     padding: 8px;
-    font-size: 0.85rem; 
+    font-size: 0.85rem;
   }
 
   .view-more-btn {
@@ -377,16 +380,17 @@ html, body {
   }
 
   .sidebar-panel {
-    flex-direction: column; 
+    flex-direction: column;
     gap: 15px;
   }
 
-  .tiles-grid, .register-stack {
-    flex: 0; 
+  .tiles-grid,
+  .register-stack {
+    flex: 0;
   }
 
   .tiles-grid {
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
 
