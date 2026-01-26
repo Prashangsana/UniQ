@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import HowItWorks from './components/HowItWorks';
-import Pricing from './components/Pricing';
-import Team from './components/Team';
-import Footer from './components/Footer';
-import Home from './dashboard/Home'; 
 import './App.css';
+import Navbar from './components/Landing/Navbar';
+import Hero from './components/Landing/Hero';
+import Features from './components/Landing/Features';
+import HowItWorks from './components/Landing/HowItWorks';
+import Pricing from './components/Landing/Pricing';
+import Team from './components/Landing/Team';
+import Footer from './components/Landing/Footer';
+import Home from './dashboard/Home';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

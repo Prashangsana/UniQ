@@ -7,23 +7,17 @@
   --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-html,
-body {
-  height: 100%;
-  margin: 0;
-  background-color: var(--bg-color);
-  color: var(--text-dark);
-}
-
 .app-inner-container {
   width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background-color: var(--bg-color); 
+  color: var(--text-dark);
 }
 
-/* --- HERO BANNER --- */
+/* HERO BANNER */
 .hero-banner {
   position: relative;
   background:
@@ -94,7 +88,7 @@ body {
   text-decoration: line-through;
 }
 
-/* --- DASHBOARD LAYOUT --- */
+/* DASHBOARD LAYOUT */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -212,7 +206,7 @@ body {
   box-shadow: 0 8px 20px rgba(91, 124, 189, 0.4);
 }
 
-/* --- SIDEBAR PANEL --- */
+/* SIDEBAR PANEL */
 .sidebar-panel {
   display: flex;
   flex-direction: column;
@@ -306,7 +300,7 @@ body {
   border-radius: 50%;
 }
 
-/* --- RESPONSIVE DESIGN ---*/
+/* RESPONSIVE DESIGN*/
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;

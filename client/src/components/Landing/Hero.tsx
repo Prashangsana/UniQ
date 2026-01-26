@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
             <div className="hero-image-container reveal-on-scroll delay-600">
                 <div className="image-placeholder">
                     <img 
-                        src="/heroimg.png" 
+                        src="/Landing/heroimg.png" 
                         alt="UniQ platform dashboard preview" 
                     />
                 </div>

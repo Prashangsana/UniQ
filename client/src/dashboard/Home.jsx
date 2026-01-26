@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
-import SettingsView from '../components/SettingsView';
+import SettingsView from './SettingsView';
 
 const SocietyView = () => (
     <div className="content-section fade-in">
