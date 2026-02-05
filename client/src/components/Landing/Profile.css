@@ -1,0 +1,367 @@
+
+/* =========================================
+   1. MAIN CONTAINER & LAYOUT
+   ========================================= */
+.profile-container {
+  display: flex;
+  gap: 40px;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-main-content {
+  flex: 1;
+}
+
+/* =========================================
+   2. SIDEBAR STYLES
+   ========================================= */
+.profile-sidebar {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-wrapper-lg {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin-bottom: 20px;
+}
+
+.large-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #eef2f7;
+}
+
+.status-emoji {
+  position: absolute;
+  bottom: 25px;
+  right: 15px;
+  background: white;
+  border: 1px solid #eef2f7;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-names h1 {
+  font-size: 1.6rem;
+  margin: 0;
+  color: #0f172a;
+}
+
+.username {
+  font-size: 1.2rem;
+  color: #64748b;
+  font-weight: 300;
+}
+
+.user-email {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+
+/* Edit/Cancel Button */
+.btn-edit-profile {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin: 20px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-profile:hover {
+  background: #f1f5f9;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.btn-edit-profile.active-edit {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+  border-color: #fecaca !important;
+}
+
+/* Circular Social Icons */
+.sidebar-socials-circular {
+  display: flex;
+  gap: 30px;
+  margin-top: 10px;
+  justify-content: flex-start;
+}
+
+.social-circle-btn {
+  width: 46px;
+  height: 46px;
+  background: #1e293b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.social-circle-btn:hover {
+  transform: scale(1.18) translateY(-3px);
+  background: #2563eb;
+  box-shadow: 0 8px 15px rgba(37, 99, 235, 0.4);
+}
+
+.social-circle-btn:active {
+  transform: scale(0.95);
+}
+/* Add/Update these in your Profile.css */
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Ensure the textarea doesn't resize weirdly */
+.edit-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Make the camera icon look nice in the bubble */
+.status-emoji {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-wrapper-lg:hover .status-emoji {
+  background: #2563eb;
+  color: white;
+}
+
+/* Success Button Color */
+.btn-save-profile {
+  background: #2563eb;
+  margin-top: 20px;
+  /* ... rest of your save button styles ... */
+}
+/* =========================================
+   3. MAIN CONTENT CARD (VIEW & EDIT)
+   ========================================= */
+.intro-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.intro-body {
+  padding: 40px;
+}
+
+/* Prevents the container from jumping sizes */
+.content-wrapper {
+  min-height: 520px; 
+  display: flex;
+  flex-direction: column;
+}
+
+/* Typography & Spacing */
+.greeting-section h2 {
+  font-size: 1.8rem;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+
+.main-bio-text {
+  font-size: 1.1rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.career-details p {
+  margin: 10px 0;
+  color: #334155;
+  font-size: 1rem;
+}
+
+.content-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 30px 0;
+}
+
+.about-section h3, 
+.skills-section h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
+
+/* Academic Details */
+.academic-details {
+  margin-top: 10px;
+  color: #334155;
+  font-size: 1rem;
+}
+
+.academic-details p {
+  margin: 8px 0;
+}
+
+.label {
+  font-weight: 600;
+  color: #1e293b;
+  margin-right: 6px;
+}
+
+.learning-section {
+  margin-top: 12px;
+}
+
+.modules-list {
+  margin: 8px 0 0 18px;
+  padding: 0;
+}
+
+.modules-list li {
+  list-style: disc;
+  margin-bottom: 6px;
+  color: #475569;
+}
+
+
+/* Skills Pills */
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.skill-pill-light {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+  padding: 8px 18px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* =========================================
+   4. FORM STYLING (EDIT MODE)
+   ========================================= */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group input, 
+.form-group textarea {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  font-size: 1rem;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.btn-save-profile {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-save-profile:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   5. ANIMATIONS & RESPONSIVE
+   ========================================= */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1024px) {
+  .profile-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .profile-sidebar {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+  .sidebar-socials-circular {
+    justify-content: center;
+  }
+  .avatar-wrapper-lg {
+    width: 240px;
+    height: 240px;
+  }
+}
