@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
 import SettingsView from '../components/SettingsView';
+import GroupsPage from '../pages/GroupsPage';
 
 const SocietyView = () => (
     <div className="content-section fade-in">
@@ -11,12 +12,12 @@ const SocietyView = () => (
     </div>
 );
 
-const GroupsView = () => (
-    <div className="content-section fade-in">
-        <h2>Study Groups</h2>
-        <p>Find study partners or manage your current project groups.</p>
-    </div>
-);
+// const GroupsView = () => (
+//     <div className="content-section fade-in">
+//         <h2>Study Groups</h2>
+//         <p>Find study partners or manage your current project groups.</p>
+//     </div>
+// );
 
 const SkillsView = () => (
     <div className="content-section fade-in">
@@ -50,7 +51,7 @@ const Home = () => {
         switch(activeTab) {
             case 'dashboard': return <DashboardView />;
             case 'society':   return <SocietyView />;
-            case 'groups':    return <GroupsView />;
+            case 'groups':    return <GroupsPage />;
             case 'skills':    return <SkillsView />;
             case 'articles':  return <ArticlesView />;
             case 'settings':  return <SettingsView />;
