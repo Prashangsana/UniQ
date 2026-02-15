@@ -54,8 +54,6 @@ const DashboardView = () => {
               </div>
             ))}
           </div>
-
-          <button className="view-more-btn">Explore New Groups</button>
         </section>
 
         {/* RIGHT COLUMN: Sidebar */}
