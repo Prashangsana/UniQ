@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Landing/Navbar';
 import Hero from './components/Landing/Hero';
@@ -32,7 +33,7 @@ function App() {
            console.log("Login verified. User role:", data.user.role);
            handleLogin(); 
         }
-      } catch (error) {
+      } catch {
         console.log("User is not logged in");
       }
     };
@@ -67,19 +68,31 @@ function App() {
   }, [isLoggedIn]);
 
   if (isLoggedIn) {
-    return <Home />;
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
+    );
   }
 
   return (
-    <div className="app-container">
-      <Navbar onSignUpSuccess={handleLogin} />
-      <Hero />
-      <Features />
-      <HowItWorks />
-      <Pricing />
-      <Team />
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={
+          <div className="app-container">
+            <Navbar onSignUpSuccess={handleLogin} />
+            <Hero />
+            <Features />
+            <HowItWorks />
+            <Pricing />
+            <Team />
+            <Footer />
+          </div>
+        } />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

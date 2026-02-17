@@ -1,0 +1,61 @@
+.sidebar-section {
+  margin-bottom: 30px;
+}
+
+.sidebar-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1b2559;
+  margin-bottom: 15px;
+}
+
+.sidebar-items {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* The clickable card */
+.sidebar-event-card {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-event-card:hover {
+  transform: scale(1.03);
+}
+
+/* The Banner inside the Sidebar */
+.sidebar-card-banner {
+  height: 80px;
+  background: #d1d5db; /* Placeholder for banner image */
+  background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url('https://via.placeholder.com/300x80');
+  background-size: cover;
+  background-position: center;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.sidebar-view-more {
+  margin-top: 15px;
+  width: 100%;
+  background: #1a08a5; /* Your theme Dark Blue */
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.sidebar-view-more:hover {
+  background: #0a0254;
+}

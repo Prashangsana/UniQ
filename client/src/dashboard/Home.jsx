@@ -3,13 +3,14 @@ import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
+import { EventsPage } from './pages/Event';
 
-const SocietyView = () => (
-    <div className="content-section fade-in">
-        <h2>Society & Events</h2>
-        <p>Browse upcoming university events and joined societies.</p>
-    </div>
-);
+// const SocietyView = () => (
+//     <div className="content-section fade-in">
+//         <h2>Society & Events</h2>
+//         <p>Browse upcoming university events and joined societies.</p>
+//     </div>
+// );
 
 const GroupsView = () => (
     <div className="content-section fade-in">
@@ -49,7 +50,7 @@ const Home = () => {
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': return <DashboardView />;
-            case 'society':   return <SocietyView />;
+            case 'society':   return <EventsPage />;
             case 'groups':    return <GroupsView />;
             case 'skills':    return <SkillsView />;
             case 'articles':  return <ArticlesView />;
