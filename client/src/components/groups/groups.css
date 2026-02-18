@@ -191,3 +191,51 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Form Inputs */
+.gf-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.gf-input:focus {
+  outline: none;
+  border-color: #5b7cbd;
+}
+
+/* Domain Tags */
+.gf-tag-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #475569;
+  transition: all 0.2s;
+}
+
+.gf-tag-btn:hover {
+  background: #e2e8f0;
+}
+
+.gf-tag-btn.active {
+  background: #5b7cbd;
+  color: white;
+  border-color: #5b7cbd;
+  box-shadow: 0 4px 10px rgba(91, 124, 189, 0.3);
+}
+
+/* Layout for User Profile to accommodate Actions */
+.gf-profile-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1f5f9;
+}

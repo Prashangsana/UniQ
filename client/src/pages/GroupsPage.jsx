@@ -4,6 +4,7 @@ import ModuleGroupsView from '../components/groups/ModuleGroupsView';
 import GroupDetailsView from '../components/groups/GroupDetailsView';
 import InviteDetailsView from '../components/groups/InviteDetailsView';
 import UserProfileView from '../components/groups/UserProfileView';
+import CreateGroupView from '../components/groups/CreateGroupView';
 
 const GroupsPage = () => {
   // State: 'dashboard', 'module', 'group', 'invite', 'profile'
@@ -15,21 +16,28 @@ const GroupsPage = () => {
   const [selectedInvite, setSelectedInvite] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   
-  // History tracking to know where to go 'back' to
-  const [previousView, setPreviousView] = useState('dashboard');
+  // This tracks where to return to when closing GroupDetails (Module or Dashboard)
+  const [originView, setOriginView] = useState('dashboard');
+  // This tracks where to return to when closing a Profile (Group or Dashboard)
+  const [profileReturnView, setProfileReturnView] = useState('dashboard');
 
   // --- Handlers ---
 
   const handleProfileClick = (user) => {
     setSelectedUser(user);
-    setPreviousView(view); // Remember if we came from group or dashboard
+    setProfileReturnView(view); // Saves if we came from 'group' or 'dashboard'
     setView('profile');
   };
 
   const handleGroupClick = (group, source) => {
     setSelectedGroup(group);
-    setPreviousView(source === 'module' ? 'module' : 'dashboard');
+    setOriginView(source === 'module' ? 'module' : 'dashboard');
     setView('group');
+  };
+
+  const handleCreateGroupClick = (module) => {
+    setSelectedModule(module);
+    setView('create-group');
   };
 
   // --- Renders ---
@@ -40,6 +48,7 @@ const GroupsPage = () => {
         module={selectedModule}
         onBack={() => setView('dashboard')}
         onSelectGroup={(group) => handleGroupClick(group, 'module')}
+        onCreateGroup={() => handleCreateGroupClick(selectedModule)}
       />
     );
   }
@@ -48,8 +57,17 @@ const GroupsPage = () => {
     return (
       <GroupDetailsView
         group={selectedGroup}
-        onBack={() => setView(previousView)}
+        onBack={() => setView(originView)}
         onViewProfile={handleProfileClick}
+      />
+    );
+  }
+
+  if (view === 'create-group') {
+    return (
+      <CreateGroupView 
+        module={selectedModule} 
+        onBack={() => setView('module')} 
       />
     );
   }
@@ -67,7 +85,7 @@ const GroupsPage = () => {
     return (
       <UserProfileView
         user={selectedUser}
-        onBack={() => setView(previousView)}
+        onBack={() => setView(profileReturnView)}
       />
     );
   }
