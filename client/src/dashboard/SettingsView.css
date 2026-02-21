@@ -20,7 +20,7 @@
   font-size: 1rem;
 }
 
-/* --- MAIN DESKTOP LAYOUT --- */
+/* MAIN DESKTOP LAYOUT */
 .settings-layout {
   display: flex;
   gap: 30px;
@@ -28,7 +28,7 @@
   width: 100%;
 }
 
-/* --- SIDEBAR --- */
+/* SIDEBAR */
 .settings-sidebar-wrapper {
   flex: 0 0 240px;
   display: flex;
@@ -80,7 +80,7 @@
 .progress-fill { background: #f8fafc; height: 100%; border-radius: 4px; box-shadow: 0 0 5px rgba(255,255,255,0.5); }
 .sidebar-widget p { font-size: 0.8rem; color: #e2e8f0; margin: 0; line-height: 1.4; }
 
-/* --- CONTENT AREA --- */
+/* CONTENT AREA */
 .settings-content {
   flex: 1;
   width: 100%;
@@ -107,7 +107,7 @@
   gap: 25px;
 }
 
-/* --- CARDS --- */
+/* CARDS */
 .settings-card {
   background: white;
   border-radius: 16px;

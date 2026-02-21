@@ -11,17 +11,17 @@ const featuresData: FeatureItem[] = [
     {
         title: "Build the Perfect Team.",
         description: "Create profiles showcasing your skills and interests. Use our Skill Matching Engine to find compatible teammates and form groups 70-60% faster.",
-        image: "/feature1.png"
+        image: "/Landing/feature1.png"
     },
     {
         title: "Never Miss a Campus Beat.",
         description: "Clubs and departments post real-time announcements. Get event pop-ups and notifications so you are always aware of what is happening on campus.",
-        image: "/feature2.png"
+        image: "/Landing/feature2.png"
     },
     {
         title: "Connect with Experts.",
         description: "Juniors can book peer tutoring with seniors. Lecturers can display expertise and sync consultation slots directly with Google Calendar.",
-        image: "/feature3.png"
+        image: "/Landing/feature3.png"
     }
 ];
 

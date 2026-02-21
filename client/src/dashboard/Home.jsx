@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
-import SettingsView from '../components/SettingsView';
+import SettingsView from './SettingsView';
 import GroupsPage from '../pages/GroupsPage';
 
 const SocietyView = () => (
