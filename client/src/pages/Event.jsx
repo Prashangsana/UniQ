@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import EventBanner from "./EventBanner";
-import EventRow from "./EventRow";
-import SidebarSection from "./SidebarSection";
-import SocietyCard from "./SocietyCard";
+import EventBanner from "../components/events/EventBanner";
+import EventRow from "../components/events/EventRow";
+import SidebarSection from "../components/events/SidebarSection";
+import SocietyCard from "../components/events/SocietyCard";
+
+import {
+  EventsPage,
+  SocietyProfilePage,
+  EventDetailsPage,
+} from "./pages/Event";
 
 import "./Event.css";
 
