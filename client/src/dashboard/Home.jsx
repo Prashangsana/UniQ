@@ -4,6 +4,8 @@ import './Home.css';
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
 import GroupsPage from '../pages/GroupsPage';
+import Profile from '../components/Landing/Profile'; 
+
 
 const SocietyView = () => (
     <div className="content-section fade-in">
@@ -33,23 +35,22 @@ const ArticlesView = () => (
     </div>
 );
 
-// const SettingsView = () => (
-//     <div className="content-section fade-in">
-//         <h2>Account Settings</h2>
-//         <p>Manage your profile, privacy, and notification preferences.</p>
-//     </div>
-// );
-
-
 const Home = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
 
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
+    const sidebarUser = {
+        name: 'Alex',
+        img: 'https://i.pravatar.cc/300?img=47' 
+    };
+
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': return <DashboardView />;
+            case 'profile':   return <Profile />;
             case 'society':   return <SocietyView />;
             case 'groups':    return <GroupsPage />;
             case 'skills':    return <SkillsView />;
@@ -65,18 +66,19 @@ const Home = () => {
                 <div className="sidebar-brand-mobile">
                     <span className="brand-text">UniQ</span>
                 </div>
+                
 
                 <div className="sidebar-profile">
-                    <div className="profile-img-container">
+                    <div className="profile-img-container" onClick={() =>setActiveTab('profile')} style={{cursor:'pointer'}}>
                         <img 
-                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
+                            src={sidebarUser.img} 
                             alt="User Profile" 
                             className="profile-img"
                         />
                         <div className="status-indicator"></div>
                     </div>
                     <div className="profile-info">
-                        <h3>Hi, Alex</h3>
+                        <h3>Hi, {sidebarUser.name}</h3>
                         <p>Student Member</p>
                     </div>
                 </div>
@@ -84,31 +86,38 @@ const Home = () => {
                 <nav className="sidebar-nav">
                     <ul>
                         <li className={activeTab === 'dashboard' ? 'active' : ''}>
-                            <a href="#dashboard" onClick={() => setActiveTab('dashboard')}>
+                            <a href="#dashboard" onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}>
                                 <Icon icon="lucide:layout-dashboard" width="20" />
                                 <span>Dashboard</span>
                             </a>
                         </li>
+                        <li className={activeTab === 'profile' ? 'active' : ''}>
+                            <a href="#profile" onClick={(e) => { e.preventDefault(); setActiveTab('profile'); }}>
+                                <Icon icon="lucide:user" width="20" />
+                                <span>Profile</span>
+                            </a>
+                        </li>
+
                         <li className={activeTab === 'society' ? 'active' : ''}>
-                            <a href="#society" onClick={() => setActiveTab('society')}>
+                            <a href="#society" onClick={(e) => { e.preventDefault(); setActiveTab('society'); }}>
                                 <Icon icon="lucide:party-popper" width="20" />
                                 <span>Society & Events</span>
                             </a>
                         </li>
                         <li className={activeTab === 'groups' ? 'active' : ''}>
-                            <a href="#groups" onClick={() => setActiveTab('groups')}>
+                            <a href="#groups" onClick={(e) => { e.preventDefault(); setActiveTab('groups'); }}>
                                 <Icon icon="lucide:users" width="20" />
                                 <span>Groups</span>
                             </a>
                         </li>
                         <li className={activeTab === 'skills' ? 'active' : ''}>
-                            <a href="#skills" onClick={() => setActiveTab('skills')}>
+                            <a href="#skills" onClick={(e) => { e.preventDefault(); setActiveTab('skills'); }}>
                                 <Icon icon="lucide:brain-circuit" width="20" />
                                 <span>Skill Matching</span>
                             </a>
                         </li>
                         <li className={activeTab === 'articles' ? 'active' : ''}>
-                            <a href="#articles" onClick={() => setActiveTab('articles')}>
+                            <a href="#articles" onClick={(e) => { e.preventDefault(); setActiveTab('articles'); }}>
                                 <Icon icon="lucide:file-text" width="20" />
                                 <span>Articles</span>
                             </a>
@@ -119,7 +128,7 @@ const Home = () => {
 
                     <ul>
                         <li className={activeTab === 'settings' ? 'active' : ''}>
-                            <a href="#settings" onClick={() => setActiveTab('settings')}>
+                            <a href="#settings" onClick={(e) => { e.preventDefault(); setActiveTab('settings'); }}>
                                 <Icon icon="lucide:settings" width="20" />
                                 <span>Settings</span>
                             </a>
@@ -133,9 +142,8 @@ const Home = () => {
                     </ul>
                 </nav>
             </aside>
-            {/* Main Content Area */}
+
             <div className="main-wrapper">
-                
                 <header className="dashboard-header">
                     <div className="header-left">
                         <div className="header-logo">
