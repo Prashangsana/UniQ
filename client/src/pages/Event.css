@@ -1,0 +1,433 @@
+/* ================= GLOBAL ================= */
+
+body {
+  background: #f8fafc;
+  font-family: Arial, sans-serif;
+}
+
+/* ================= EVENTS PAGE ================= */
+
+.events-page {
+  padding: 40px 20px;
+  max-width: 1400px;
+  margin: auto;
+}
+
+.events-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 40px;
+}
+
+/* Left Side */
+
+.events-left {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+/* Right Side */
+
+.events-right {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  position: sticky;
+  top: 20px;
+}
+
+/* ================= EVENT BANNER ================= */
+
+.event-banner {
+  height: 160px;
+  background: #e0e0e0;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #666;
+  transition: 0.2s;
+}
+
+.event-banner.large {
+  height: 260px;
+}
+
+.event-banner:hover {
+  transform: scale(1.02);
+}
+
+/* ================= EVENT ROW ================= */
+
+.event-row {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.row-header h2 {
+  font-size: 22px;
+}
+
+.row-header button {
+  background: none;
+  border: none;
+  color: #11047a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.row-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.empty-state {
+  color: gray;
+  font-size: 14px;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar-section {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.sidebar-title {
+  margin-bottom: 15px;
+}
+
+.sidebar-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-event-card {
+  height: 80px;
+  background: #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar-event-card:hover {
+  background: #d1d5db;
+}
+
+.sidebar-view-more {
+  margin-top: 15px;
+  width: 100%;
+  background: #11047a;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* ================= SOCIETIES ================= */
+
+.societies-section h3 {
+  margin-bottom: 15px;
+}
+
+.societies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.society-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.society-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.societies-more-btn-pill {
+  margin-top: 15px;
+  background: #11047a;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ================= EVENT DETAILS ================= */
+
+.event-details-page {
+  padding: 40px;
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.navigation-header {
+  width: 100%;
+  max-width: 1000px;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background: #11047a;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.event-details-container {
+  width: 100%;
+  max-width: 1000px;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Banner */
+
+.event-hero-image {
+  height: 300px;
+  background: #1e3a8a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+/* Content */
+
+.event-info-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+  padding: 40px;
+}
+
+.event-description-text {
+  margin: 15px 0;
+  color: #4b5563;
+}
+
+/* Links */
+
+.event-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.link-btn {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.insta { background: #e1306c; }
+.register { background: #2563eb; }
+.tickets { background: #059669; }
+
+/* Sidebar */
+
+.event-meta-sidebar {
+  background: #f1f5f9;
+  padding: 25px;
+  border-radius: 15px;
+}
+
+.meta-item {
+  margin-bottom: 18px;
+}
+
+.meta-item span {
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+/* Bottom Button */
+
+.external-action-area {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  justify-content: center;
+}
+
+.add-to-events-btn,
+.remove-from-events-btn {
+  width: 400px;
+  max-width: 100%;
+  padding: 16px;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ================= SOCIETY PROFILE ================= */
+
+.society-profile-page {
+  padding: 60px 40px;
+  text-align: center;
+  background: #f5f6f8;
+  min-height: 100vh;
+}
+
+.society-logo-large {
+  width: 150px;
+  height: 150px;
+  background: #d9d9d9;
+  border-radius: 50%;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 5px solid white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.society-full-name {
+  font-size: 28px;
+  color: #1e3a8a;
+  margin: 15px 0;
+}
+
+.join-btn {
+  background: #1e3a8a;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 30px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.join-btn.joined {
+  background: #03015c;
+}
+
+.divider {
+  margin: 40px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Our Events */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.more-link {
+  background: none;
+  border: none;
+  color: #11047a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.events-grid-profile {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+  .events-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .event-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .row-content {
+    grid-template-columns: 1fr;
+  }
+
+  .events-grid-profile {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fix Back Button Position in Society Profile */
+
+.society-profile-page .navigation-header {
+  width: 100%;
+  text-align: left;      /* Cancel center alignment */
+  margin-bottom: 20px;
+}
+
+.society-profile-page .back-btn {
+  margin-left: 0;        /* Push to left */
+}
+
+.event-banner {
+  width: 180px;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+}
+
+.event-banner.large {
+  width: 100%;
+  height: 220px;
+}
+
+.notification-box {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 15px;
+  margin: 15px;
+  border-radius: 8px;
+}
+
+.notification-box h4 {
+  margin-bottom: 8px;
+}
+
+.notification-box p {
+  margin: 4px 0;
+  font-size: 14px;
+}

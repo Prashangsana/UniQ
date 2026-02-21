@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
 import GroupsPage from '../pages/GroupsPage';
-import Profile from '../components/Landing/Profile'; 
+import Profile from '../components/Landing/Profile';
+import { EventsPage } from '../pages/Event'; 
 
-
-const SocietyView = () => (
-    <div className="content-section fade-in">
-        <h2>Society & Events</h2>
-        <p>Browse upcoming university events and joined societies.</p>
-    </div>
-);
+// const SocietyView = () => (
+//     <div className="content-section fade-in">
+//         <h2>Society & Events</h2>
+//         <p>Browse upcoming university events and joined societies.</p>
+//     </div>
+// );
 
 // const GroupsView = () => (
 //     <div className="content-section fade-in">
@@ -35,8 +36,9 @@ const ArticlesView = () => (
     </div>
 );
 
-const Home = () => {
+const Home = ({ myEventsList }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const location = useLocation();
 
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -47,13 +49,19 @@ const Home = () => {
         img: 'https://i.pravatar.cc/300?img=47' 
     };
 
+    useEffect(() => {
+        if (location.state && location.state.tab) {
+            setActiveTab(location.state.tab);
+        }
+    }, [location.state]);
+
     const renderContent = () => {
         switch(activeTab) {
-            case 'dashboard': return <DashboardView />;
-            case 'profile':   return <Profile />;
-            case 'society':   return <SocietyView />;
-            case 'groups':    return <GroupsPage />;
-            case 'skills':    return <SkillsView />;
+case 'dashboard': return <DashboardView />;
+case 'profile':   return <Profile />;
+case 'society':   return <EventsPage />;
+case 'groups':    return <GroupsPage />;
+case 'skills':    return <SkillsView />;
             case 'articles':  return <ArticlesView />;
             case 'settings':  return <SettingsView />;
             default:          return <DashboardView />;

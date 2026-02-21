@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Landing/Navbar';
 import Hero from './components/Landing/Hero';
@@ -8,15 +9,25 @@ import Pricing from './components/Landing/Pricing';
 import Team from './components/Landing/Team';
 import Footer from './components/Landing/Footer';
 import Home from './dashboard/Home';
+import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [myEventsList, setMyEventsList] = useState<string[]>([]);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const handleLogin = () => {
     setIsLoggedIn(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddEvent = (eventId: string) => {
+    setMyEventsList(prev => [...prev, eventId]);
+  };
+
+  const handleRemoveEvent = (eventId: string) => {
+    setMyEventsList(prev => prev.filter(id => id !== eventId));
   };
 
   // Check if user is already logged in / Returning from Google OAuth
@@ -32,13 +43,13 @@ function App() {
            console.log("Login verified. User role:", data.user.role);
            handleLogin(); 
         }
-      } catch (error) {
+      } catch {
         console.log("User is not logged in");
       }
     };
 
     checkAuth();
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     if (isLoggedIn) return;
@@ -67,19 +78,33 @@ function App() {
   }, [isLoggedIn]);
 
   if (isLoggedIn) {
-    return <Home />;
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home myEventsList={myEventsList} />} />
+          <Route path="/event/:id" element={<EventDetailsPage onAddEvent={handleAddEvent} onRemoveEvent={handleRemoveEvent} myEventsList={myEventsList} />} />
+          <Route path="/society/:name" element={<SocietyProfilePage />} />
+        </Routes>
+      </BrowserRouter>
+    );
   }
 
   return (
-    <div className="app-container">
-      <Navbar onSignUpSuccess={handleLogin} />
-      <Hero />
-      <Features />
-      <HowItWorks />
-      <Pricing />
-      <Team />
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={
+          <div className="app-container">
+            <Navbar onSignUpSuccess={handleLogin} />
+            <Hero />
+            <Features />
+            <HowItWorks />
+            <Pricing />
+            <Team />
+            <Footer />
+          </div>
+        } />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
