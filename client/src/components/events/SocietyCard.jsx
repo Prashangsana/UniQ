@@ -11,12 +11,9 @@ const SocietyCard = ({ name }) => {
       <div className="society-card">
 
         <img
-          src={`/images/${urlName}.png`}
+          src="/images-d/design.jpg"
           alt={name}
           className="society-logo"
-          onError={(e) => {
-            e.target.src = "/images/default.jpg";
-          }}
         />
 
         <span>{name}</span>

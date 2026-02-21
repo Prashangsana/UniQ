@@ -262,10 +262,8 @@ export const EventDetailsPage = ({
 /* ================= SOCIETY PROFILE ================= */
 
 export const SocietyProfilePage = () => {
-  const { name } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-
-  const id = name;
 
   /* ---------- Follow State ---------- */
 
@@ -314,7 +312,7 @@ export const SocietyProfilePage = () => {
 
       {/* Back */}
       <div className="navigation-header">
-        <button className="back-btn" onClick={() => navigate("/", { state: { tab: 'society' } })}>
+        <button className="back-btn" onClick={() => navigate("/")}>
           ← Back
         </button>
       </div>

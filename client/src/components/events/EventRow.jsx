@@ -40,7 +40,7 @@ const EventRow = ({ title, addedEvents = [] }) => {
             <EventBanner
               key={index}
               id={isMyEventsRow ? item : `recommended-${index}`}
-              image={`/images/event${index + 1}.jpg`}
+              image={`/images-d/${['design.jpg', 'gd.jpg', 'ml.jpg', 'robotics.jpg'][index % 4]}`}
             />
           ))
         )}

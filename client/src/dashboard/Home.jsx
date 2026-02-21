@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
@@ -41,11 +42,18 @@ const ArticlesView = () => (
 // );
 
 
-const Home = () => {
+const Home = ({ myEventsList }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const location = useLocation();
 
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    useEffect(() => {
+        if (location.state && location.state.tab) {
+            setActiveTab(location.state.tab);
+        }
+    }, [location.state]);
 
     const renderContent = () => {
         switch(activeTab) {
