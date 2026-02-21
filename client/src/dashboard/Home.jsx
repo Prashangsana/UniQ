@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react';
 import './Home.css';
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
-import { EventsPage } from './pages/Event';
+import { EventsPage } from '../components/events/Event';
 
 // const SocietyView = () => (
 //     <div className="content-section fade-in">
