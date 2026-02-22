@@ -1,7 +1,7 @@
 
-/* =========================================
+/* 
    1. MAIN CONTAINER & LAYOUT
-   ========================================= */
+   */
 .profile-container {
   display: flex;
   gap: 40px;
@@ -14,9 +14,8 @@
   flex: 1;
 }
 
-/* =========================================
-   2. SIDEBAR STYLES
-   ========================================= */
+/* 
+   2. SIDEBAR STYLES */
 .profile-sidebar {
   flex: 0 0 280px;
   display: flex;
@@ -165,9 +164,9 @@
   margin-top: 20px;
   /* ... rest of your save button styles ... */
 }
-/* =========================================
+/*
    3. MAIN CONTENT CARD (VIEW & EDIT)
-   ========================================= */
+  */
 .intro-card {
   border: 1px solid #e2e8f0;
   border-radius: 16px;
@@ -273,9 +272,9 @@
   font-weight: 600;
 }
 
-/* =========================================
+/*
    4. FORM STYLING (EDIT MODE)
-   ========================================= */
+  */
 .edit-form {
   display: flex;
   flex-direction: column;
@@ -335,9 +334,9 @@
   transform: translateY(-1px);
 }
 
-/* =========================================
+/*
    5. ANIMATIONS & RESPONSIVE
-   ========================================= */
+   */
 .fade-in {
   animation: fadeIn 0.5s ease-out;
 }

@@ -99,12 +99,7 @@ case 'skills':    return <SkillsView />;
                                 <span>Dashboard</span>
                             </a>
                         </li>
-                        <li className={activeTab === 'profile' ? 'active' : ''}>
-                            <a href="#profile" onClick={(e) => { e.preventDefault(); setActiveTab('profile'); }}>
-                                <Icon icon="lucide:user" width="20" />
-                                <span>Profile</span>
-                            </a>
-                        </li>
+                       
 
                         <li className={activeTab === 'society' ? 'active' : ''}>
                             <a href="#society" onClick={(e) => { e.preventDefault(); setActiveTab('society'); }}>
