@@ -59,17 +59,18 @@ const Home = ({ myEventsList }) => {
     }
   }, [location.pathname, location.state]);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard': return <DashboardView />;
-      case 'society':   return <EventsPage myEventsList={myEventsList} />;
-      case 'groups':    return <GroupsView />;
-      case 'skills':    return <SkillsView />;
-      case 'articles':  return <ArticlesView />;
-      case 'settings':  return <SettingsView />;
-      default:          return <DashboardView />;
-    }
-  };
+    const renderContent = () => {
+        switch(activeTab) {
+            case 'dashboard': return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+            case 'profile':   return <Profile />;
+            case 'society':   return <EventsPage myEventsList={myEventsList} />;
+            case 'groups':    return <GroupsView />;
+            case 'skills':    return <SkillsView />;
+            case 'articles':  return <ArticlesView />;
+            case 'settings':  return <SettingsView />;
+            default:          return <DashboardView />;
+        }
+    };
 
   return (
     <div className="dashboard-layout">
