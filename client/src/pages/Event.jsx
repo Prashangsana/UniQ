@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-// Import everything from your consolidated components file
 import { EventBanner, EventRow, SidebarSection, SocietyCard } from "../components/EventsComponents";
-
 import "./Event.css";
 
 /* ================= EVENTS PAGE (Dashboard View) ================= */
@@ -61,7 +58,6 @@ export const EventsPage = ({ myEventsList = [] }) => {
                 <SocietyCard key={club} name={club} />
               ))}
             </div>
-            {/* The blue pill button matches SidebarSection design */}
             <button className="sidebar-view-more" onClick={() => setShowAllSocieties(!showAllSocieties)}>
               {showAllSocieties ? "Show less" : "More >"}
             </button>
@@ -80,21 +76,47 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const isAdded = myEventsList.includes(eventId);
   const displayTitle = eventId?.replace(/-/g, " ");
 
+  // HELPER: Resolves unique IDs into the correct folder path
+  const getHeroImage = (id) => {
+    if (!id) return "/images-e/default.jpg";
+    
+    // 1. Handle Main Event
+    if (id === "main-hackathon-2026") return "/images-e/events/main-event.jpg";
+    
+    // 2. Handle Unique Society IDs (e.g., rotaract-club-event-1)
+    if (id.includes("-event-")) {
+      const [clubName, eventPart] = id.split("-event-");
+      return `/images-e/club-events/${clubName}/event${eventPart}.jpg`;
+    }
+
+    // 3. Fallback for recommended events in the main folder
+    return `/images-e/events/${id}.jpg`;
+  };
+
+  const heroImagePath = getHeroImage(eventId);
+
   return (
     <div className="event-details-page">
       <div className="navigation-header">
-        {/* Back button goes back one step in history (useful if coming from Club profile) */}
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
       </div>
 
       <div className="event-details-container">
-        <div className="event-hero-image" style={{ backgroundImage: "url(/images-e/events/main-event.jpg)", backgroundSize: "cover" }}>
+        <div 
+          className="event-hero-image" 
+          style={{ 
+            backgroundImage: `url(${heroImagePath}), url(/images-e/default.jpg)`, 
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          }}
+        >
           <h2>{displayTitle?.toUpperCase()}</h2>
         </div>
+        
         <div className="event-info-grid">
           <div className="event-main-info">
             <h1>{displayTitle}</h1>
-            <p className="event-description-text"><strong>Description:</strong> Standard event details and descriptions.</p>
+            <p className="event-description-text"><strong>Description:</strong> This is a unique event detail page for {displayTitle}.</p>
             <div className="event-links">
               <a href="https://instagram.com" target="_blank" rel="noreferrer" className="link-btn insta">Instagram</a>
               <a href="https://forms.google.com" target="_blank" rel="noreferrer" className="link-btn register">Register</a>
@@ -123,7 +145,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
 /* ================= SOCIETY PROFILE PAGE ================= */
 export const SocietyProfilePage = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // e.g., rotaract-club
   const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(() => {
     const saved = localStorage.getItem("followedSocieties");
@@ -140,20 +162,20 @@ export const SocietyProfilePage = () => {
     setIsFollowing(!isFollowing);
   };
 
-  const allEvents = ["soc-event-1", "soc-event-2", "soc-event-3", "soc-event-4", "soc-event-5", "soc-event-6"];
+  // FIX: Create UNIQUE IDs for each event (e.g., rotaract-club-event-1)
+  const allEvents = [1, 2, 3, 4, 5, 6].map(num => `${id}-event-${num}`);
   const displayedEvents = showAllEvents ? allEvents : allEvents.slice(0, 3);
 
   return (
     <div className="society-profile-page">
       <div className="navigation-header">
-        {/* Forces back to the dashboard's society tab */}
         <button className="back-btn" onClick={() => navigate("/", { state: { tab: 'society' } })}>
           ← Back
         </button>
       </div>
 
       <header className="society-header">
-        <img src={`/images-e/societies/${id}.png`} alt="Society" className="society-logo-large" onError={(e) => { e.target.src = "/images/default.jpg"; }} />
+        <img src={`/images-e/societies/${id}.png`} alt="Society" className="society-logo-large" onError={(e) => { e.target.src = "/images-e/default.jpg"; }} />
         <h1 className="society-full-name">{id.replace(/-/g, " ").toUpperCase()} OF IIT</h1>
         <button className={`join-btn ${isFollowing ? "joined" : ""}`} onClick={handleFollowToggle}>
           {isFollowing ? "Following" : "Follow"}
@@ -169,7 +191,11 @@ export const SocietyProfilePage = () => {
         </div>
         <div className="events-grid-profile">
           {displayedEvents.map((eventId, index) => (
-            <EventBanner key={index} id={eventId} image={`/images-e/club-events/${id}/event${index + 1}.jpg`} />
+            <EventBanner 
+              key={index} 
+              id={eventId} 
+              image={`/images-e/club-events/${id}/event${index + 1}.jpg`} 
+            />
           ))}
         </div>
       </section>

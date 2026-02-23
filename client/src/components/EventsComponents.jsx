@@ -9,7 +9,11 @@ export const EventBanner = ({ large, id = "sample-event", image }) => {
     <div
       className={`event-banner ${large ? "large" : ""}`}
       onClick={() => navigate(`/event/${id}`)}
-      style={{ backgroundImage: `url(${image || "/images-e/default.jpg"})` }}
+      style={{ 
+        backgroundImage: `url(${image || "/images-e/default.jpg"})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     />
   );
 };
@@ -41,7 +45,7 @@ export const EventRow = ({ title, addedEvents = [] }) => {
     if (isMyEventsRow) {
       return showAll ? addedEvents : addedEvents.slice(0, 3);
     }
-    return Array(showAll ? 6 : 3).fill(0);
+    return ["career-fair-2026", "sports-meet", "tech-symposium"].slice(0, showAll ? 6 : 3);
   };
 
   const displayItems = getDisplayItems();
@@ -59,16 +63,28 @@ export const EventRow = ({ title, addedEvents = [] }) => {
       <div className="row-content">
         {isMyEventsRow && addedEvents.length === 0 ? (
           <div className="empty-state">
-            <p>No events added to your schedule yet.</p>
+             <p>No events added to your schedule yet.</p>
           </div>
         ) : (
-          displayItems.map((item, index) => (
-            <EventBanner
-              key={index}
-              id={isMyEventsRow ? item : `recommended-${index}`}
-              image={`/images-e/event${index + 1}.jpg`}
-            />
-          ))
+          displayItems.map((itemId, index) => {
+            // FIX: Dynamic image path resolution for Dashboard rows
+            let img = `/images-e/events/${itemId}.jpg`;
+
+            if (itemId === "main-hackathon-2026") {
+              img = "/images-e/events/main-event.jpg";
+            } else if (itemId.includes("-event-")) {
+              const [club, num] = itemId.split("-event-");
+              img = `/images-e/club-events/${club}/event${num}.jpg`;
+            }
+
+            return (
+              <EventBanner
+                key={index}
+                id={itemId}
+                image={img}
+              />
+            );
+          })
         )}
       </div>
     </section>
@@ -79,21 +95,26 @@ export const EventRow = ({ title, addedEvents = [] }) => {
 export const SidebarSection = ({ title }) => {
   const [showAll, setShowAll] = useState(false);
   const navigate = useNavigate();
-  const items = Array(showAll ? 5 : 3).fill(0);
+  
+  const trendingIds = ["top-event-1", "top-event-2", "top-event-3", "top-event-4", "top-event-5"];
+  const displayItems = showAll ? trendingIds : trendingIds.slice(0, 3);
 
   return (
     <div className="sidebar-section">
       <h3 className="sidebar-title">{title}</h3>
       <div className="sidebar-items">
-        {items.map((_, index) => (
+        {displayItems.map((itemId, index) => (
           <div
             key={index}
             className="sidebar-event-card"
-            onClick={() => navigate(`/event/top-event-${index}`)}
+            onClick={() => navigate(`/event/${itemId}`)}
           >
             <div
               className="sidebar-card-banner"
-              style={{ backgroundImage: `url(/images-e/top${index + 1}.jpg)` }}
+              style={{ 
+                backgroundImage: `url(/images-e/events/${itemId}.jpg)`,
+                backgroundSize: 'cover'
+              }}
             />
           </div>
         ))}
