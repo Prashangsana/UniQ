@@ -14,7 +14,6 @@ import Footer from './components/Landing/Footer';
 // Dashboard Components
 import Home from './dashboard/Home';
 
-// @ts-ignore
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 
 function App() {
@@ -57,7 +56,7 @@ function App() {
         } else {
           handleLogout();
         }
-      } catch (error) {
+      } catch {
         handleLogout();
       }
     };
@@ -93,7 +92,7 @@ function App() {
               <EventDetailsPage
                 onAddEvent={handleAddEvent}
                 onRemoveEvent={handleRemoveEvent}
-                myEventsList={myEventsList as any}
+                myEventsList={myEventsList as never}
               />
             }
           />
