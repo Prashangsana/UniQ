@@ -6,13 +6,14 @@ import './Home.css';
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
 import { EventsPage } from '../pages/Event';
+import GroupsPage from '../pages/GroupsPage';
 
-const GroupsView = () => (
-  <div className="content-section fade-in">
-    <h2>Study Groups</h2>
-    <p>Find study partners or manage your current project groups.</p>
-  </div>
-);
+// const GroupsView = () => (
+//   <div className="content-section fade-in">
+//     <h2>Study Groups</h2>
+//     <p>Find study partners or manage your current project groups.</p>
+//   </div>
+// );
 
 const SkillsView = () => (
   <div className="content-section fade-in">
@@ -63,7 +64,7 @@ const Home = ({ myEventsList }) => {
     switch (activeTab) {
       case 'dashboard': return <DashboardView />;
       case 'society':   return <EventsPage myEventsList={myEventsList} />;
-      case 'groups':    return <GroupsView />;
+      case 'groups':    return <GroupsPage />;
       case 'skills':    return <SkillsView />;
       case 'articles':  return <ArticlesView />;
       case 'settings':  return <SettingsView />;
