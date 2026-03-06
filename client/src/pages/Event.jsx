@@ -145,7 +145,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
 /* ================= SOCIETY PROFILE PAGE ================= */
 export const SocietyProfilePage = () => {
-  const { id } = useParams(); // e.g., rotaract-club
+  const { id } = useParams(); // id is 'rotaract-club', 'ieee-club', etc.
   const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(() => {
     const saved = localStorage.getItem("followedSocieties");
@@ -162,8 +162,11 @@ export const SocietyProfilePage = () => {
     setIsFollowing(!isFollowing);
   };
 
-  // FIX: Create UNIQUE IDs for each event (e.g., rotaract-club-event-1)
+  // FIX: Create UNIQUE IDs for each event per club
+  // This ensures 'rotaract-club-event-1' is different from 'ieee-club-event-1'
   const allEvents = [1, 2, 3, 4, 5, 6].map(num => `${id}-event-${num}`);
+  
+  // FIX: When 'More' is clicked, it shows all 6 (two rows of three)
   const displayedEvents = showAllEvents ? allEvents : allEvents.slice(0, 3);
 
   return (
@@ -187,14 +190,20 @@ export const SocietyProfilePage = () => {
       <section className="society-events-section">
         <div className="section-header">
           <h2>Our Events</h2>
-          <button className="more-link" onClick={() => setShowAllEvents(!showAllEvents)}>{showAllEvents ? "Show less" : "More >"}</button>
+          {/* Toggle button for 'More >' / 'Show less' */}
+          <button className="more-link" onClick={() => setShowAllEvents(!showAllEvents)}>
+            {showAllEvents ? "Show less" : "More >"}
+          </button>
         </div>
+        
+        {/* The CSS Grid will handle the rows of 3 automatically */}
         <div className="events-grid-profile">
           {displayedEvents.map((eventId, index) => (
             <EventBanner 
               key={index} 
               id={eventId} 
-              image={`/images-e/club-events/${id}/event${index + 1}.jpg`} 
+              // Pulls the image from the specific club folder
+              image={`/images-e/club-events/${id}/event${(index % 6) + 1}.jpg`} 
             />
           ))}
         </div>

@@ -45,7 +45,8 @@ export const EventRow = ({ title, addedEvents = [] }) => {
     if (isMyEventsRow) {
       return showAll ? addedEvents : addedEvents.slice(0, 3);
     }
-    return ["career-fair-2026", "sports-meet", "tech-symposium"].slice(0, showAll ? 6 : 3);
+    // FIX: Provide 6 IDs to support a second row of three
+    return ["career-fair-2026", "sports-meet", "tech-symposium", "workshop-01", "concert-night", "hack-it"].slice(0, showAll ? 6 : 3);
   };
 
   const displayItems = getDisplayItems();
@@ -54,8 +55,9 @@ export const EventRow = ({ title, addedEvents = [] }) => {
     <section className="event-row">
       <div className="row-header">
         <h2>{title}</h2>
+        {/* Shows button only if there are more than 3 items */}
         {(isMyEventsRow ? addedEvents.length > 3 : true) && (
-          <button onClick={() => setShowAll(!showAll)}>
+          <button className="more-link" onClick={() => setShowAll(!showAll)}>
             {showAll ? "Show less" : "More >"}
           </button>
         )}
@@ -66,25 +68,22 @@ export const EventRow = ({ title, addedEvents = [] }) => {
              <p>No events added to your schedule yet.</p>
           </div>
         ) : (
-          displayItems.map((itemId, index) => {
-            // FIX: Dynamic image path resolution for Dashboard rows
-            let img = `/images-e/events/${itemId}.jpg`;
+          <div className="row-grid"> {/* Grid container for rows of 3 */}
+            {displayItems.map((itemId, index) => {
+              let img = `/images-e/events/${itemId}.jpg`;
+              if (itemId === "main-hackathon-2026") img = "/images-e/events/main-event.jpg";
+              
+              // Handle unique society IDs added to 'My Events'
+              if (itemId.includes("-event-")) {
+                const [club, num] = itemId.split("-event-");
+                img = `/images-e/club-events/${club}/event${num}.jpg`;
+              }
 
-            if (itemId === "main-hackathon-2026") {
-              img = "/images-e/events/main-event.jpg";
-            } else if (itemId.includes("-event-")) {
-              const [club, num] = itemId.split("-event-");
-              img = `/images-e/club-events/${club}/event${num}.jpg`;
-            }
-
-            return (
-              <EventBanner
-                key={index}
-                id={itemId}
-                image={img}
-              />
-            );
-          })
+              return (
+                <EventBanner key={index} id={itemId} image={img} />
+              );
+            })}
+          </div>
         )}
       </div>
     </section>
