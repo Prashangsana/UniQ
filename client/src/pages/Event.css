@@ -65,7 +65,6 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
 .link-btn { text-align: center; padding: 12px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; }
 .insta { background: #e1306c; }
 .register { background: #2563eb; }
-.tickets { background: #059669; }
 
 .event-meta-sidebar { background: #f1f5f9; padding: 25px; border-radius: 15px; }
 .meta-item { margin-bottom: 18px; }

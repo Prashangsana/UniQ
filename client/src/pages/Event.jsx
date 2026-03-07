@@ -76,20 +76,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const isAdded = myEventsList.includes(eventId);
   const displayTitle = eventId?.replace(/-/g, " ");
 
-  // HELPER: Resolves unique IDs into the correct folder path
   const getHeroImage = (id) => {
     if (!id) return "/images-e/default.jpg";
-    
-    // 1. Handle Main Event
     if (id === "main-hackathon-2026") return "/images-e/events/main-event.jpg";
-    
-    // 2. Handle Unique Society IDs (e.g., rotaract-club-event-1)
     if (id.includes("-event-")) {
       const [clubName, eventPart] = id.split("-event-");
       return `/images-e/club-events/${clubName}/event${eventPart}.jpg`;
     }
-
-    // 3. Fallback for recommended events in the main folder
     return `/images-e/events/${id}.jpg`;
   };
 
@@ -117,12 +110,18 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           <div className="event-main-info">
             <h1>{displayTitle}</h1>
             <p className="event-description-text"><strong>Description:</strong> This is a unique event detail page for {displayTitle}.</p>
+            
+            {/* UPDATED LINKS SECTION */}
             <div className="event-links">
               <a href="https://instagram.com" target="_blank" rel="noreferrer" className="link-btn insta">Instagram</a>
-              <a href="https://forms.google.com" target="_blank" rel="noreferrer" className="link-btn register">Register</a>
-              <a href="https://tickets.com" target="_blank" rel="noreferrer" className="link-btn tickets">Tickets</a>
+              
+              {/* RENAME REGISTER TO PARTICIPATE */}
+              <a href="https://forms.google.com" target="_blank" rel="noreferrer" className="link-btn register">Participate</a>
+              
+              {/* TICKETS REMOVED FROM HERE */}
             </div>
           </div>
+          
           <div className="event-meta-sidebar">
             <div className="meta-item"><span>📅 Date:</span><p>Oct 25, 2026</p></div>
             <div className="meta-item"><span>⏰ Time:</span><p>09:00 AM</p></div>
