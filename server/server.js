@@ -4,9 +4,8 @@ const passport = require('passport');
 const session = require('express-session');
 const cors = require('cors');
 
-// Import new files
-const authRoutes = require('./routes/auth'); // Import routes
-require('./config/passport')(passport);      // Import passport config
+const authRoutes = require('./src/routes/auth'); 
+require('./src/config/passport')(passport);
 
 const app = express();
 
