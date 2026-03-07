@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
-import { groups } from '../../data/mockGroups';
 
 const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
-  // Filter groups that belong to this specific module
-  const moduleGroups = groups.filter(g => g.moduleId === module.id);
+  const [moduleGroups, setModuleGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Temporary hardcoded logic until further backend implementation: Assume user is NOT in a group 
+  // (In a real app, the backend would tell us if the logged-in user is in one of these groups)
+  const isAlreadyInGroup = false; 
 
-  // Check if the user is already in ANY group within this specific module
-  const isAlreadyInGroup = moduleGroups.some(g => g.joined === true);
+  // Fetch groups from backend when the module view opens
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/modules/${module.id}/groups`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setModuleGroups(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch groups:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, [module.id]);
+
+  if (loading) return <div className="gf-main" style={{textAlign: 'center', padding: '3rem'}}>Loading groups...</div>;
 
   return (
     <div className="gf-main">
@@ -38,12 +60,12 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
         <div className="gf-grid">
           {moduleGroups.map(group => (
             <div 
-              key={group.id} 
+              key={group._id} 
               className="gf-card-visual"
               onClick={() => onSelectGroup(group)}
             >
               {/* Use group image or a fallback */}
-              <img src={group.img || 'https://via.placeholder.com/300x200?text=Group'} alt={group.id} />
+              <img src={group.img || `https://via.placeholder.com/300x200?text=${group.name}`} alt={group.name} />
               
               <div className="gf-card-gradient">
                 {/* Status Badge */}
@@ -55,9 +77,9 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
                   )}
                 </div>
 
-                <div className="gf-card-title">{group.id}</div>
+                <div className="gf-card-title">{group.name}</div>
                 <div className="gf-card-sub">
-                  {group.members}/{group.maxMembers} Members • {group.domain}
+                  {group.memberCount}/{group.maxMembers} Members • {group.domain}
                 </div>
               </div>
             </div>

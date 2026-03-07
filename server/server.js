@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose'); // Merged: Mongoose for database connection
 const passport = require('passport');
 const session = require('express-session');
 const cors = require('cors');
 
 const authRoutes = require('./src/routes/auth'); 
 require('./src/config/passport')(passport);
+const groupRoutes = require('./src/routes/groupRoutes'); // Merged: Grouping routes
 
 const app = express();
 
@@ -22,6 +24,12 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
+// Body Parser Middleware (CRITICAL for Stage 1)
+// This allows your Express server to read JSON data sent from the frontend
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Good practice for form-encoded data
+
+
 app.use(session({
     secret: process.env.SESSION_SECRET, //
     resave: false,
@@ -37,9 +45,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 // --- USE ROUTES ---
 // This mounts all auth routes under '/auth'
 // So '/google' in auth.js becomes '/auth/google' automatically
 app.use('/auth', authRoutes);
+
+// Grouping endpoints (e.g., /api/groups, /api/modules/:moduleId/groups)
+app.use('/api', groupRoutes);
+
+// --- DATABASE CONNECTION ---
+// mongoose.connect(process.env.MONGO_URI)
+// .then(() => console.log('MongoDB Connected successfully'))
+// .catch(err => console.error('MongoDB connection error:', err));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
