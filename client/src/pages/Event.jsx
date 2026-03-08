@@ -5,28 +5,20 @@ import "./Event.css";
 
 /* ================= EVENTS PAGE (Dashboard View) ================= */
 export const EventsPage = ({ myEventsList = [] }) => {
+  const [societies, setSocieties] = useState([]);
   const [showAllSocieties, setShowAllSocieties] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const followed = JSON.parse(localStorage.getItem("followedSocieties")) || [];
-    const savedEvents = JSON.parse(localStorage.getItem("societyEvents")) || {};
-    let newNotes = [];
-
-    followed.forEach((society) => {
-      if (savedEvents[society]) {
-        savedEvents[society].forEach((event) => {
-          newNotes.push(`${society.replace("-", " ")} added: ${event}`);
-        });
-      }
-    });
-    setNotifications(newNotes);
+    fetch("http://localhost:5000/api/societies")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSocieties(data.data);   // ✅ FIX
+        }
+      })
+      .catch(err => console.error("Error loading societies:", err));
   }, []);
-
-  const societies = [
-    "ROTARACT CLUB", "IEEE CLUB", "BIZLINK SOCIETY", "IIT SPORTS CLUB",
-    "MOZILLA CLUB", "IEEE CS CLUB", "LEO CLUB", "TOASTMASTERS CLUB", "YOUTH PULSE CLUB",
-  ];
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
 
@@ -55,7 +47,12 @@ export const EventsPage = ({ myEventsList = [] }) => {
             <h3>Your societies</h3>
             <div className="societies-list">
               {displayedSocieties.map((club) => (
-                <SocietyCard key={club} name={club} />
+                <SocietyCard 
+                  key={club._id} 
+                  id={club._id}     // Pass the _id from your JSON
+                  name={club.name} 
+                  logo={club.logo} 
+                />
               ))}
             </div>
             <button className="sidebar-view-more" onClick={() => setShowAllSocieties(!showAllSocieties)}>
@@ -144,44 +141,39 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
 /* ================= SOCIETY PROFILE PAGE ================= */
 export const SocietyProfilePage = () => {
-  const { id } = useParams(); // id is 'rotaract-club', 'ieee-club', etc.
+  const { id } = useParams(); 
   const navigate = useNavigate();
-  const [isFollowing, setIsFollowing] = useState(() => {
-    const saved = localStorage.getItem("followedSocieties");
-    const list = saved ? JSON.parse(saved) : [];
-    return list.includes(id);
-  });
-  const [showAllEvents, setShowAllEvents] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleFollowToggle = () => {
-    const saved = localStorage.getItem("followedSocieties");
-    let list = saved ? JSON.parse(saved) : [];
-    isFollowing ? (list = list.filter((item) => item !== id)) : list.push(id);
-    localStorage.setItem("followedSocieties", JSON.stringify(list));
-    setIsFollowing(!isFollowing);
-  };
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/societies/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setProfileData(data.data);   // ✅ FIX
+        }
+      })
+      .catch(err => console.error("Error loading profile:", err))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  // FIX: Create UNIQUE IDs for each event per club
-  // This ensures 'rotaract-club-event-1' is different from 'ieee-club-event-1'
-  const allEvents = [1, 2, 3, 4, 5, 6].map(num => `${id}-event-${num}`);
-  
-  // FIX: When 'More' is clicked, it shows all 6 (two rows of three)
-  const displayedEvents = showAllEvents ? allEvents : allEvents.slice(0, 3);
+  if (loading) return <div className="loading">Loading Profile...</div>;
+  if (!profileData) return <div className="error">Society not found</div>;
+
+  const { society, events } = profileData;
 
   return (
     <div className="society-profile-page">
       <div className="navigation-header">
-        <button className="back-btn" onClick={() => navigate("/", { state: { tab: 'society' } })}>
-          ← Back
-        </button>
+        <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
       </div>
 
       <header className="society-header">
-        <img src={`/images-e/societies/${id}.png`} alt="Society" className="society-logo-large" onError={(e) => { e.target.src = "/images-e/default.jpg"; }} />
-        <h1 className="society-full-name">{id.replace(/-/g, " ").toUpperCase()} OF IIT</h1>
-        <button className={`join-btn ${isFollowing ? "joined" : ""}`} onClick={handleFollowToggle}>
-          {isFollowing ? "Following" : "Follow"}
-        </button>
+        {/* Use the real logo from the backend */}
+        <img src={society.logo} alt={society.name} className="society-logo-large" />
+        <h1 className="society-full-name">{society.name} OF IIT</h1>
+        <button className="join-btn">Follow</button>
       </header>
       
       <hr className="divider" />
@@ -189,20 +181,14 @@ export const SocietyProfilePage = () => {
       <section className="society-events-section">
         <div className="section-header">
           <h2>Our Events</h2>
-          {/* Toggle button for 'More >' / 'Show less' */}
-          <button className="more-link" onClick={() => setShowAllEvents(!showAllEvents)}>
-            {showAllEvents ? "Show less" : "More >"}
-          </button>
         </div>
         
-        {/* The CSS Grid will handle the rows of 3 automatically */}
         <div className="events-grid-profile">
-          {displayedEvents.map((eventId, index) => (
+          {events.map((event) => (
             <EventBanner 
-              key={index} 
-              id={eventId} 
-              // Pulls the image from the specific club folder
-              image={`/images-e/club-events/${id}/event${(index % 6) + 1}.jpg`} 
+              key={event._id} 
+              id={event._id} 
+              image={event.bannerImage} // Use real banner from events.json
             />
           ))}
         </div>
