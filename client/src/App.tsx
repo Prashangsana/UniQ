@@ -10,6 +10,8 @@ import Team from './components/Landing/Team';
 import Footer from './components/Landing/Footer';
 import Home from './dashboard/Home';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
+import Mentoring  from './pages/Mentoring';
+import DashboardView from './dashboard/DashboardView';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -82,8 +84,10 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home myEventsList={myEventsList} />} />
-          <Route path="/event/:id" element={<EventDetailsPage onAddEvent={handleAddEvent} onRemoveEvent={handleRemoveEvent} myEventsList={myEventsList} />} />
-          <Route path="/society/:name" element={<SocietyProfilePage />} />
+            <Route path="/event/:id" element={<EventDetailsPage onAddEvent={handleAddEvent} onRemoveEvent={handleRemoveEvent} myEventsList={myEventsList} />} />
+            <Route path="/society/:name" element={<SocietyProfilePage />} />
+            <Route path="/dashboard" element={<DashboardView onSeeAll={() => {}} />} />
+          <Route path="/mentoring" element={<Mentoring />} />
         </Routes>
       </BrowserRouter>
     );

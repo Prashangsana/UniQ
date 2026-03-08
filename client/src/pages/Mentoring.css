@@ -1,0 +1,147 @@
+/* Color Palette */
+:root {
+  --deep-navy: #0d214f;
+  --bg-silver: #f4f5f7;
+  --accent-purple: #7a7fac;
+  --text-dark: #333;
+  --text-muted: #666;
+}
+
+.mentoring-container {
+  min-height: 100vh;
+  background-color: var(--bg-silver);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar */
+.mentoring-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-links span {
+  margin: 0 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.active-tab {
+  font-weight: 700;
+  color: var(--text-dark) !important;
+  border-bottom: 3px solid var(--deep-navy);
+  padding-bottom: 5px;
+}
+
+.logout-btn {
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  margin-left: 10px;
+}
+
+/* Main Layout */
+.mentoring-layout {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr;
+  gap: 25px;
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Blue Expertise Section */
+.expertise-hero-card {
+  background: var(--deep-navy);
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  margin-bottom: 30px;
+}
+
+.expertise-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.lecturer-card {
+  background: white;
+  width: 22%;
+  height: 160px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+.expertise-pill {
+  color: black;
+  border: 1px solid #ccc;
+  padding: 2px 20px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  flex-grow: 1;
+  background: #eee;
+  border-radius: 8px;
+}
+
+/* Booking Rows */
+.booking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #e1e4e8;
+  padding: 15px 25px;
+  border-radius: 40px;
+  margin-bottom: 15px;
+}
+
+.tag-pill {
+  background: #1a1a1a;
+  color: white;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.calendar-link {
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Sidebar Elements */
+.mentoring-sidebar {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+}
+
+.mentor-block, .calendar-widget {
+  background: #314470;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.mentor-block { height: 75px; }
+.calendar-widget { height: 180px; }
+
+.sidebar-divider {
+  border: 0;
+  border-top: 2px solid var(--deep-navy);
+  margin: 20px 0;
+}

@@ -12,6 +12,7 @@ const groupsData = [
 ];
 
 const DashboardView = ({ onSeeAll }) => {
+  const navigate = useNavigate();
   return (
     <div className="app-inner-container">
       {/* Hero Banner */}
@@ -87,7 +88,7 @@ const DashboardView = ({ onSeeAll }) => {
           </div>
 
           <div className="register-stack">
-            <button className="register-btn">
+            <button className="register-btn" onClick={() => navigate('/mentoring')}>
               <div className="reg-content">
                 <span className="reg-title">Register as a Mentor</span>
                 <span className="reg-sub">Share your knowledge</span>
