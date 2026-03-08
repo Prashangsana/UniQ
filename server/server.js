@@ -3,8 +3,11 @@ const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+//const connectDB = require('./src/config/db');
 
-const authRoutes = require('./src/routes/auth'); 
+const authRoutes = require('./src/routes/auth');
+const userRoutes = require('./src/routes/userRoutes'); //use mockdata
 require('./src/config/passport')(passport);
 
 const app = express();
@@ -16,6 +19,9 @@ const PORT = process.env.PORT || 5000;
 app.set('trust proxy', 1);
 
 // Middleware
+app.use(express.json()); 
+app.use(cookieParser());
+
 app.use(cors({
     origin: [FRONTEND_URL, 'https://uniq.lk', 'https://www.uniq.lk'],
     credentials: true,
@@ -41,5 +47,8 @@ app.use(passport.session());
 // This mounts all auth routes under '/auth'
 // So '/google' in auth.js becomes '/auth/google' automatically
 app.use('/auth', authRoutes);
+app.use('/api/users', userRoutes);
+
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
