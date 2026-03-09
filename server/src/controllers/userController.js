@@ -1,6 +1,17 @@
 // src/controllers/userController.js
 const mockUser = require("../mockData/userMock"); // This is a reference to the object
 
+// GET user profile
+exports.getUserProfile = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      data: mockUser
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 exports.updateUserProfile = async (req, res) => {
   try {
     // 1. Log the incoming data to see if it's reaching the server

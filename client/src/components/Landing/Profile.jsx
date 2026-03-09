@@ -1,12 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import './Profile.css';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);//
+  const [error, setError] = useState(null);//
   const fileInputRef = useRef(null);
 
-  const [user, setUser] = useState({
+  /*const [user, setUser] = useState({
     name: 'Alex',
     username: 'lexes',
     email: 'alex@student.uni.ac.lk',
@@ -17,16 +19,45 @@ const Profile = () => {
     aboutMe: 'Outside of code, I enjoy building projects and learning new tech.',
     skills: ['JavaScript', 'React', 'Node.js', 'Python', 'UI/UX Design'],
     profileImage: 'https://i.pravatar.cc/300?img=47'
-  });
+  });*/
+
+  // Initialize with null - data will come from your userMock.js via the Controller
+  const [user, setUser] = useState(null);
 
   // Local state for comma-separated inputs
-  const [skillsInput, setSkillsInput] = useState(user.skills.join(', '));
-  const [modulesInput, setModulesInput] = useState(user.modules.join(', '));
+  const [skillsInput, setSkillsInput] = useState('');
+  const [modulesInput, setModulesInput] = useState('');
+
+  // --- STAGE 1 & 3: FETCH DATA FROM BACKEND ---
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/users/profile');
+        const result = await response.json();
+
+        if (result.success) {
+          setUser(result.data);
+          // Sync the comma-separated strings with the arrays from backend
+          setSkillsInput(result.data.skills ? result.data.skills.join(', ') : '');
+          setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
+        } else {
+          setError(result.message);
+        }
+      } catch (err) {
+        setError("Could not connect to the server. Make sure your Node backend is running on port 5000.");
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
+  const { name, value } = e.target;
+  setUser({ ...user, [name]: value });
+};
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -35,19 +66,39 @@ const Profile = () => {
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     // Convert strings back to arrays
     const updatedSkills = skillsInput.split(',').map(s => s.trim()).filter(s => s !== "");
     const updatedModules = modulesInput.split(',').map(m => m.trim()).filter(m => m !== "");
     
-    setUser({ 
+    const updatedData = { 
       ...user, 
       skills: updatedSkills, 
       modules: updatedModules 
-    });
-    setIsEditing(false);
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setUser(result.data); // Update UI with the data returned from mockUser update
+        setIsEditing(false);
+        alert("Profile Updated Successfully (Mock Data)!");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      alert("Failed to save changes.");
+    }
   };
+
+  if (loading) return <div className="loading-screen">Loading Profile...</div>;
+  if (error) return <div className="error-screen">{error}</div>;
 
   return (
     <div className="profile-container fade-in">
