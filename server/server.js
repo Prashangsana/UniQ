@@ -8,6 +8,8 @@ const authRoutes = require('./src/routes/auth');
 
 const societyRoutes = require('./src/routes/societyRoutes');
 
+const eventRoutes = require('./src/routes/eventRoutes');
+
 require('./src/config/passport')(passport);
 
 const app = express();
@@ -49,5 +51,7 @@ app.use(passport.session());
 app.use('/auth', authRoutes);
 
 app.use('/api/societies', societyRoutes);
+
+app.use('/api/events', eventRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
