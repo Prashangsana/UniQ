@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 
+
+
 // Landing Page Components
 import Navbar from './components/Landing/Navbar';
 import Hero from './components/Landing/Hero';
@@ -10,6 +12,7 @@ import HowItWorks from './components/Landing/HowItWorks';
 import Pricing from './components/Landing/Pricing';
 import Team from './components/Landing/Team';
 import Footer from './components/Landing/Footer';
+import PublicProfile from './components/Landing/PublicProfile';
 
 // Dashboard Components
 import Home from './dashboard/Home';
@@ -86,6 +89,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home myEventsList={myEventsList} />} />
           <Route path="/dashboard" element={<Home myEventsList={myEventsList} />} />
+
+          <Route path="/profile/:id" element={<PublicProfile />} />
           <Route
             path="/event/:eventId"
             element={
@@ -117,6 +122,7 @@ function App() {
             <Footer />
           </div>
         } />
+         <Route path="/profile/:id" element={<PublicProfile />} />
       </Routes>
     </BrowserRouter>
   );
