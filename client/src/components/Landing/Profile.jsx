@@ -8,18 +8,7 @@ const Profile = () => {
   const [error, setError] = useState(null);//
   const fileInputRef = useRef(null);
 
-  /*const [user, setUser] = useState({
-    name: 'Alex',
-    username: 'lexes',
-    email: 'alex@student.uni.ac.lk',
-    course: 'Computer Science Undergraduate',
-    group: 'CS 2023 / Group A',
-    modules: ['Java', 'Web Development', 'Software Engineering'],
-    bio: 'I am a computer-science student at IIT',
-    aboutMe: 'Outside of code, I enjoy building projects and learning new tech.',
-    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'UI/UX Design'],
-    profileImage: 'https://i.pravatar.cc/300?img=47'
-  });*/
+  
 
   // Initialize with null - data will come from your userMock.js via the Controller
   const [user, setUser] = useState(null);
