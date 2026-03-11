@@ -5,13 +5,19 @@ import "./Event.css";
 
 /* ================= EVENTS PAGE (Dashboard View) ================= */
 export const EventsPage = ({ myEventsList = [] }) => {
+
   const [societies, setSocieties] = useState([]);
   const [showAllSocieties, setShowAllSocieties] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
+  /* STAGE 4 DATA */
+  const [mainEvent, setMainEvent] = useState(null);
+  const [latestEvents, setLatestEvents] = useState([]);
+  const [topEvents, setTopEvents] = useState([]);
+
+  /* LOAD SOCIETIES */
   useEffect(() => {
 
-    /* LOAD SOCIETIES */
     fetch("http://localhost:5000/api/societies")
       .then(res => res.json())
       .then(data => {
@@ -23,8 +29,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
   }, []);
 
-
-  /* 🧩 STEP 7 — LOAD NOTIFICATIONS */
+  /* LOAD NOTIFICATIONS */
   useEffect(() => {
 
     fetch("http://localhost:5000/api/events/notifications")
@@ -40,44 +45,108 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
   }, []);
 
+  /* LOAD STAGE 4 EVENT DISCOVERY DATA */
+  useEffect(() => {
+
+    /* MAIN EVENT */
+    fetch("http://localhost:5000/api/events/main")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setMainEvent(data.data);
+        }
+      })
+      .catch(err => console.log("Main event error:", err));
+
+    /* MORE EVENTS FOR YOU */
+    fetch("http://localhost:5000/api/events/latest")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setLatestEvents(data.data);
+        }
+      })
+      .catch(err => console.log("Latest events error:", err));
+
+    /* TOP EVENTS THIS WEEK */
+    fetch("http://localhost:5000/api/events/top-week")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setTopEvents(data.data);
+        }
+      })
+      .catch(err => console.log("Top events error:", err));
+
+  }, []);
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
 
   return (
     <div className="events-page">
+
       {notifications.length > 0 && (
         <div className="notification-box">
           <h4>🔔 Notifications</h4>
-          {notifications.map((note, index) => <p key={index}>{note}</p>)}
+          {notifications.map((note, index) => (
+            <p key={index}>{note}</p>
+          ))}
         </div>
       )}
 
       <div className="events-layout">
+
         <div className="events-left">
+
           <section className="main-events-section">
             <h2>Main events</h2>
-            <EventBanner large id="main-hackathon-2026" image="/images-e/events/main-event.jpg" />
+
+            {mainEvent && (
+              <EventBanner
+                large
+                id={mainEvent._id}
+                image={mainEvent.bannerImage}
+              />
+            )}
+
           </section>
 
-          <EventRow title="My events" addedEvents={myEventsList} />
-          <EventRow title="More events for you" />
+          <EventRow
+            title="My events"
+            addedEvents={myEventsList}
+          />
+
+          <EventRow
+            title="More events for you"
+            events={latestEvents}
+          />
+
         </div>
 
         <div className="events-right">
-          <SidebarSection title="Top this week" />
+
+          <SidebarSection
+            title="Top this week"
+            events={topEvents}
+          />
 
           <div className="societies-section">
+
             <h3>Your societies</h3>
 
             <div className="societies-list">
+
               {displayedSocieties.map((club) => (
+
                 <SocietyCard
                   key={club._id}
                   id={club._id}
                   name={club.name}
                   logo={club.logo}
                 />
+
               ))}
+
             </div>
 
             <button
@@ -86,9 +155,13 @@ export const EventsPage = ({ myEventsList = [] }) => {
             >
               {showAllSocieties ? "Show less" : "More >"}
             </button>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 };
@@ -99,7 +172,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
   const params = useParams();
   const eventId = params.eventId || params.id;
-
   const navigate = useNavigate();
 
   const isAdded = (myEventsList || []).some(
@@ -122,10 +194,10 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     }
 
     return `/images-e/events/${id}.jpg`;
+
   };
 
   const heroImagePath = getHeroImage(eventId);
-
 
   const handleAddEvent = async () => {
 
@@ -152,8 +224,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     } catch (error) {
       console.error("Error adding event:", error);
     }
-  };
 
+  };
 
   const handleRemoveEvent = async () => {
 
@@ -180,8 +252,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     } catch (error) {
       console.error("Error removing event:", error);
     }
-  };
 
+  };
 
   return (
     <div className="event-details-page">
@@ -194,7 +266,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           ← Back
         </button>
       </div>
-
 
       <div className="event-details-container">
 
@@ -209,7 +280,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           <h2>{displayTitle.toUpperCase()}</h2>
         </div>
 
-
         <div className="event-info-grid">
 
           <div className="event-main-info">
@@ -220,7 +290,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
               <strong>Description:</strong>
               {" "}This is a unique event detail page for {displayTitle}.
             </p>
-
 
             <div className="event-links">
 
@@ -245,7 +314,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
             </div>
 
           </div>
-
 
           <div className="event-meta-sidebar">
 
@@ -275,7 +343,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       </div>
 
-
       <div className="external-action-area">
 
         {!isAdded ? (
@@ -303,8 +370,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     </div>
   );
 };
-
-
 
 /* ================= SOCIETY PROFILE PAGE ================= */
 export const SocietyProfilePage = () => {

@@ -1,56 +1,53 @@
 const express = require('express');
 const router = express.Router();
 
-const { getNotifications } = require("../controllers/eventController");
-
 const {
+  getMainEvent,
+  getLatestEvents,
+  getTopEvents,
   getEventDetails,
   getSocietyEvents,
   addEventToMyEvents,
   removeEventFromMyEvents,
-  getMyEvents
+  getMyEvents,
+  getNotifications
 } = require('../controllers/eventController');
+
+
+/* ================= STAGE 4 ROUTES ================= */
+
+router.get("/main", getMainEvent);
+router.get("/latest", getLatestEvents);
+router.get("/top-week", getTopEvents);
+
+
+/* ================= NOTIFICATIONS ================= */
 
 router.get("/notifications", getNotifications);
 
 
-/*
------------------------------------------
-GET EVENTS BY SOCIETY
------------------------------------------
-*/
+/* ================= SOCIETY EVENTS ================= */
+
 router.get('/society/:societyId', getSocietyEvents);
 
 
-/*
------------------------------------------
-GET MY EVENTS
------------------------------------------
-*/
+/* ================= MY EVENTS ================= */
+
 router.get('/my', getMyEvents);
 
 
-/*
------------------------------------------
-ADD EVENT TO MY EVENTS
------------------------------------------
-*/
+/* ================= ADD EVENT ================= */
+
 router.post('/:id/add', addEventToMyEvents);
 
 
-/*
------------------------------------------
-REMOVE EVENT FROM MY EVENTS
------------------------------------------
-*/
+/* ================= REMOVE EVENT ================= */
+
 router.delete('/:id/remove', removeEventFromMyEvents);
 
 
-/*
------------------------------------------
-GET EVENT DETAILS
------------------------------------------
-*/
+/* ================= EVENT DETAILS ================= */
+
 router.get('/:id', getEventDetails);
 
 
