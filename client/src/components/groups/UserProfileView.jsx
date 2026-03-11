@@ -4,6 +4,26 @@ import './groups.css';
 const UserProfileView = ({ user, type, onBack }) => {
   // 'type' can be 'member' or 'requester' to determine buttons
 
+  const handleRequestAction = async (action) => {
+    try {
+      // action will be either 'approve' or 'reject'
+      const response = await fetch(`http://localhost:5000/api/requests/${user.requestId}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert(data.message);
+        onBack(); // Send them back to the group view so the sidebar reloads
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      alert("Server error. Make sure your backend is running.");
+    }
+  };
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '2rem' }}>
       <button className="gf-btn-back" onClick={onBack}>&larr; Back</button>
@@ -34,10 +54,22 @@ const UserProfileView = ({ user, type, onBack }) => {
         </div>
 
         {/* Logic for Join Request Actions */}
-        {user.student && (
+        {user.isJoinRequest && (
            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-             <button className="gf-btn-outline" style={{flex:1}} onClick={onBack}>Deny Request</button>
-             <button className="gf-btn-primary" style={{flex:1}} onClick={() => alert('Accepted student!')}>Accept to Group</button>
+             <button 
+               className="gf-btn-outline" 
+               style={{flex:1}} 
+               onClick={() => handleRequestAction('reject')}
+             >
+               Deny Request
+             </button>
+             <button 
+               className="gf-btn-primary" 
+               style={{flex:1}} 
+               onClick={() => handleRequestAction('approve')}
+             >
+               Accept to Group
+             </button>
            </div>
         )}
       </div>

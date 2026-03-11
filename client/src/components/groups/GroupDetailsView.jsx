@@ -5,6 +5,7 @@ import GroupsSidebar from './GroupsSidebar';
 const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) => {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [requesting, setRequesting] = useState(false);
 
   const handleLeaveGroup = () => {
     if(window.confirm(`Are you sure you want to leave ${group.name}?`)) {
@@ -35,6 +36,27 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) =>
     }
   }, [initialGroupData]);
 
+  const handleRequestJoin = async () => {
+    setRequesting(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/groups/${group._id}/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        alert("Request sent successfully! Waiting for group approval.");
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      alert("Failed to send request. Is the server running?");
+    } finally {
+      setRequesting(false);
+    }
+  };
+
   if (loading || !group) return <div className="gf-main">Loading details...</div>;
 
   return (
@@ -51,13 +73,19 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) =>
                 {' '}— {group.domain} Domain
               </p>
             </div>
-            {group.joined && (
-               <button 
-                className="gf-btn-danger" 
-                style={{width:'auto', padding:'0.5rem 1.2rem'}}
-                onClick={handleLeaveGroup}
-               >
+
+            {group.joined ? (
+               <button className="gf-btn-danger" onClick={handleLeaveGroup} style={{width:'auto', padding:'0.5rem 1.2rem'}}>
                  Leave Group
+               </button>
+            ) : (
+               <button 
+                 className="gf-btn-primary" 
+                 onClick={handleRequestJoin} 
+                 disabled={requesting || group.members.length >= group.maxMembers}
+                 style={{width:'auto', padding:'0.5rem 1.2rem', opacity: (requesting || group.members.length >= group.maxMembers) ? 0.5 : 1}}
+               >
+                 {requesting ? 'Sending...' : group.members.length >= group.maxMembers ? 'Group Full' : 'Request to Join'}
                </button>
             )}
           </div>

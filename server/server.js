@@ -54,6 +54,9 @@ app.use('/auth', authRoutes);
 // Grouping endpoints (e.g., /api/groups, /api/modules/:moduleId/groups)
 app.use('/api', groupRoutes);
 
+// Request
+app.use('/api', require('./src/routes/requestRoutes'));
+
 // --- DATABASE CONNECTION ---
 // mongoose.connect(process.env.MONGO_URI)
 // .then(() => console.log('MongoDB Connected successfully'))
