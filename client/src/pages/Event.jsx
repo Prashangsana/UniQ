@@ -10,14 +10,21 @@ export const EventsPage = ({ myEventsList = [] }) => {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
+
+    /* LOAD SOCIETIES */
     fetch("http://localhost:5000/api/societies")
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setSocieties(data.data);   // ✅ FIX
+          setSocieties(data.data);
         }
       })
       .catch(err => console.error("Error loading societies:", err));
+
+
+    /* LOAD MY EVENTS FROM BACKEND */
+    // optional for later DB use
+
   }, []);
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
@@ -37,25 +44,32 @@ export const EventsPage = ({ myEventsList = [] }) => {
             <h2>Main events</h2>
             <EventBanner large id="main-hackathon-2026" image="/images-e/events/main-event.jpg" />
           </section>
+
           <EventRow title="My events" addedEvents={myEventsList} />
           <EventRow title="More events for you" />
         </div>
 
         <div className="events-right">
           <SidebarSection title="Top this week" />
+
           <div className="societies-section">
             <h3>Your societies</h3>
+
             <div className="societies-list">
               {displayedSocieties.map((club) => (
-                <SocietyCard 
-                  key={club._id} 
-                  id={club._id}     // Pass the _id from your JSON
-                  name={club.name} 
-                  logo={club.logo} 
+                <SocietyCard
+                  key={club._id}
+                  id={club._id}
+                  name={club.name}
+                  logo={club.logo}
                 />
               ))}
             </div>
-            <button className="sidebar-view-more" onClick={() => setShowAllSocieties(!showAllSocieties)}>
+
+            <button
+              className="sidebar-view-more"
+              onClick={() => setShowAllSocieties(!showAllSocieties)}
+            >
               {showAllSocieties ? "Show less" : "More >"}
             </button>
           </div>
@@ -65,98 +79,248 @@ export const EventsPage = ({ myEventsList = [] }) => {
   );
 };
 
+
 /* ================= EVENT DETAILS PAGE ================= */
 export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] }) => {
-  const { eventId } = useParams();
+
+  const params = useParams();
+  const eventId = params.eventId || params.id;
+
   const navigate = useNavigate();
-  
-  const isAdded = myEventsList.includes(eventId);
-  const displayTitle = eventId?.replace(/-/g, " ");
+
+  /* FIXED — works with objects or strings */
+
+  const isAdded = (myEventsList || []).some(
+  e => (typeof e === "string" ? e === eventId : e.event === eventId)
+);
+
+  const displayTitle = eventId ? eventId.replace(/-/g, " ") : "";
 
   const getHeroImage = (id) => {
+
     if (!id) return "/images-e/default.jpg";
-    if (id === "main-hackathon-2026") return "/images-e/events/main-event.jpg";
+
+    if (id === "main-hackathon-2026") {
+      return "/images-e/events/main-event.jpg";
+    }
+
     if (id.includes("-event-")) {
       const [clubName, eventPart] = id.split("-event-");
       return `/images-e/club-events/${clubName}/event${eventPart}.jpg`;
     }
+
     return `/images-e/events/${id}.jpg`;
   };
 
   const heroImagePath = getHeroImage(eventId);
 
+
+  /* ================= ADD EVENT ================= */
+  const handleAddEvent = async () => {
+
+    if (!eventId) return;
+
+    try {
+
+      const res = await fetch(
+        `http://localhost:5000/api/events/${eventId}/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        onAddEvent(eventId);
+      }
+
+    } catch (error) {
+      console.error("Error adding event:", error);
+    }
+  };
+
+
+  /* ================= REMOVE EVENT ================= */
+  const handleRemoveEvent = async () => {
+
+    if (!eventId) return;
+
+    try {
+
+      const res = await fetch(
+        `http://localhost:5000/api/events/${eventId}/remove`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        onRemoveEvent(eventId);
+      }
+
+    } catch (error) {
+      console.error("Error removing event:", error);
+    }
+  };
+
+
   return (
     <div className="event-details-page">
+
       <div className="navigation-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
+        <button
+          className="back-btn"
+          onClick={() => navigate(-1)}
+        >
+          ← Back
+        </button>
       </div>
 
+
       <div className="event-details-container">
-        <div 
-          className="event-hero-image" 
-          style={{ 
-            backgroundImage: `url(${heroImagePath}), url(/images-e/default.jpg)`, 
+
+        <div
+          className="event-hero-image"
+          style={{
+            backgroundImage: `url(${heroImagePath}), url(/images-e/default.jpg)`,
             backgroundSize: "cover",
             backgroundPosition: "center"
           }}
         >
-          <h2>{displayTitle?.toUpperCase()}</h2>
+          <h2>{displayTitle.toUpperCase()}</h2>
         </div>
-        
+
+
         <div className="event-info-grid">
+
           <div className="event-main-info">
+
             <h1>{displayTitle}</h1>
-            <p className="event-description-text"><strong>Description:</strong> This is a unique event detail page for {displayTitle}.</p>
-            
-            {/* UPDATED LINKS SECTION */}
+
+            <p className="event-description-text">
+              <strong>Description:</strong>
+              {" "}This is a unique event detail page for {displayTitle}.
+            </p>
+
+
             <div className="event-links">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="link-btn insta">Instagram</a>
-              
-              {/* RENAME REGISTER TO PARTICIPATE */}
-              <a href="https://forms.google.com" target="_blank" rel="noreferrer" className="link-btn register">Participate</a>
-              
-              {/* TICKETS REMOVED FROM HERE */}
+
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                className="link-btn insta"
+              >
+                Instagram
+              </a>
+
+              <a
+                href="https://forms.google.com"
+                target="_blank"
+                rel="noreferrer"
+                className="link-btn register"
+              >
+                Participate
+              </a>
+
             </div>
+
           </div>
-          
+
+
           <div className="event-meta-sidebar">
-            <div className="meta-item"><span>📅 Date:</span><p>Oct 25, 2026</p></div>
-            <div className="meta-item"><span>⏰ Time:</span><p>09:00 AM</p></div>
-            <div className="meta-item"><span>📍 Place:</span><p>IIT Auditorium</p></div>
-            <div className="meta-item"><span>💰 Price:</span><p>LKR 1000</p></div>
+
+            <div className="meta-item">
+              <span>📅 Date:</span>
+              <p>Oct 25, 2026</p>
+            </div>
+
+            <div className="meta-item">
+              <span>⏰ Time:</span>
+              <p>09:00 AM</p>
+            </div>
+
+            <div className="meta-item">
+              <span>📍 Place:</span>
+              <p>IIT Auditorium</p>
+            </div>
+
+            <div className="meta-item">
+              <span>💰 Price:</span>
+              <p>LKR 1000</p>
+            </div>
+
           </div>
+
         </div>
+
       </div>
 
+
       <div className="external-action-area">
+
         {!isAdded ? (
-          <button className="add-to-events-btn" onClick={() => onAddEvent(eventId)}>+ Add to My Events</button>
+
+          <button
+            className="add-to-events-btn"
+            onClick={handleAddEvent}
+          >
+            + Add to My Events
+          </button>
+
         ) : (
-          <button className="remove-from-events-btn" onClick={() => onRemoveEvent(eventId)}>✕ Remove from My Events</button>
+
+          <button
+            className="remove-from-events-btn"
+            onClick={handleRemoveEvent}
+          >
+            ✕ Remove from My Events
+          </button>
+
         )}
+
       </div>
+
     </div>
   );
 };
 
+
+
 /* ================= SOCIETY PROFILE PAGE ================= */
 export const SocietyProfilePage = () => {
-  const { id } = useParams(); 
+
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
     fetch(`http://localhost:5000/api/societies/${id}`)
       .then(res => res.json())
       .then(data => {
+
         if (data.success) {
-          setProfileData(data.data);   // ✅ FIX
+          setProfileData(data.data);
         }
+
       })
       .catch(err => console.error("Error loading profile:", err))
       .finally(() => setLoading(false));
+
   }, [id]);
+
 
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profileData) return <div className="error">Society not found</div>;
@@ -165,34 +329,60 @@ export const SocietyProfilePage = () => {
 
   return (
     <div className="society-profile-page">
+
       <div className="navigation-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
+        <button
+          className="back-btn"
+          onClick={() => navigate(-1)}
+        >
+          ← Back
+        </button>
       </div>
 
+
       <header className="society-header">
-        {/* Use the real logo from the backend */}
-        <img src={society.logo} alt={society.name} className="society-logo-large" />
-        <h1 className="society-full-name">{society.name} OF IIT</h1>
-        <button className="join-btn">Follow</button>
+
+        <img
+          src={society.logo}
+          alt={society.name}
+          className="society-logo-large"
+        />
+
+        <h1 className="society-full-name">
+          {society.name} OF IIT
+        </h1>
+
+        <button className="join-btn">
+          Follow
+        </button>
+
       </header>
-      
+
       <hr className="divider" />
-      
+
+
       <section className="society-events-section">
+
         <div className="section-header">
           <h2>Our Events</h2>
         </div>
-        
+
         <div className="events-grid-profile">
+
           {events.map((event) => (
-            <EventBanner 
-              key={event._id} 
-              id={event._id} 
-              image={event.bannerImage} // Use real banner from events.json
+
+            <EventBanner
+              key={event._id}
+              id={event._id}
+              image={event.bannerImage}
             />
+
           ))}
+
         </div>
+
       </section>
+
     </div>
   );
 };

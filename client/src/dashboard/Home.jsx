@@ -61,7 +61,7 @@ const Home = ({ myEventsList }) => {
         switch(activeTab) {
             case 'dashboard': return <DashboardView />;
             case 'profile':   return <Profile />;
-            case 'society':   return <EventsPage />;
+            case 'society':   return <EventsPage myEventsList={myEventsList} />;
             case 'groups':    return <GroupsPage />;
             case 'skills':    return <SkillsView />;
             case 'articles':  return <ArticlesView />;

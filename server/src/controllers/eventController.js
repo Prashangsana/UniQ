@@ -1,93 +1,133 @@
 const events = require('../mockData/events.json');
 const societies = require('../mockData/societies.json');
 
+/*
+TEMP STORAGE (until DB exists)
+*/
+let savedEvents = [];
+
 
 /*
------------------------------------------
 GET EVENT DETAILS
-API: GET /api/events/:id
------------------------------------------
-Returns full information about one event
 */
 exports.getEventDetails = (req, res) => {
 
-  try {
+  const eventId = req.params.id;
 
-    const eventId = req.params.id;
+  const event = events.find(e => e._id === eventId);
 
-    const event = events.find(
-      e => e._id === eventId
-    );
-
-    if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found"
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: event
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
+  if (!event) {
+    return res.status(404).json({
       success: false,
-      message: "Error fetching event"
+      message: "Event not found"
     });
-
   }
+
+  res.json({
+    success: true,
+    data: event
+  });
+};
+
+
+/*
+GET EVENTS BY SOCIETY
+*/
+exports.getSocietyEvents = (req, res) => {
+
+  const societyId = req.params.societyId;
+
+  const society = societies.find(s => s._id === societyId);
+
+  if (!society) {
+    return res.status(404).json({
+      success: false,
+      message: "Society not found"
+    });
+  }
+
+  const societyEvents = events.filter(e => e.society === societyId);
+
+  res.json({
+    success: true,
+    data: societyEvents
+  });
+};
+
+
+/*
+ADD EVENT
+*/
+exports.addEventToMyEvents = (req, res) => {
+
+  const userId = "mock-user-001";
+  const eventId = req.params.id;
+
+  const eventExists = events.find(e => e._id === eventId);
+
+  if (!eventExists) {
+    return res.status(404).json({
+      success: false,
+      message: "Event not found"
+    });
+  }
+
+  const exists = savedEvents.find(
+    e => e.user === userId && e.event === eventId
+  );
+
+  if (exists) {
+    return res.json({
+      success: true,
+      message: "Event already added"
+    });
+  }
+
+  savedEvents.push({
+    user: userId,
+    event: eventId
+  });
+
+  res.json({
+    success: true,
+    message: "Event added"
+  });
 
 };
 
 
+/*
+REMOVE EVENT
+*/
+exports.removeEventFromMyEvents = (req, res) => {
+
+  const userId = "mock-user-001";
+  const eventId = req.params.id;
+
+  savedEvents = savedEvents.filter(
+    e => !(e.user === userId && e.event === eventId)
+  );
+
+  res.json({
+    success: true,
+    message: "Event removed"
+  });
+
+};
+
 
 /*
------------------------------------------
-GET EVENTS BY SOCIETY
-API: GET /api/events/society/:societyId
------------------------------------------
-Returns all events under a society
-Sorted newest first
+GET MY EVENTS
 */
-exports.getSocietyEvents = (req, res) => {
+exports.getMyEvents = (req, res) => {
 
-  try {
+  const userId = "mock-user-001";
 
-    const societyId = req.params.societyId;
+  const userEvents = savedEvents.filter(e => e.user === userId);
 
-    const society = societies.find(
-      s => s._id === societyId
-    );
-
-    if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found"
-      });
-    }
-
-    const societyEvents = events
-      .filter(event => event.society === societyId)
-      .sort((a, b) =>
-        new Date(b.createdAt) - new Date(a.createdAt)
-      );
-
-    res.status(200).json({
-      success: true,
-      count: societyEvents.length,
-      data: societyEvents
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching events"
-    });
-
-  }
+  res.json({
+    success: true,
+    data: userEvents
+  });
 
 };
