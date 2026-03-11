@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+const { getNotifications } = require("../controllers/eventController");
+
 const {
   getEventDetails,
   getSocietyEvents,
@@ -8,6 +10,8 @@ const {
   removeEventFromMyEvents,
   getMyEvents
 } = require('../controllers/eventController');
+
+router.get("/notifications", getNotifications);
 
 
 /*

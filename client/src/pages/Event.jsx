@@ -21,11 +21,25 @@ export const EventsPage = ({ myEventsList = [] }) => {
       })
       .catch(err => console.error("Error loading societies:", err));
 
+  }, []);
 
-    /* LOAD MY EVENTS FROM BACKEND */
-    // optional for later DB use
+
+  /* 🧩 STEP 7 — LOAD NOTIFICATIONS */
+  useEffect(() => {
+
+    fetch("http://localhost:5000/api/events/notifications")
+      .then(res => res.json())
+      .then(data => {
+
+        if (data.success) {
+          setNotifications(data.data.map(n => n.message));
+        }
+
+      })
+      .catch(err => console.log(err));
 
   }, []);
+
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
 
@@ -88,11 +102,9 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
   const navigate = useNavigate();
 
-  /* FIXED — works with objects or strings */
-
   const isAdded = (myEventsList || []).some(
-  e => (typeof e === "string" ? e === eventId : e.event === eventId)
-);
+    e => (typeof e === "string" ? e === eventId : e.event === eventId)
+  );
 
   const displayTitle = eventId ? eventId.replace(/-/g, " ") : "";
 
@@ -115,7 +127,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const heroImagePath = getHeroImage(eventId);
 
 
-  /* ================= ADD EVENT ================= */
   const handleAddEvent = async () => {
 
     if (!eventId) return;
@@ -144,7 +155,6 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   };
 
 
-  /* ================= REMOVE EVENT ================= */
   const handleRemoveEvent = async () => {
 
     if (!eventId) return;
@@ -305,21 +315,60 @@ export const SocietyProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /* 🧩 STEP 6 — FOLLOW STATE */
+  const [following, setFollowing] = useState(false);
+
+  const handleFollow = async () => {
+
+    if (following) {
+
+      await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
+        method: "DELETE"
+      });
+
+      setFollowing(false);
+
+    } else {
+
+      await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
+        method: "POST"
+      });
+
+      setFollowing(true);
+
+    }
+
+  };
+
   useEffect(() => {
 
-    fetch(`http://localhost:5000/api/societies/${id}`)
-      .then(res => res.json())
-      .then(data => {
+  /* LOAD SOCIETY PROFILE */
+  fetch(`http://localhost:5000/api/societies/${id}`)
+    .then(res => res.json())
+    .then(data => {
 
-        if (data.success) {
-          setProfileData(data.data);
-        }
+      if (data.success) {
+        setProfileData(data.data);
+      }
 
-      })
-      .catch(err => console.error("Error loading profile:", err))
-      .finally(() => setLoading(false));
+    })
+    .catch(err => console.error("Error loading profile:", err))
+    .finally(() => setLoading(false));
 
-  }, [id]);
+
+  /* LOAD FOLLOW STATUS */
+  fetch(`http://localhost:5000/api/societies/${id}/follow-status`)
+    .then(res => res.json())
+    .then(data => {
+
+      if (data.success) {
+        setFollowing(data.following);
+      }
+
+    })
+    .catch(err => console.error("Follow status error:", err));
+
+}, [id]);
 
 
   if (loading) return <div className="loading">Loading Profile...</div>;
@@ -352,8 +401,9 @@ export const SocietyProfilePage = () => {
           {society.name} OF IIT
         </h1>
 
-        <button className="join-btn">
-          Follow
+        {/* FOLLOW BUTTON */}
+        <button className="join-btn" onClick={handleFollow}>
+          {following ? "Following" : "Follow"}
         </button>
 
       </header>

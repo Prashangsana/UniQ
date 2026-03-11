@@ -6,6 +6,8 @@ TEMP STORAGE (until DB exists)
 */
 let savedEvents = [];
 
+let notifications = [];
+
 
 /*
 GET EVENT DETAILS
@@ -128,6 +130,21 @@ exports.getMyEvents = (req, res) => {
   res.json({
     success: true,
     data: userEvents
+  });
+
+};
+
+exports.getNotifications = (req, res) => {
+
+  const userId = "mock-user-001";
+
+  const userNotifications = notifications.filter(
+    n => n.user === userId
+  );
+
+  res.json({
+    success: true,
+    data: userNotifications
   });
 
 };
