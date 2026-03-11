@@ -74,7 +74,7 @@ exports.getGroupDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
 
-    res.status(200).json({ success: true, data: responseData });
+    res.status(200).json({ success: true, data: group });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }

@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
-import { groups, modules, groupInvites } from '../../data/mockGroups';
+import { groups, modules } from '../../data/mockGroups';
 import GroupsSidebar from './GroupsSidebar';
 
 const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
   const joinedGroups = groups.filter(g => g.joined);
+
+  // State to hold our fetched invites
+  const [invites, setInvites] = useState([]);
+
+  // Fetch pending invites when the dashboard loads
+  useEffect(() => {
+    const fetchInvites = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/invites/my');
+        const data = await response.json();
+        
+        if (data.success) {
+          setInvites(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch invites:", error);
+      }
+    };
+
+    fetchInvites();
+  }, []);
 
   return (
     <div className="gf-layout">
@@ -52,7 +73,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
 
       <GroupsSidebar 
         type="dashboard" 
-        invites={groupInvites} 
+        invites={invites} 
         onSelectInvite={onSelectInvite}
       />
     </div>

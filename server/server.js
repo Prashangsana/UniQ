@@ -57,6 +57,9 @@ app.use('/api', groupRoutes);
 // Request
 app.use('/api', require('./src/routes/requestRoutes'));
 
+// Invite
+app.use('/api', require('./src/routes/inviteRoutes'));
+
 // --- DATABASE CONNECTION ---
 // mongoose.connect(process.env.MONGO_URI)
 // .then(() => console.log('MongoDB Connected successfully'))
