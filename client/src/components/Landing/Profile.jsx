@@ -12,10 +12,14 @@ const Profile = () => {
 
   // Initialize with null - data will come from your userMock.js via the Controller
   const [user, setUser] = useState(null);
-
-  // Local state for comma-separated inputs
-  const [skillsInput, setSkillsInput] = useState('');
   const [modulesInput, setModulesInput] = useState('');
+
+  // select skills 
+  const PREDEFINED_SKILLS = ["React", "Node.js", "Java", "Python", "UI/UX Design", "SQL", "Figma", "TypeScript", "JavaScript", "C++", "Other"];
+  const [selectedSkill, setSelectedSkill] = useState('');
+  const [otherSkill, setOtherSkill] = useState('');
+  const [showOtherInput, setShowOtherInput] = useState(false);
+
 
   // --- STAGE 1 & 3: FETCH DATA FROM BACKEND ---
   useEffect(() => {
@@ -27,7 +31,7 @@ const Profile = () => {
         if (result.success) {
           setUser(result.data);
           // Sync the comma-separated strings with the arrays from backend
-          setSkillsInput(result.data.skills ? result.data.skills.join(', ') : '');
+          
           setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
         } else {
           setError(result.message);
@@ -48,6 +52,27 @@ const Profile = () => {
   setUser({ ...user, [name]: value });
 };
 
+// --- NEW SKILL METHODS ---
+  const handleSkillSelectChange = (e) => {
+    const val = e.target.value;
+    setSelectedSkill(val);
+    setShowOtherInput(val === "Other");
+  };
+
+  const addSkill = () => {
+    const skillToAdd = selectedSkill === "Other" ? otherSkill.trim() : selectedSkill;
+    if (skillToAdd && !user.skills.includes(skillToAdd)) {
+      setUser({ ...user, skills: [...user.skills, skillToAdd] });
+      setSelectedSkill('');
+      setOtherSkill('');
+      setShowOtherInput(false);
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    setUser({ ...user, skills: user.skills.filter(s => s !== skillToRemove) });
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -58,12 +83,12 @@ const Profile = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     // Convert strings back to arrays
-    const updatedSkills = skillsInput.split(',').map(s => s.trim()).filter(s => s !== "");
+    
     const updatedModules = modulesInput.split(',').map(m => m.trim()).filter(m => m !== "");
     
     const updatedData = { 
       ...user, 
-      skills: updatedSkills, 
+      
       modules: updatedModules 
     };
 
@@ -194,10 +219,33 @@ const Profile = () => {
                       <label>Modules (comma separated)</label>
                       <input value={modulesInput} onChange={(e) => setModulesInput(e.target.value)} />
                     </div>
-                    <div className="form-group">
-                      <label>Skills (comma separated)</label>
-                      <input value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
+                    {/* --- NEW SKILLS SELECTOR UI --- */}
+                  <div className="form-group">
+                    <label>Skills</label>
+                    <div className="skills-tag-editor">
+                      {user.skills.map((skill, index) => (
+                        <div key={index} className="skill-tag">
+                          {skill}
+                          <Icon icon="lucide:x" onClick={() => removeSkill(skill)} className="remove-tag-icon" />
+                        </div>
+                      ))}
                     </div>
+                    <div className="skill-input-row">
+                      <select value={selectedSkill} onChange={handleSkillSelectChange} className="skill-select">
+                        <option value="">Choose a skill...</option>
+                        {PREDEFINED_SKILLS.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      {showOtherInput && (
+                        <input 
+                          placeholder="Type skill..." 
+                          value={otherSkill}
+                          onChange={(e) => setOtherSkill(e.target.value)}
+                          className="other-skill-input"
+                        />
+                      )}
+                      <button type="button" onClick={addSkill} className="btn-add-skill">Add</button>
+                    </div>
+                  </div>
                   </div>
 
                   <button type="submit" className="btn-save-profile">Save All Changes</button>

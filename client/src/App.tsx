@@ -111,6 +111,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        
         <Route path="/" element={
           <div className="app-container">
             <Navbar onSignUpSuccess={handleLogin} />

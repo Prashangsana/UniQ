@@ -11,6 +11,6 @@ router.put("/profile", updateUserProfile);
 
 // Public route to view any user by their ID
 
-router.get("/:id", getPublicProfile);
+router.get("/public-profile/:id", getPublicProfile);
 
 module.exports = router;

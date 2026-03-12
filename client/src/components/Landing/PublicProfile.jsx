@@ -12,7 +12,7 @@ const PublicProfile = () => {
   useEffect(() => {
     const fetchPublicProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/${id}`);
+        const response = await fetch(`http://localhost:5000/api/users/public-profile/${id}`);
         const result = await response.json();
 
         if (result.success) {
@@ -34,6 +34,10 @@ const PublicProfile = () => {
   if (loading) return <div className="loading-screen">Loading Profile...</div>;
   if (error) return <div className="error-screen">{error}</div>;
   if (!user) return null;
+
+  if (!user) {
+    return <div className="loading">Loading Profile...</div>;
+}
 
   return (
     <div className="profile-container fade-in">

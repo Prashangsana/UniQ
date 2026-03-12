@@ -40,7 +40,7 @@ exports.updateUserProfile = async (req, res) => {
 
     // 2. This line updates the actual object in the server's memory
     // It copies everything from req.body INTO mockUser
-    Object.assign(mockUser, req.body); 
+    Object.assign(mockUsers[0], req.body); 
 
     // 3. Send back the updated object
     res.status(200).json({

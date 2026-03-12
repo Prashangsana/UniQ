@@ -334,6 +334,76 @@
   transform: translateY(-1px);
 }
 
+/* New Skills Tag System Styles */
+.skills-tag-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 2px solid #f1f5f9;
+  border-radius: 10px;
+  min-height: 50px;
+}
+
+.skill-tag {
+  background: #2563eb;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.remove-tag-icon {
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s;
+}
+
+.remove-tag-icon:hover {
+  transform: scale(1.2);
+  color: #fee2e2;
+}
+
+.skill-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.skill-select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.other-skill-input {
+  flex: 1;
+  animation: fadeIn 0.3s ease;
+}
+
+.btn-add-skill {
+  background: #1e293b;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add-skill:hover {
+  background: #334155;
+}
+
 /*
    5. ANIMATIONS & RESPONSIVE
    */
