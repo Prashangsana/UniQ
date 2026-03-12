@@ -1,0 +1,321 @@
+/* Leader.css */
+
+/* Page Background & Container */
+.admin-page {
+  padding: 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+  background-color: #f8fafc; /* Light gray background */
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+}
+
+/* 2-Column Grid Layout */
+.admin-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px; /* Main content | Sidebar width */
+  gap: 40px;
+  align-items: start;
+}
+
+/* Header Section */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.admin-header p {
+  color: #64748b;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+/* Header Button */
+.publish-btn {
+  background-color: #0f172a; /* Dark button */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px; /* Pill shape */
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.publish-btn:hover {
+  background-color: #1e293b;
+  transform: translateY(-1px);
+}
+
+/* Left Column Content */
+.admin-left {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.admin-main-event h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
+
+/* Right Column (Sidebar) */
+.admin-right {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 50px; /* Align with content below header */
+}
+
+/* Manage Societies Section (Bottom Right) */
+.manage-societies h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 15px;
+  margin-left: 5px;
+}
+
+/* Hiding Editor/Manager specific styles if not used on dashboard */
+.editor-page, .manager-page {
+  background: #f1f5f9;
+}
+
+
+/* ==========================================
+   EDITOR PAGE SPECIFICS (Restored & Styled)
+========================================== */
+.editor-page { 
+  padding: 40px; 
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-nav { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  margin-bottom: 20px; 
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+}
+.back-link:hover { color: #0f172a; }
+
+.status-pill { 
+  background: #e2e8f0; 
+  color: #334155; 
+  padding: 8px 16px; 
+  border-radius: 20px; 
+  font-weight: 700; 
+  font-size: 14px;
+}
+
+.editor-container { 
+  background: white; 
+  border-radius: 24px; 
+  overflow: hidden; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+}
+
+.editor-hero { 
+  height: 250px; 
+  background: #cbd5e1; /* Matches the gray placeholder style */
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  color: #1e293b; 
+  gap: 15px; 
+}
+
+.editor-hero h2 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.change-img-btn {
+  background: rgba(255,255,255,0.7);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #0f172a;
+}
+.change-img-btn:hover { background: white; }
+
+.editor-grid { 
+  display: grid; 
+  grid-template-columns: 2fr 1fr; 
+  padding: 40px; 
+  gap: 40px; 
+}
+
+.input-group { margin-bottom: 24px; }
+.input-group label { 
+  display: block; 
+  margin-bottom: 8px; 
+  font-weight: 600; 
+  color: #475569; 
+  font-size: 14px;
+}
+
+.input-group input, .input-group textarea { 
+  width: 100%; 
+  padding: 14px; 
+  border: 2px solid #e2e8f0; 
+  border-radius: 12px; 
+  font-family: inherit;
+  font-size: 15px;
+  background: #f8fafc;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus, .input-group textarea:focus {
+  outline: none;
+  border-color: #94a3b8;
+  background: white;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.save-btn { 
+  background: #0f172a; 
+  color: white; 
+  border: none; 
+  padding: 14px 28px; 
+  border-radius: 12px; 
+  font-weight: 600; 
+  cursor: pointer; 
+}
+.save-btn:hover { background: #1e293b; }
+
+.cancel-btn {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cancel-btn:hover { background: #fecaca; }
+
+.admin-stat-box { 
+  background: #f8fafc; 
+  padding: 25px; 
+  border-radius: 16px; 
+  text-align: center; 
+  border: 2px dashed #cbd5e1; 
+  margin-bottom: 24px; 
+}
+
+.admin-stat-box span {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-stat-box strong { 
+  font-size: 32px; 
+  display: block; 
+  margin: 10px 0; 
+  color: #0f172a; 
+}
+
+.export-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+.export-btn:hover { background: #f1f5f9; }
+
+/* ==========================================
+   MANAGER PAGE SPECIFICS
+========================================== */
+.manager-header { 
+  padding: 40px; 
+  background: white; 
+  text-align: center; 
+  border-radius: 24px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+}
+
+.manager-logo { 
+  width: 100px; 
+  height: 100px; 
+  background: #cbd5e1; 
+  border-radius: 50%; 
+  margin: 0 auto 20px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #64748b;
+  font-weight: bold;
+}
+
+.edit-profile-btn {
+  background: #f1f5f9;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  margin-top: 15px;
+}
+.edit-profile-btn:hover { background: #e2e8f0; }
+
+.manager-events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.small-add-btn {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.small-add-btn:hover { background: #1e293b; }
+
+.manager-grid { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 20px; 
+}
