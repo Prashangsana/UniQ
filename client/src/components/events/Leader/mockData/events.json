@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "rotaract-club-event-1",
+    "title": "ESCAPED",
+    "description": "A thrilling escape room experience.",
+    "society": "rotaract-club",
+    "bannerImage": "/images-e/events/main-event.jpg",
+    "date": "2026-03-08",
+    "time": "09:00 AM",
+    "location": "IIT Auditorium",
+    "tickets": [
+      { "name": "Standard", "price": "Rs. 1000" },
+      { "name": "VIP", "price": "Rs. 2500" }
+    ],
+    "adminLink": "https://docs.google.com/forms/...",
+    "createdAt": "2026-03-05T10:00:00Z"
+  }
+]
