@@ -5,6 +5,7 @@ import GroupDetailsView from '../components/groups/GroupDetailsView';
 import InviteDetailsView from '../components/groups/InviteDetailsView';
 import UserProfileView from '../components/groups/UserProfileView';
 import CreateGroupView from '../components/groups/CreateGroupView';
+import ModuleStudentsView from '../components/groups/ModuleStudentsView';
 
 const GroupsPage = () => {
   // State: 'dashboard', 'module', 'group', 'invite', 'profile'
@@ -21,12 +22,21 @@ const GroupsPage = () => {
   // This tracks where to return to when closing a Profile (Group or Dashboard)
   const [profileReturnView, setProfileReturnView] = useState('dashboard');
 
+  const [rosterModuleId, setRosterModuleId] = useState(null);
+  const [rosterGroupId, setRosterGroupId] = useState(null);
+
   // --- Handlers ---
 
   const handleProfileClick = (user) => {
     setSelectedUser(user);
     setProfileReturnView(view); // Saves if we came from 'group' or 'dashboard'
     setView('profile');
+  };
+
+  const handleFindMembers = (moduleId, groupId) => {
+    setRosterModuleId(moduleId);
+    setRosterGroupId(groupId);
+    setView('module-students');
   };
 
   const handleGroupClick = (group, source) => {
@@ -38,6 +48,12 @@ const GroupsPage = () => {
   const handleCreateGroupClick = (module) => {
     setSelectedModule(module);
     setView('create-group');
+  };
+
+  const handleFindMembersClick = (moduleId, groupId) => {
+    setRosterModuleId(moduleId);
+    setRosterGroupId(groupId);
+    setView('module-students');
   };
 
   // --- Renders ---
@@ -58,6 +74,19 @@ const GroupsPage = () => {
       <GroupDetailsView
         group={selectedGroup}
         onBack={() => setView(originView)}
+        onViewProfile={handleProfileClick}
+        onFindMembers={handleFindMembers}
+      />
+    );
+  }
+
+  // NEW View Route
+  if (view === 'module-students') {
+    return (
+      <ModuleStudentsView
+        moduleId={rosterModuleId}
+        groupId={rosterGroupId}
+        onBack={() => setView('group')}
         onViewProfile={handleProfileClick}
       />
     );

@@ -5,7 +5,7 @@ const router = express.Router();
 // const { createGroup, getModuleGroups, getGroupDetails } = require('../controllers/groupController');
 
 // USING THE MOCK CONTROLLER INSTEAD
-const { createGroup, getModuleGroups, getGroupDetails } = require('../controllers/mockGroupController');
+const { createGroup, getModuleGroups, getGroupDetails, getAvailableStudents } = require('../controllers/mockGroupController');
 
 // COMMENTING OUT THE REAL ONE FOR NOW:
 // const { protect } = require('../middleware/authMiddleware');
@@ -19,5 +19,6 @@ router.use(protect);
 router.post('/groups', createGroup);
 router.get('/modules/:moduleId/groups', getModuleGroups);
 router.get('/groups/:groupId', getGroupDetails);
+router.get('/modules/:moduleId/available-students', getAvailableStudents);
 
 module.exports = router;

@@ -79,3 +79,37 @@ exports.getGroupDetails = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+// GET /api/modules/:moduleId/available-students
+exports.getAvailableStudents = async (req, res) => {
+  try {
+    // Create a dummy list of students for the mock roster
+    const dummyStudents = [
+      {
+        _id: "user_roster_1",
+        name: "Kamal Perera",
+        skills: ["Java", "Spring Boot", "SQL"],
+        bio: "Backend specialist looking for a heavy database project."
+      },
+      {
+        _id: "user_roster_2",
+        name: "Sarah Silva",
+        skills: ["Figma", "React", "CSS"],
+        bio: "Frontend developer and UI designer."
+      },
+      {
+        _id: mockUser._id, // Adding mock user as one of the options too!
+        name: mockUser.name,
+        skills: mockUser.skills,
+        bio: mockUser.bio
+      }
+    ];
+
+    res.status(200).json({ success: true, count: dummyStudents.length, data: dummyStudents });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// Add this at the very bottom of mockGroupController.js
+exports.groupsDb = groupsDb;

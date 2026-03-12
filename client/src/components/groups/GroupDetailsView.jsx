@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './groups.css';
 import GroupsSidebar from './GroupsSidebar';
 
-const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) => {
+const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFindMembers }) => {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
@@ -59,6 +59,9 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) =>
 
   if (loading || !group) return <div className="gf-main">Loading details...</div>;
 
+  const CURRENT_USER_ID = "60d0fe4f5311236168a109ca"; // Mock user ID
+  const isMember = group.members.some(member => member._id === CURRENT_USER_ID);
+
   return (
     <div className="gf-layout">
       <div className="gf-main">
@@ -74,20 +77,33 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) =>
               </p>
             </div>
 
-            {group.joined ? (
-               <button className="gf-btn-danger" onClick={handleLeaveGroup} style={{width:'auto', padding:'0.5rem 1.2rem'}}>
-                 Leave Group
-               </button>
-            ) : (
-               <button 
-                 className="gf-btn-primary" 
-                 onClick={handleRequestJoin} 
-                 disabled={requesting || group.members.length >= group.maxMembers}
-                 style={{width:'auto', padding:'0.5rem 1.2rem', opacity: (requesting || group.members.length >= group.maxMembers) ? 0.5 : 1}}
-               >
-                 {requesting ? 'Sending...' : group.members.length >= group.maxMembers ? 'Group Full' : 'Request to Join'}
-               </button>
-            )}
+            <div style={{display: 'flex', gap: '10px'}}>
+              {/* Find Members Button (Only show if in group and group isn't full) */}
+              {isMember && group.members.length < group.maxMembers && (
+                <button 
+                  className="gf-btn-outline" 
+                  onClick={() => onFindMembers(group.moduleId, group._id)} 
+                  style={{width:'auto', padding:'0.5rem 1.2rem'}}
+                >
+                  Find Members
+                </button>
+              )}
+
+              {isMember ? (
+                <button className="gf-btn-danger" onClick={handleLeaveGroup} style={{width:'auto', padding:'0.5rem 1.2rem'}}>
+                  Leave Group
+                </button>
+              ) : (
+                <button 
+                  className="gf-btn-primary" 
+                  onClick={handleRequestJoin} 
+                  disabled={requesting || group.members.length >= group.maxMembers}
+                  style={{width:'auto', padding:'0.5rem 1.2rem', opacity: (requesting || group.members.length >= group.maxMembers) ? 0.5 : 1}}
+                >
+                  {requesting ? 'Sending...' : group.members.length >= group.maxMembers ? 'Group Full' : 'Request to Join'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -126,7 +142,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile }) =>
         </div>
       </div>
 
-      {group.joined && (
+      {isMember && (
         <GroupsSidebar 
           type="group" 
           groupId={group._id} 
