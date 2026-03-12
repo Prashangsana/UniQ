@@ -45,15 +45,57 @@ exports.getMyInvites = async (req, res) => {
 
 // POST /api/invites/:inviteId/accept
 exports.acceptInvite = async (req, res) => {
-  const { inviteId } = req.params;
-  const invite = invitesDb.find(i => i._id === inviteId);
-  
-  if (!invite) return res.status(404).json({ success: false, message: 'Invite not found' });
-  
-  invite.status = 'accepted';
-  // (In the real controller, we push the user to the group.members array here)
-  
-  res.status(200).json({ success: true, message: 'Invite accepted!' });
+  try {
+    const { inviteId } = req.params;
+    const invite = invitesDb.find(i => i._id === inviteId);
+    
+    if (!invite) return res.status(404).json({ success: false, message: 'Invite not found' });
+    if (invite.status !== 'pending') return res.status(400).json({ success: false, message: 'Invite is no longer pending' });
+
+    let group = groupsDb.find(g => g._id === invite.group);
+
+    // --- FIX: Actually create the group in the database! ---
+    if (!group && invite._id === "inv_123") {
+      group = {
+        _id: "test_group_123",
+        name: "CS-105-Alpha",
+        // CHANGE THE LINE BELOW to match a Module ID on your Dashboard!
+        moduleId: "5COSC019C ", 
+        domain: "Web Development",
+        maxMembers: 5,
+        leader: { _id: "fake_leader", name: "System Admin" },
+        members: [], 
+        isFinalised: false
+      };
+      groupsDb.push(group); // Push the new group into our mock database
+    }
+    // --------------------------------------------------------
+
+    if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+
+    // Validation Checks
+    if (group.members.length >= group.maxMembers) {
+      invite.status = 'rejected';
+      return res.status(400).json({ success: false, message: 'Sorry, this group is now full' });
+    }
+
+    const existingGroup = groupsDb.find(g => 
+      g.moduleId === group.moduleId && 
+      g.members.some(m => (m._id || m) === mockUser._id)
+    );
+
+    if (existingGroup) {
+      return res.status(400).json({ success: false, message: 'You are already in a group for this module' });
+    }
+
+    // Add user to the group!
+    group.members.push(mockUser);
+    invite.status = 'accepted';
+    
+    res.status(200).json({ success: true, message: 'Successfully joined the group!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 // POST /api/invites/:inviteId/reject

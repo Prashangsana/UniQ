@@ -1,7 +1,23 @@
 const mockUser = require('../data/mockUser.json');
 
 // This array acts as our temporary MongoDB
-let groupsDb = [];
+let groupsDb = [
+  {
+    _id: "test_group_123",
+    name: "CS-105-Alpha",
+    moduleId: "5COSC019C", // (Or whichever module ID you used)
+    domain: "Web Development",
+    maxMembers: 5,
+    leader: { _id: "fake_leader", name: "System Admin" },
+    
+    // --- THE FIX IS HERE --- 
+    // We removed mockUser so you aren't in the group yet!
+    members: [{ _id: "fake_leader", name: "System Admin" }], 
+    // -----------------------
+    
+    isFinalised: false
+  }
+];
 
 exports.createGroup = async (req, res) => {
   try {
