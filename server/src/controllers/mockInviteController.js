@@ -1,5 +1,7 @@
 const mockUser = require('../data/mockUser.json');
 
+const { groupsDb } = require('./mockGroupController');
+
 // Temporary in-memory DB for invites
 let invitesDb = [
   // Let's add a fake invite so you can see it in your UI immediately!
@@ -68,6 +70,35 @@ exports.rejectInvite = async (req, res) => {
 // POST /api/groups/:groupId/leave
 exports.leaveGroup = async (req, res) => {
   const { groupId } = req.params;
-  // (In the real controller, we check if user is leader, and pull them from group.members)
+  const userId = mockUser._id; // Using our mock user ID
+
+  // 1. Find the group in our mock database
+  const groupIndex = groupsDb.findIndex(g => g._id === groupId);
+  if (groupIndex === -1) {
+    return res.status(404).json({ success: false, message: 'Group not found' });
+  }
+
+  const group = groupsDb[groupIndex];
+
+  // 2. Logic: Leader can only leave if they are the last person
+  const isLeader = (group.leader._id === userId || group.leader === userId);
+  
+  if (isLeader) {
+    if (group.members.length > 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Leader cannot leave while there are other members. Please transfer leadership first.' 
+      });
+    } else {
+      // User is the leader AND the only member. Delete the entire group!
+      groupsDb.splice(groupIndex, 1);
+      return res.status(200).json({ success: true, message: 'You left, and the empty group was deleted.' });
+    }
+  }
+
+  // 3. Logic: Standard member leaving
+  // Filter out the user from the members array
+  group.members = group.members.filter(m => (m._id || m) !== userId);
+
   res.status(200).json({ success: true, message: 'Successfully left the group.' });
 };

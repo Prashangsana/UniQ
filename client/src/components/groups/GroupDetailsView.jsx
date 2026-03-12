@@ -7,10 +7,24 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     if(window.confirm(`Are you sure you want to leave ${group.name}?`)) {
-      console.log('Left group');
-      onBack();
+      try {
+        const response = await fetch(`http://localhost:5000/api/groups/${group._id}/leave`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+          onBack(); // Send user back to the dashboard/module view
+        } else {
+          alert(`Error: ${data.message}`);
+        }
+      } catch (error) {
+        alert("Failed to leave group. Is the server running?");
+      }
     }
   };
 
