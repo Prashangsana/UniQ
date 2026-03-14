@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import MentorLogin from './pages/MentorLogin';
+
+// Component Imports
 import Navbar from './components/Landing/Navbar';
 import Hero from './components/Landing/Hero';
 import Features from './components/Landing/Features';
@@ -10,14 +13,12 @@ import Team from './components/Landing/Team';
 import Footer from './components/Landing/Footer';
 import Home from './dashboard/Home';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
-import Mentoring  from './pages/Mentoring';
+// import Mentoring from './pages/Mentoring';
 import DashboardView from './dashboard/DashboardView';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -32,37 +33,10 @@ function App() {
     setMyEventsList(prev => prev.filter(id => id !== eventId));
   };
 
-  // Check if user is already logged in / Returning from Google OAuth
+  // Scroll observer logic
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch(`${API_URL}/auth/me`, {
-           credentials: 'include' 
-        });
-        const data = await response.json();
-        
-        if (data.authenticated) {
-           console.log("Login verified. User role:", data.user.role);
-           handleLogin(); 
-        }
-      } catch {
-        console.log("User is not logged in");
-      }
-    };
-
-    checkAuth();
-  }, [API_URL]);
-
-  useEffect(() => {
-    if (isLoggedIn) return;
-
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries, observer) => {
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('is-visible');
@@ -79,34 +53,41 @@ function App() {
     };
   }, [isLoggedIn]);
 
-  if (isLoggedIn) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home myEventsList={myEventsList} />} />
-            <Route path="/event/:id" element={<EventDetailsPage onAddEvent={handleAddEvent} onRemoveEvent={handleRemoveEvent} myEventsList={myEventsList} />} />
-            <Route path="/society/:name" element={<SocietyProfilePage />} />
-            <Route path="/dashboard" element={<DashboardView onSeeAll={() => {}} />} />
-          <Route path="/mentoring" element={<Mentoring />} />
-        </Routes>
-      </BrowserRouter>
-    );
-  }
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={
-          <div className="app-container">
-            <Navbar onSignUpSuccess={handleLogin} />
-            <Hero />
-            <Features />
-            <HowItWorks />
-            <Pricing />
-            <Team />
-            <Footer />
-          </div>
-        } />
+        {isLoggedIn ? (
+          /* Authenticated Routes */
+          <>
+            <Route path="/" element={<Home myEventsList={myEventsList} />} />
+            <Route path="/mentor-auth/:role" element={<MentorLogin />} />
+            <Route path="/dashboard" element={<DashboardView onSeeAll={() => { }} />} />
+            <Route path="/event/:id" element={
+              <EventDetailsPage 
+                onAddEvent={handleAddEvent} 
+                onRemoveEvent={handleRemoveEvent} 
+                myEventsList={myEventsList} 
+              />
+            } />
+            <Route path="/society/:name" element={<SocietyProfilePage />} />
+          </>
+        ) : (
+          /* Public/Landing Routes */
+          <Route path="/" element={
+            <div className="app-container">
+              <Navbar onSignUpSuccess={handleLogin} />
+              <Hero />
+              <div className="reveal-on-scroll"><Features /></div>
+              <div className="reveal-on-scroll"><HowItWorks /></div>
+              <div className="reveal-on-scroll"><Pricing /></div>
+              <div className="reveal-on-scroll"><Team /></div>
+              <Footer />
+            </div>
+          } />
+        )}
+        
+        {/* Redirect unknown routes to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

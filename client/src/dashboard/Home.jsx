@@ -7,20 +7,11 @@ import SettingsView from './SettingsView';
 import GroupsPage from '../pages/GroupsPage';
 import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
-
-// const SocietyView = () => (
-//     <div className="content-section fade-in">
-//         <h2>Society & Events</h2>
-//         <p>Browse upcoming university events and joined societies.</p>
-//     </div>
-// );
-
-// const GroupsView = () => (
-//     <div className="content-section fade-in">
-//         <h2>Study Groups</h2>
-//         <p>Find study partners or manage your current project groups.</p>
-//     </div>
-// );
+import PeerMentoring from '../pages/PeerMentoring';
+import LecturerMentoring from '../pages/LecturerMentoring';
+import MentorDashboardPeer from '../pages/MentorDashboardPeer';
+import MentorDashboardLecturer from '../pages/MentorDashboardLecturer';
+import MentoringHub from '../pages/MentoringHub';
 
 const SkillsView = () => (
     <div className="content-section fade-in">
@@ -43,7 +34,6 @@ const Home = ({ myEventsList }) => {
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
     const sidebarUser = {
         name: 'Alex',
         img: 'https://i.pravatar.cc/300?img=47' 
@@ -57,12 +47,21 @@ const Home = ({ myEventsList }) => {
 
     const renderContent = () => {
         switch(activeTab) {
-            case 'dashboard': return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+            case 'dashboard': return <DashboardView 
+                onSeeAll={() => setActiveTab('groups')} 
+                onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
+                />;
             case 'profile':   return <Profile />;
             case 'society':   return <EventsPage />;
             case 'groups':    return <GroupsPage />;
             case 'skills':    return <SkillsView />;
             case 'articles':  return <ArticlesView />;
+            case 'mentoring-hub': 
+                return <MentoringHub onSelectCategory={(category) => setActiveTab(category)} />;
+            case 'peer-mentoring': return <PeerMentoring onBack={() => setActiveTab('mentoring-hub')} />;
+            case 'lecturer-mentoring': return <LecturerMentoring onBack={() => setActiveTab('mentoring-hub')} />;
+            case 'peer-dashboard-view': return <MentorDashboardPeer />;
+            case 'lecturer-dashboard-view': return <MentorDashboardLecturer />;
             case 'settings':  return <SettingsView />;
             default:          return <DashboardView />;
         }
@@ -111,6 +110,12 @@ const Home = ({ myEventsList }) => {
                             <a href="#groups" onClick={(e) => { e.preventDefault(); setActiveTab('groups'); }}>
                                 <Icon icon="lucide:users" width="20" />
                                 <span>Groups</span>
+                            </a>
+                        </li>
+                        <li className={activeTab === 'mentoring-hub' || activeTab === 'peer-mentoring' || activeTab === 'lecturer-mentoring' ? 'active' : ''}>
+                            <a href="#mentoring" onClick={(e) => { e.preventDefault(); setActiveTab('mentoring-hub'); }}>
+                                <Icon icon="lucide:book-open" width="20" />
+                                <span>Mentoring</span>
                             </a>
                         </li>
                         <li className={activeTab === 'skills' ? 'active' : ''}>
