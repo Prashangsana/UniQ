@@ -127,5 +127,43 @@ exports.getAvailableStudents = async (req, res) => {
   }
 };
 
+// GET /api/modules/:moduleId/my-group
+exports.getMyGroup = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+    const userId = req.user.id; 
+
+    // Find a group for this module where the members array includes our mock user
+    const myGroup = groupsDb.find(g => 
+      g.moduleId === moduleId && 
+      g.members.some(m => m._id === userId || m === userId)
+    );
+
+    if (!myGroup) {
+      // User is not in a group, send back null
+      return res.status(200).json({ success: true, data: null });
+    }
+
+    // User is in a group, send the group data
+    res.status(200).json({ success: true, data: myGroup });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// GET /api/groups/my
+exports.getMyAllGroups = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Find all groups where you are a member
+    const myGroups = groupsDb.filter(g => 
+      g.members.some(m => m._id === userId || m === userId)
+    );
+    res.status(200).json({ success: true, data: myGroups });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
 // Add this at the very bottom of mockGroupController.js
 exports.groupsDb = groupsDb;

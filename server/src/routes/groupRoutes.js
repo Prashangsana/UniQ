@@ -5,7 +5,7 @@ const router = express.Router();
 // const { createGroup, getModuleGroups, getGroupDetails } = require('../controllers/groupController');
 
 // USING THE MOCK CONTROLLER INSTEAD
-const { createGroup, getModuleGroups, getGroupDetails, getAvailableStudents } = require('../controllers/mockGroupController');
+const { createGroup, getModuleGroups, getGroupDetails, getAvailableStudents, getMyGroup, getMyAllGroups } = require('../controllers/mockGroupController');
 
 // COMMENTING OUT THE REAL ONE FOR NOW:
 // const { protect } = require('../middleware/authMiddleware');
@@ -16,9 +16,16 @@ const { protect } = require('../middleware/mockAuthMiddleware');
 // Apply the mock authentication to all routes below
 router.use(protect);
 
+// 1. Static Routes (Must go first!)
 router.post('/groups', createGroup);
+router.get('/groups/my', getMyAllGroups);
+
+// 2. Module Routes
 router.get('/modules/:moduleId/groups', getModuleGroups);
-router.get('/groups/:groupId', getGroupDetails);
 router.get('/modules/:moduleId/available-students', getAvailableStudents);
+router.get('/modules/:moduleId/my-group', getMyGroup);
+
+// 3. Dynamic Routes (Must go last!)
+router.get('/groups/:groupId', getGroupDetails);
 
 module.exports = router;

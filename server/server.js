@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./src/config/db'); // Database connection logic
 
 // 1. Connect to MongoDB
-connectDB();
+// connectDB();
 const groupRoutes = require('./src/routes/groupRoutes'); // Merged: Grouping routes
 
 const app = express();
