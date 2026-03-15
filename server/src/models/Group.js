@@ -31,12 +31,38 @@ const groupSchema = new mongoose.Schema({
     required: [true, 'Maximum number of members is required'],
     min: [1, 'Group must have at least 1 member capacity']
   },
+
+  // --- NEW FIELDS FOR LECTURER FINALISATION ---
+  
+  // The specific prefix the students selected (e.g., "SE")
+  prefix: { 
+    type: String 
+  },
+  // The final generated ID (e.g., "SE-1")
+  finalisedCode: { 
+    type: String 
+  },
+  // Tracks where the group is in the review process
+  status: { 
+    type: String, 
+    enum: ['open', 'pending_review', 'finalised'], 
+    default: 'open' 
+  },
+  // Stores the form data (IIT IDs, UoW IDs, Phone numbers, Tutorial Groups)
+  finalisationForm: { 
+    type: mongoose.Schema.Types.Mixed 
+  },
+  // Stores any feedback from the lecturer if rejected
+  feedback: {
+    type: String
+  },
+  
   isFinalised: { 
     type: Boolean, 
-    default: false // Groups are open by default until a lecturer finalises them
+    default: false 
   }
 }, { 
-  timestamps: true // Automatically adds createdAt and updatedAt fields
+  timestamps: true 
 });
 
 module.exports = mongoose.model('Group', groupSchema);
