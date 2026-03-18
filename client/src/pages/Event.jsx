@@ -18,7 +18,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
   /* LOAD SOCIETIES */
   useEffect(() => {
 
-    fetch("http://localhost:5000/api/societies")
+    fetch("http://localhost:5000/api/societies", {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -51,7 +53,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
   useEffect(() => {
 
     /* MAIN EVENT */
-    fetch("http://localhost:5000/api/events/main")
+    fetch("http://localhost:5000/api/events/main", {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -61,7 +65,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .catch(err => console.log("Main event error:", err));
 
     /* MORE EVENTS FOR YOU */
-    fetch("http://localhost:5000/api/events/latest")
+    fetch("http://localhost:5000/api/events/latest", {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -71,7 +77,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .catch(err => console.log("Latest events error:", err));
 
     /* TOP EVENTS THIS WEEK */
-    fetch("http://localhost:5000/api/events/top-week")
+    fetch("http://localhost:5000/api/events/top-week", {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -420,7 +428,9 @@ export const SocietyProfilePage = () => {
   useEffect(() => {
 
   /* LOAD SOCIETY PROFILE */
-  fetch(`http://localhost:5000/api/societies/${id}`)
+  fetch(`http://localhost:5000/api/societies/${id}`, {
+    credentials: "include"
+  })
     .then(res => res.json())
     .then(data => {
 

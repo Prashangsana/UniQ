@@ -21,7 +21,7 @@ app.use(express.json()); // Essential for parsing JSON requests
 app.use(cookieParser()); // Required to read the JWT cookies
 
 app.use(cors({
-    origin: [FRONTEND_URL, 'https://uniq.lk', 'https://www.uniq.lk'],
+    origin: [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174', 'https://uniq.lk', 'https://www.uniq.lk'],
     credentials: true, // This is crucial for cookies to work across domains!
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));

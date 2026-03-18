@@ -19,12 +19,12 @@ export const EventBanner = ({ large, id = "sample-event", image }) => {
 };
 
 // --- SOCIETY CARD ---
-export const SocietyCard = ({ name, id }) => {
+export const SocietyCard = ({ name, id, logo }) => {
   return (
     <Link to={`/society/${id}`} className="society-card-link">
       <div className="society-card">
         <img
-          src={`/images-e/societies/${id}.png`}
+          src={logo || `/images-e/societies/${id}.png`}
           alt={name}
           className="society-logo"
           onError={(e) => { e.target.src = "/images-e/default.jpg"; }}
