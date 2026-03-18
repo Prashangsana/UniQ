@@ -31,15 +31,17 @@ app.use(cors({
 app.use(express.urlencoded({ extended: true })); // Good practice for form-encoded data
 
 // 3. Initialize Passport 
-// (Notice: passport.session() and express-session are completely removed)
 app.use(passport.initialize());
-
-// Load Passport Configuration
 require('./src/config/passport')(passport);
 
 // 4. Routes
 const authRoutes = require('./src/routes/authRoutes'); 
+const societyRoutes = require('./src/routes/societyRoutes');
+const eventRoutes = require('./src/routes/eventRoutes');
+
 app.use('/auth', authRoutes); // Teammate's real auth routes
+app.use('/api/societies', societyRoutes);
+app.use('/api/events', eventRoutes);
 
 // Grouping APIs
 app.use('/api', groupRoutes);
@@ -47,5 +49,4 @@ app.use('/api', require('./src/routes/requestRoutes'));
 app.use('/api', require('./src/routes/inviteRoutes'));
 app.use('/api', require('./src/routes/lecturerRoutes'));
 
-// 5. Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
