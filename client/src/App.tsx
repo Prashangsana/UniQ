@@ -21,28 +21,43 @@ function App() {
     return localStorage.getItem('is_logged_in') === 'true';
   });
   
-  const [myEventsList, setMyEventsList] = useState<string[]>([]);
+  const [myEventsList, setMyEventsList] = useState<any[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
   const handleLogin = (): void => {
     localStorage.setItem('is_logged_in', 'true');
     setIsLoggedIn(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchMyEvents(); // Fetch saved events after login
   };
 
   const handleLogout = (): void => {
     localStorage.removeItem('is_logged_in');
     setIsLoggedIn(false);
+    setMyEventsList([]); // Clear list on logout
   };
 
-  const handleAddEvent = (eventId: string): void => {
-    if (!myEventsList.includes(eventId)) {
-      setMyEventsList(prev => [...prev, eventId]);
+  const fetchMyEvents = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/events/my`, { credentials: 'include' });
+      const data = await response.json();
+      if (data.success) {
+        setMyEventsList(data.data); // data.data is an array of populated SavedEvent objects
+      }
+    } catch (error) {
+      console.error('Error fetching saved events:', error);
     }
   };
 
+  const handleAddEvent = (event: any): void => {
+    // If it's an object from the backend, it will have { event: { ... } }
+    // If it's just the ID, we'll need to fetch the event details to show it in the list
+    // For now, let's just refresh the whole list from the server to keep it in sync
+    fetchMyEvents();
+  };
+
   const handleRemoveEvent = (eventId: string): void => {
-    setMyEventsList(prev => prev.filter(id => id !== eventId));
+    setMyEventsList(prev => prev.filter(e => (e.event?._id || e.event) !== eventId));
   };
 
   // Background Auth Check
