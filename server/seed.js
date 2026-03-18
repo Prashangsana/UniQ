@@ -4,6 +4,7 @@ const Event = require('./src/models/Event');
 const Society = require('./src/models/Society');
 const eventsData = require('./src/mockData/events.json');
 const societiesData = require('./src/mockData/societies.json');
+const studentsData = require('./data/mockstudent.json');
 
 const seedDB = async () => {
   try {
@@ -13,6 +14,7 @@ const seedDB = async () => {
     // Clear existing data (optional, but good for fresh start)
     await Event.deleteMany({});
     await Society.deleteMany({});
+    await User.deleteMany({});
 
     // 1. Insert Societies
     const societyMap = {};
@@ -39,6 +41,11 @@ const seedDB = async () => {
       bannerImage: e.bannerImage,
       createdAt: e.createdAt ? new Date(e.createdAt) : new Date()
     }));
+
+    // 3. Insert student 
+    console.log('Seeding Students...');
+    await User.insertMany(studentsData); 
+    console.log('Students seeded with Bios and Skills!');
 
     await Event.insertMany(eventsToInsert);
     console.log('Events seeded!');
