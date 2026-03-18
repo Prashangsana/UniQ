@@ -188,7 +188,10 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const [loading, setLoading] = useState(true);
 
   const isAdded = (myEventsList || []).some(
-    e => (typeof e === "string" ? e === eventId : (e.event?._id === eventId || e.event === eventId))
+    e => {
+      const savedEventId = e.event?._id || e.event || e;
+      return savedEventId.toString() === eventId?.toString();
+    }
   );
 
   useEffect(() => {
@@ -226,10 +229,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       if (data.success) {
         onAddEvent(eventId);
+      } else {
+        alert(data.message || "Failed to add event");
       }
 
     } catch (error) {
       console.error("Error adding event:", error);
+      alert("Error adding event. Make sure you are logged in.");
     }
 
   };
@@ -255,10 +261,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       if (data.success) {
         onRemoveEvent(eventId);
+      } else {
+        alert(data.message || "Failed to remove event");
       }
 
     } catch (error) {
       console.error("Error removing event:", error);
+      alert("Error removing event.");
     }
 
   };
