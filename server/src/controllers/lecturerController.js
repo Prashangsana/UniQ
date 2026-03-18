@@ -1,5 +1,24 @@
 const GroupProject = require('../models/GroupProject');
 const Group = require('../models/Group');
+const Module = require('../models/Module'); // Need to import the Admin's model
+
+// GET /api/lecturer/my-modules
+exports.getMyModules = async (req, res) => {
+  try {
+    // Find modules where this user is EITHER a leader OR in the team
+    const authorizedModules = await Module.find({
+      $or: [
+        { moduleLeaders: req.user.id },
+        { moduleTeam: req.user.id }
+      ]
+    }).select('_id name'); // We only need the ID and Name for the dropdown
+
+    res.status(200).json({ success: true, data: authorizedModules });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error fetching modules' });
+  }
+};
 
 // POST /api/modules/:moduleId/group-project (LECTURER ONLY)
 exports.createGroupProject = async (req, res) => {

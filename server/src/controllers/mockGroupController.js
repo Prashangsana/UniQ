@@ -19,6 +19,22 @@ let groupsDb = [
   }
 ];
 
+// GET /api/modules/open
+exports.getOpenModules = async (req, res) => {
+  try {
+    // In the real app, this will query: GroupProject.find({ isOpen: true }).populate('moduleId')
+    // For now, we mock the modules that the Lecturer just opened!
+    const openModules = [
+      { _id: '5COSC019C', name: 'Software Engineering' },
+      { _id: '5COSC021C', name: 'Database Systems' }
+    ];
+
+    res.status(200).json({ success: true, data: openModules });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error fetching modules' });
+  }
+};
+
 exports.createGroup = async (req, res) => {
   try {
     const { name, moduleId, domain, maxMembers } = req.body;

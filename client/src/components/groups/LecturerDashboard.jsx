@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
 
 const LecturerDashboard = () => {
   const [activeTab, setActiveTab] = useState('setup');
+
+  // --- NEW STATE FOR MODULES ---
+  const [myModules, setMyModules] = useState([]);
+  const [isLoadingModules, setIsLoadingModules] = useState(true);
   
   // Form States for setting up a project
   const [moduleId, setModuleId] = useState('');
@@ -10,6 +14,23 @@ const LecturerDashboard = () => {
   const [maxMembers, setMaxMembers] = useState(5);
   const [deadline, setDeadline] = useState('');
   const [prefixes, setPrefixes] = useState('SE, CS, AI');
+
+  // --- NEW: FETCH MODULES ON LOAD ---
+  useEffect(() => {
+    // In the real app, this will be: fetch('/api/modules/my-modules')
+    // For now, we simulate the backend response:
+    setTimeout(() => {
+      const mockFetchedModules = [
+        { _id: '5COSC019C', name: 'Software Engineering' },
+        { _id: '5COSC021C', name: 'Database Systems' }
+      ];
+      setMyModules(mockFetchedModules);
+      if (mockFetchedModules.length > 0) {
+        setModuleId(mockFetchedModules[0]._id); // Auto-select the first one
+      }
+      setIsLoadingModules(false);
+    }, 500); // slight delay to simulate network
+  }, []);
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
@@ -56,36 +77,54 @@ const LecturerDashboard = () => {
           <h3>Open a New Group Project</h3>
           <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Allow students to start forming groups for a module.</p>
           
-          <form onSubmit={handleCreateProject}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Module ID</label>
-              <input type="text" className="gf-input" value={moduleId} onChange={(e) => setModuleId(e.target.value)} placeholder="e.g., 5COSC019C" required />
-            </div>
+          {isLoadingModules ? (
+            <p>Loading your assigned modules...</p>
+          ) : myModules.length === 0 ? (
+            <p style={{ color: '#ef4444' }}>You have not been assigned as a module leader to any modules yet.</p>
+          ) : (
+            <form onSubmit={handleCreateProject}>
 
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Min Members</label>
-                <input type="number" className="gf-input" value={minMembers} onChange={(e) => setMinMembers(e.target.value)} />
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Module</label>
+                <select 
+                  className="gf-input" 
+                  value={moduleId} 
+                  onChange={(e) => setModuleId(e.target.value)} 
+                  required
+                >
+                  {myModules.map(mod => (
+                    <option key={mod._id} value={mod._id}>
+                      {mod._id} - {mod.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Max Members</label>
-                <input type="number" className="gf-input" value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} />
+
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Min Members</label>
+                  <input type="number" className="gf-input" value={minMembers} onChange={(e) => setMinMembers(e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Max Members</label>
+                  <input type="number" className="gf-input" value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} />
+                </div>
               </div>
-            </div>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Deadline</label>
-              <input type="date" className="gf-input" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
-            </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Deadline</label>
+                <input type="date" className="gf-input" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+              </div>
 
-            <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Allowed Prefixes (Comma separated)</label>
-              <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px' }}>Students will choose one of these when finalising.</p>
-              <input type="text" className="gf-input" value={prefixes} onChange={(e) => setPrefixes(e.target.value)} placeholder="SE, CS, DS" required />
-            </div>
+              <div style={{ marginBottom: '2rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Allowed Prefixes (Comma separated)</label>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px' }}>Students will choose one of these when finalising.</p>
+                <input type="text" className="gf-input" value={prefixes} onChange={(e) => setPrefixes(e.target.value)} placeholder="SE, CS, DS" required />
+              </div>
 
-            <button type="submit" className="gf-btn-primary">Open Group Formation</button>
-          </form>
+              <button type="submit" className="gf-btn-primary">Open Group Formation</button>
+            </form>
+          )}
         </div>
       )}
 

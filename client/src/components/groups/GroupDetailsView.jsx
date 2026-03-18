@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './groups.css';
 import GroupsSidebar from './GroupsSidebar';
 
-const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFindMembers }) => {
+const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFindMembers, onFinalise }) => {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
@@ -84,12 +84,35 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
         <div className="gf-header">
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'start'}}>
             <div>
-              <h1 style={{margin:0, fontSize:'2.5rem', color:'#1e293b'}}>{group.name}</h1>
+              <h1 style={{margin:0, fontSize:'2.5rem', color:'#1e293b', display: 'flex', alignItems: 'center', gap: '15px'}}>
+                {group.name}
+                {group.status === 'finalised' && (
+                  <span style={{ background: '#10b981', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold' }}>
+                    Finalised: {group.finalisedCode}
+                  </span>
+                )}
+                {group.status === 'pending_review' && (
+                  <span style={{ background: '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold' }}>
+                    Pending Review
+                  </span>
+                )}
+              </h1>
               <p style={{fontSize:'1.1rem'}}>
                 <span style={{fontWeight:'600', color:'#5b7cbd'}}>{group.moduleId}</span> 
                 {' '}— {group.domain} Domain
               </p>
             </div>
+
+            {/* --- Submit for Finalisation Button --- */}
+              {isMember && group.members.length === group.maxMembers && (!group.status || group.status === 'open') && (
+                <button 
+                  className="gf-btn-primary" 
+                  onClick={onFinalise} 
+                  style={{ background: '#10b981', width:'auto', padding:'0.5rem 1.2rem' }}
+                >
+                  Submit for Finalisation
+                </button>
+              )}
 
             <div style={{display: 'flex', gap: '10px'}}>
               {/* Find Members Button (Only show if in group and group isn't full) */}
@@ -102,6 +125,8 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
                   Find Members
                 </button>
               )}
+
+              
 
               {isMember ? (
                 <button className="gf-btn-danger" onClick={handleLeaveGroup} style={{width:'auto', padding:'0.5rem 1.2rem'}}>

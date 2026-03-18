@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './groups.css';
-import { groups, modules } from '../../data/mockGroups';
 import GroupsSidebar from './GroupsSidebar';
 
 const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
@@ -9,6 +8,10 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
 
   const [myGroups, setMyGroups] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
+
+  // Dynamic Modules
+  const [modules, setModules] = useState([]);
+  const [loadingModules, setLoadingModules] = useState(true);
 
   // Fetch pending invites when the dashboard loads
   useEffect(() => {
@@ -38,8 +41,24 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
       }
     };
 
+    // Fetch only modules that have an Open Group Project
+    const fetchOpenModules = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/modules/open');
+        const data = await response.json();
+        if (data.success) {
+          setModules(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch open modules:", error);
+      } finally {
+        setLoadingModules(false);
+      }
+    };
+
     fetchInvites();
     fetchMyGroups();
+    fetchOpenModules();
   }, []);
 
   return (
@@ -95,23 +114,35 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
           </div>
         )}
 
-        <h3 className="gf-section-title">Explore Modules</h3>
+        {/* --- DYNAMIC MODULES SECTION --- */}
+        <h3 className="gf-section-title">Explore Open Modules</h3>
 
-        <div className="gf-grid">
-          {modules.map(m => (
-            <div 
-              key={m.id} 
-              className="gf-card-simple"
-              onClick={() => onSelectModule(m)}
-              style={{ minHeight: '100px', display: 'flex', alignItems: 'center' }}
-            >
-              <div>
-                <h4 style={{ margin: 0, color: '#334155' }}>{m.id}</h4>
-                <small style={{ color: '#64748b' }}>{m.name.split('(')[0]}</small>
+        {loadingModules ? (
+          <p style={{ color: '#64748b' }}>Loading open modules...</p>
+        ) : modules.length === 0 ? (
+          <div className="gf-card-simple" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+            <p>No lecturers have opened group projects yet.</p>
+          </div>
+        ) : (
+          <div className="gf-grid">
+            {modules.map(m => (
+              <div 
+                key={m._id} // Changed to _id
+                className="gf-card-simple"
+                onClick={() => onSelectModule(m)}
+                style={{ cursor: 'pointer', transition: 'all 0.2s', borderTop: '4px solid #3b82f6' }} // Added styling
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#1e293b' }}>{m.name}</h3>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#3b82f6', background: '#eff6ff', padding: '4px 8px', borderRadius: '12px' }}>
+                    {m._id}
+                  </span>
+                </div>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Click to view groups or create your own.</p>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <GroupsSidebar 

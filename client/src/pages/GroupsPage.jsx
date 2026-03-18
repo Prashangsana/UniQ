@@ -6,7 +6,8 @@ import InviteDetailsView from '../components/groups/InviteDetailsView';
 import UserProfileView from '../components/groups/UserProfileView';
 import CreateGroupView from '../components/groups/CreateGroupView';
 import ModuleStudentsView from '../components/groups/ModuleStudentsView';
-import LecturerDashboard from '../components/groups/LecturerDashboard'; // Add this import!
+import LecturerDashboard from '../components/groups/LecturerDashboard';
+import FinalisationFormView from '../components/groups/FinalisationFormView';
 
 const GroupsPage = () => {
   // --- ROLE STATE ---
@@ -53,6 +54,13 @@ const GroupsPage = () => {
     setSelectedModule(module);
     setView('create-group');
   };
+
+  const handleFinalisationSubmit = (groupId, data) => {
+  console.log("Submitting finalisation for group", groupId, data);
+  alert(`Successfully submitted to lecturer as ${data.selectedPrefix}!`);
+  // Update the backend here, then update the local state to show 'pending_review'
+  setView('group'); 
+};
 
   // --- LECTURER VIEW OVERRIDE ---
   if (userRole === 'lecturer') {
@@ -127,6 +135,14 @@ const GroupsPage = () => {
         <UserProfileView
           user={selectedUser}
           onBack={() => setView(profileReturnView)}
+        />
+      )}
+
+      {view === 'finalise' && (
+        <FinalisationFormView
+          group={selectedGroup}
+          onBack={() => setView('group')}
+          onSubmit={handleFinalisationSubmit}
         />
       )}
 

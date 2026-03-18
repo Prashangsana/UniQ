@@ -4,6 +4,27 @@ const { groupsDb } = require('./mockGroupController');
 // Mock Database for Group Projects
 let groupProjectsDb = [];
 
+// Add this near the top with your other mock databases
+const mockModulesDb = [
+  { _id: '5COSC019C', name: 'Software Engineering', moduleLeaders: ['lecturer_123'], moduleTeam: [] },
+  { _id: '5COSC021C', name: 'Database Systems', moduleLeaders: [], moduleTeam: ['lecturer_123'] },
+  { _id: '5COSC023C', name: 'Operating Systems', moduleLeaders: ['some_other_guy'], moduleTeam: [] }, // Lecturer shouldn't see this one
+];
+
+// Add this new function
+// GET /api/lecturer/my-modules
+exports.getMyModules = async (req, res) => {
+  // We simulate checking the logged-in user's ID
+  // In our mock setup, let's assume the logged-in lecturer is 'lecturer_123'
+  const lecturerId = req.user ? req.user.id : 'lecturer_123'; 
+
+  const authorizedModules = mockModulesDb.filter(m => 
+    m.moduleLeaders.includes(lecturerId) || m.moduleTeam.includes(lecturerId)
+  );
+
+  res.status(200).json({ success: true, data: authorizedModules });
+};
+
 // POST /api/modules/:moduleId/group-project
 exports.createGroupProject = async (req, res) => {
   const { moduleId } = req.params;
