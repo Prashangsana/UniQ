@@ -28,40 +28,39 @@ const PeerMentoring = ({ onBack }) => {
   ];
 
   const availableMentors = [
-    { name: 'Jordan (Senior)', tag: 'React', img: '/images-d/design.jpg' },
-    { name: 'Casey (Junior)', tag: 'Python', img: '/images-d/gp.jpg' },
-    { name: 'Morgan (Alumni)', tag: 'Study Tips', img: '/images-d/ml.jpg' },
-    { name: 'Jamie (Senior)', tag: 'Exam Prep', img: '/images-d/gd.jpg' },
+    { name: 'Jordan (Senior)', tag: 'React' },
+    { name: 'Casey (Junior)', tag: 'Python' },
+    { name: 'Morgan (Alumni)', tag: 'Study Tips' },
+    { name: 'Jamie (Senior)', tag: 'Exam Prep' },
   ];
 
   const categorizedPeers = {
     'Study Tips': [
-      { name: 'Morgan (Alumni)', tag: 'Study Strategies', desc: 'Expert in time management and effective revision techniques. Let me help you build a study schedule that actually works.', email: 'w1827364@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/ml.jpg' },
-      { name: 'Riley (Senior)', tag: 'Note-taking', desc: 'I can show you how to structure your university notes for maximum retention and easy exam prep.', email: 'w1928374@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gd.jpg' },
-      { name: 'Sam (Junior)', tag: 'Focus Habits', desc: 'Struggling with procrastination? We can work on building better focus habits and utilizing Pomodoro techniques.', email: 'w1738294@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/design.jpg' }
+      { name: 'Morgan (Alumni)', tag: 'Study Strategies', desc: 'Expert in time management and effective revision techniques.', email: 'w1827364@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Riley (Senior)', tag: 'Note-taking', desc: 'I can show you how to structure your university notes for maximum retention.', email: 'w1928374@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Sam (Junior)', tag: 'Focus Habits', desc: 'Struggling with procrastination? Let\'s work on Pomodoro techniques.', email: 'w1738294@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ],
     'Project Help': [
-      { name: 'Alex (Senior)', tag: 'React & Node.js', desc: 'Full-stack developer ready to help you debug your coursework and architect your final year project.', email: 'w1647382@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/design.jpg' },
-      { name: 'Jordan (Senior)', tag: 'System Design', desc: 'I specialize in planning out complex applications. Let me help you draw your UML diagrams and plan your database.', email: 'w1847263@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gp.jpg' },
-      { name: 'Taylor (Alumni)', tag: 'Agile/Scrum', desc: 'Need help managing your group project? I can teach you how to set up Jira, Trello, and run effective sprints.', email: 'w1536273@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/robotics.jpg' }
+      { name: 'Alex (Senior)', tag: 'React & Node.js', desc: 'Full-stack developer ready to help you debug your coursework.', email: 'w1647382@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Jordan (Senior)', tag: 'System Design', desc: 'Let me help you draw UML diagrams and plan your database.', email: 'w1847263@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Taylor (Alumni)', tag: 'Agile/Scrum', desc: 'Need help managing your group project? I can teach you Jira and Trello.', email: 'w1536273@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ],
     'Exam Prep': [
-      { name: 'Casey (Junior)', tag: 'Past Papers', desc: 'I have compiled strategies for tackling Computer Science past papers. Let\'s review common question patterns.', email: 'w1938472@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gp.jpg' },
-      { name: 'Jamie (Senior)', tag: 'Mock Exams', desc: 'I offer 1-on-1 mock exam sessions where I test your knowledge on core university modules under timed conditions.', email: 'w1827365@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gd.jpg' }
+      { name: 'Casey (Junior)', tag: 'Past Papers', desc: 'I have compiled strategies for tackling CS past papers.', email: 'w1938472@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Jamie (Senior)', tag: 'Mock Exams', desc: 'I offer 1-on-1 mock exam sessions for core modules.', email: 'w1827365@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ],
     'Coding Help': [
-      { name: 'Chris (Senior)', tag: 'Python & AI', desc: 'Stuck on a Python assignment? I can help you understand loops, functions, and basic machine learning libraries.', email: 'w1837465@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/design.jpg' },
-      { name: 'Avery (Junior)', tag: 'Java & OOP', desc: 'Object-Oriented Programming can be tricky. I can simplify concepts like polymorphism, inheritance, and encapsulation.', email: 'w1948576@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/ai.png' },
-      { name: 'Taylor (Senior)', tag: 'C++ & Algorithms', desc: 'Master memory management, pointers, and complex data structures for your advanced programming modules.', email: 'w1736485@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/robotics.jpg' }
+      { name: 'Chris (Senior)', tag: 'Python & AI', desc: 'Stuck on a Python assignment? Let\'s fix those loops and functions.', email: 'w1837465@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Avery (Junior)', tag: 'Java & OOP', desc: 'I can simplify polymorphism, inheritance, and encapsulation.', email: 'w1948576@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Taylor (Senior)', tag: 'C++ & Algorithms', desc: 'Master memory management and complex data structures.', email: 'w1736485@my.westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ]
   };
 
-  // CHANGED: Set images to null to trigger the icon component!
   const pastMentors = [
-    { name: 'Taylor', tag: 'JavaScript', img: null },
-    { name: 'Chris', tag: 'UI/UX', img: null },
-    { name: 'Avery', tag: 'Data Structures', img: null },
-    { name: 'Riley', tag: 'Machine Learning', img: null }
+    { name: 'Taylor', tag: 'JavaScript' },
+    { name: 'Chris', tag: 'UI/UX' },
+    { name: 'Avery', tag: 'Data Structures' },
+    { name: 'Riley', tag: 'Machine Learning' }
   ];
 
   const filteredMentors = availableMentors.filter(mentor => 
@@ -83,10 +82,7 @@ const PeerMentoring = ({ onBack }) => {
     <div className="mentoring-layout">
       <main className="mentoring-main">
 
-        <button 
-          onClick={handleSmartBack} 
-          className="back-navigation-btn"
-        >
+        <button onClick={handleSmartBack} className="back-navigation-btn">
           <Icon icon="lucide:arrow-left" width="20" /> {selectedCategory ? "Back to Search" : "Back to Hub"}
         </button>
 
@@ -100,7 +96,10 @@ const PeerMentoring = ({ onBack }) => {
             {categorizedPeers[selectedCategory]?.map((mentor, idx) => (
               <div key={idx} style={{ background: '#fff', border: '1px solid #eee', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                   <img src={mentor.img} alt={mentor.name} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', background: '#f0f2f5' }} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
+                   {/* User Icon Placeholder */}
+                   <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon icon="lucide:user" width="30" style={{ color: '#888' }} />
+                   </div>
                    <div>
                       <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--deep-navy)' }}>{mentor.name}</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
@@ -132,7 +131,7 @@ const PeerMentoring = ({ onBack }) => {
               <input 
                 type="text"
                 className='mentoring-search-input' 
-                placeholder="Search by name or tag (e.g. 'React', 'Alex')..." 
+                placeholder="Search by name or tag..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '15px' }}
@@ -146,8 +145,8 @@ const PeerMentoring = ({ onBack }) => {
                   filteredMentors.map((mentor, idx) => (
                     <div key={idx} className="booking-item" style={{ background: '#fff', border: '1px solid #eee' }}>
                       <div className="lecturer-meta">
-                        <div className="avatar-placeholder" style={{ width: '40px', height: '40px', marginRight: '15px' }}>
-                          <img src={mentor.img} alt={mentor.name} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '15px' }}>
+                          <Icon icon="lucide:user" width="20" style={{ color: '#888' }} />
                         </div>
                         <div className="lecturer-details">
                           <p className="lecturer-name">{mentor.name}</p>
@@ -164,14 +163,7 @@ const PeerMentoring = ({ onBack }) => {
             ) : (
               <div className="expertise-row">
                 {expertise.map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    className="lecturer-card" 
-                    onClick={() => setSelectedCategory(item.title)}
-                    style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                  >
+                  <div key={idx} className="lecturer-card" onClick={() => setSelectedCategory(item.title)} style={{ cursor: 'pointer' }}>
                     <span className="expertise-pill">{item.title}</span>
                     <div className="avatar-placeholder">
                        <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
@@ -186,7 +178,9 @@ const PeerMentoring = ({ onBack }) => {
               {bookings.map((booking, idx) => (
                 <div key={idx} className="booking-item">
                   <div className="lecturer-meta">
-                    <div className="mini-avatar"></div>
+                    <div className="mini-avatar" style={{ background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                         <Icon icon="lucide:user" width="14" style={{ color: '#888' }} />
+                    </div>
                     <div className="lecturer-details">
                       <p className="lecturer-name">{booking.name}</p>
                       <span className="tag-pill">{booking.tag}</span>
@@ -196,10 +190,7 @@ const PeerMentoring = ({ onBack }) => {
                     <p className="status-text">{booking.status}</p>
                     <small className="date-text">{booking.date}</small>
                   </div>
-                  <button 
-                    className="btn-view-calendar" 
-                    onClick={() => window.open(booking.link, '_blank', 'noopener,noreferrer')}
-                  > 
+                  <button className="btn-view-calendar" onClick={() => window.open(booking.link, '_blank')}> 
                     <Icon icon="lucide:calendar-days" width="16" /> View Calendar
                   </button>
                 </div>
@@ -211,28 +202,16 @@ const PeerMentoring = ({ onBack }) => {
 
       <aside className="mentoring-sidebar">
         <div className="sidebar-section">
-          <h3 
-            onClick={() => setIsExpanded(!isExpanded)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'color 0.2s' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--deep-banner-blue)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--heading-color)'}
-          >
+          <h3 onClick={() => setIsExpanded(!isExpanded)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
             Your Peer Mentors 
             <Icon icon={isExpanded ? "lucide:chevron-up" : "lucide:chevron-down"} width="20" style={{ color: '#999' }} />
           </h3>
           <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {displayedMentors.map((mentor, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                
-                {/* CHANGED: Dynamically render an image OR a profile icon */}
-                {mentor.img ? (
-                  <img src={mentor.img} alt={mentor.name} style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', background: '#eee' }} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
-                ) : (
-                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon icon="lucide:user" width="24" style={{ color: '#888' }} />
-                  </div>
-                )}
-
+                </div>
                 <div>
                   <p style={{ margin: 0, fontWeight: '600', fontSize: '14px', color: 'var(--deep-navy)' }}>{mentor.name}</p>
                   <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{mentor.tag}</p>

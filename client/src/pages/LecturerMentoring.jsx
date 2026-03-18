@@ -29,34 +29,33 @@ const LecturerMentoring = ({ onBack }) => {
   ];
 
   const availableLecturers = [
-    { name: 'Dr. Smith', tag: 'Machine Learning', img: '/images-d/ml.jpg' },
-    { name: 'Prof. Johnson', tag: 'System Architecture', img: '/images-d/gd.jpg' },
-    { name: 'Dr. Lee', tag: 'UI/UX Design', img: '/images-d/design.jpg' },
-    { name: 'Prof. Davis', tag: 'Database Security', img: '/images-d/gp.jpg' },
+    { name: 'Dr. Smith', tag: 'Machine Learning' },
+    { name: 'Prof. Johnson', tag: 'System Architecture' },
+    { name: 'Dr. Lee', tag: 'User Interface Design' },
+    { name: 'Prof. Davis', tag: 'Database Security' },
   ];
 
   const categorizedLecturers = {
     'Machine Learning': [
-      { name: 'Dr. Nilaskshi', tag: 'Neural Networks', desc: 'Consult with me regarding your final year projects involving deep learning, NLP, or computer vision.', email: 'n.nilaskshi@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/ml.jpg' },
-      { name: 'Dr. Smith', tag: 'Data Science', desc: 'Available for discussions on data mining, predictive analytics, and statistical modeling approaches.', email: 'j.smith@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/ml.jpg' },
-      { name: 'Prof. Sarah', tag: 'AI Ethics', desc: 'Book a session to discuss the ethical implications of your AI models and bias mitigation strategies.', email: 's.jones@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/ai.png' }
+      { name: 'Dr. Nilaskshi', tag: 'Neural Networks', desc: 'Consult with me regarding your final year projects involving deep learning, NLP, or computer vision.', email: 'n.nilaskshi@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Dr. Smith', tag: 'Data Science', desc: 'Available for discussions on data mining, predictive analytics, and statistical modeling approaches.', email: 'j.smith@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Prof. Sarah', tag: 'AI Ethics', desc: 'Book a session to discuss the ethical implications of your AI models and bias mitigation strategies.', email: 's.jones@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ],
     'System Architecture': [
-      { name: 'Prof. Johnson', tag: 'Cloud Computing', desc: 'Expert in AWS and Azure. I can help you design scalable, highly available architectures for your applications.', email: 'r.johnson@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gd.jpg' },
-      { name: 'Dr. Alan', tag: 'Distributed Systems', desc: 'Schedule a meeting to review your microservices architecture and load balancing strategies.', email: 'a.turing@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/robotics.jpg' }
+      { name: 'Prof. Johnson', tag: 'Cloud Computing', desc: 'Expert in AWS and Azure. I can help you design scalable, highly available architectures for your applications.', email: 'r.johnson@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Dr. Alan', tag: 'Distributed Systems', desc: 'Schedule a meeting to review your microservices architecture and load balancing strategies.', email: 'a.turing@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ],
-    'UI/UX Design': [
-      { name: 'Dr. Lee', tag: 'HCI', desc: 'Specializing in Human-Computer Interaction. I can review your wireframes, prototypes, and user testing plans.', email: 'k.lee@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/design.jpg' },
-      { name: 'Prof. Davis', tag: 'Accessibility', desc: 'Ensure your applications meet WCAG standards. Let\'s evaluate your interface for inclusive design.', email: 'm.davis@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gp.jpg' }
+    'User Interface Design': [
+      { name: 'Dr. Lee', tag: 'HCI', desc: 'Specializing in Human-Computer Interaction. I can review your wireframes, prototypes, and user testing plans.', email: 'k.lee@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Prof. Davis', tag: 'Accessibility', desc: 'Ensure your applications meet WCAG standards. Let\'s evaluate your interface for inclusive design.', email: 'm.davis@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ],
     'Database Security': [
-      { name: 'Prof. Mark', tag: 'Cybersecurity', desc: 'Discuss penetration testing, vulnerability assessments, and secure database configurations.', email: 'm.cuban@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gp.jpg' },
-      { name: 'Dr. Emily', tag: 'Cryptography', desc: 'Available to guide you through encryption protocols, secure data storage, and network security concepts.', email: 'e.clark@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/design.jpg' },
-      { name: 'Dr. Suresh', tag: 'Backend Auth', desc: 'Need help securing your API? We can review your JWT, OAuth implementations, and server-side validation.', email: 's.suresh@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day', img: '/images-d/gd.jpg' }
+      { name: 'Prof. Mark', tag: 'Cybersecurity', desc: 'Discuss penetration testing, vulnerability assessments, and secure database configurations.', email: 'm.cuban@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Dr. Emily', tag: 'Cryptography', desc: 'Available to guide you through encryption protocols, secure data storage, and network security concepts.', email: 'e.clark@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' },
+      { name: 'Dr. Suresh', tag: 'Backend Auth', desc: 'Need help securing your API? We can review your JWT, OAuth implementations, and server-side validation.', email: 's.suresh@westminster.ac.uk', link: 'https://calendar.google.com/calendar/u/0/r/day' }
     ]
   };
 
-  // CHANGED: Set images to null to trigger the icon component!
   const pastLecturers = [
     { name: 'Dr. Alan', tag: 'Algorithms', img: null },
     { name: 'Prof. Sarah', tag: 'Data Science', img: null },
@@ -83,10 +82,7 @@ const LecturerMentoring = ({ onBack }) => {
     <div className="mentoring-layout">
       <main className="mentoring-main">
 
-        <button 
-          onClick={handleSmartBack} 
-          className="back-navigation-btn"
-        >
+        <button onClick={handleSmartBack} className="back-navigation-btn">
           <Icon icon="lucide:arrow-left" width="20" /> {selectedCategory ? "Back to Search" : "Back to Hub"}
         </button>
 
@@ -100,7 +96,10 @@ const LecturerMentoring = ({ onBack }) => {
             {categorizedLecturers[selectedCategory]?.map((lecturer, idx) => (
               <div key={idx} style={{ background: '#fff', border: '1px solid #eee', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                   <img src={lecturer.img} alt={lecturer.name} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', background: '#f0f2f5' }} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
+                   {/* User Icon Placeholder */}
+                   <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon icon="lucide:user" width="30" style={{ color: '#888' }} />
+                   </div>
                    <div>
                       <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--deep-navy)' }}>{lecturer.name}</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
@@ -132,7 +131,7 @@ const LecturerMentoring = ({ onBack }) => {
               <input 
                 type="text" 
                 className='mentoring-search-input'
-                placeholder="Search by name or subject (e.g. 'Machine Learning', 'Dr. Smith')..." 
+                placeholder="Search by name or subject..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '15px' }}
@@ -146,8 +145,8 @@ const LecturerMentoring = ({ onBack }) => {
                   filteredLecturers.map((lecturer, idx) => (
                     <div key={idx} className="booking-item" style={{ background: '#fff', border: '1px solid #eee' }}>
                       <div className="lecturer-meta">
-                        <div className="avatar-placeholder" style={{ width: '40px', height: '40px', marginRight: '15px' }}>
-                          <img src={lecturer.img} alt={lecturer.name} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '15px' }}>
+                          <Icon icon="lucide:user" width="20" style={{ color: '#888' }} />
                         </div>
                         <div className="lecturer-details">
                           <p className="lecturer-name">{lecturer.name}</p>
@@ -169,8 +168,6 @@ const LecturerMentoring = ({ onBack }) => {
                     className="lecturer-card"
                     onClick={() => setSelectedCategory(item.title)}
                     style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                   >
                     <span className="expertise-pill">{item.title}</span>
                     <div className="avatar-placeholder">
@@ -186,7 +183,9 @@ const LecturerMentoring = ({ onBack }) => {
               {bookings.map((booking, idx) => (
                 <div key={idx} className="booking-item">
                   <div className="lecturer-meta">
-                    <div className="mini-avatar"></div>
+                    <div className="mini-avatar" style={{ background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                         <Icon icon="lucide:user" width="14" style={{ color: '#888' }} />
+                    </div>
                     <div className="lecturer-details">
                       <p className="lecturer-name">{booking.name}</p>
                       <span className="tag-pill">{booking.tag}</span>
@@ -196,10 +195,7 @@ const LecturerMentoring = ({ onBack }) => {
                     <p className="status-text">{booking.status}</p>
                     <small className="date-text">{booking.date}</small>
                   </div>
-                  <button 
-                    className="btn-view-calendar" 
-                    onClick={() => window.open(booking.link, '_blank', 'noopener,noreferrer')}
-                  > 
+                  <button className="btn-view-calendar" onClick={() => window.open(booking.link, '_blank')}> 
                     <Icon icon="lucide:calendar-days" width="16" /> View Calendar
                   </button>
                 </div>
@@ -211,28 +207,16 @@ const LecturerMentoring = ({ onBack }) => {
 
       <aside className="mentoring-sidebar">
         <div className="sidebar-section">
-          <h3 
-            onClick={() => setIsExpanded(!isExpanded)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'color 0.2s' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--deep-banner-blue)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--heading-color)'}
-          >
+          <h3 onClick={() => setIsExpanded(!isExpanded)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
             Your Lecturers 
             <Icon icon={isExpanded ? "lucide:chevron-up" : "lucide:chevron-down"} width="20" style={{ color: '#999' }} />
           </h3>
           <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {displayedLecturers.map((lecturer, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                
-                {/* CHANGED: Dynamically render an image OR a profile icon */}
-                {lecturer.img ? (
-                  <img src={lecturer.img} alt={lecturer.name} style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', background: '#eee' }} onError={(e) => { e.target.onerror = null; e.target.src="/logo.png" }} />
-                ) : (
-                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon icon="lucide:user" width="24" style={{ color: '#888' }} />
-                  </div>
-                )}
-
+                </div>
                 <div>
                   <p style={{ margin: 0, fontWeight: '600', fontSize: '14px', color: 'var(--deep-navy)' }}>{lecturer.name}</p>
                   <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{lecturer.tag}</p>
