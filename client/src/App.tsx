@@ -51,7 +51,7 @@ function App() {
       try {
         const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const data = await response.json();
-        if (data.authenticated) {
+        if (data.success) {
           handleLogin();
         } else {
           handleLogout();

@@ -35,6 +35,4 @@ module.exports = function(passport) {
         return done(null, oauthProfile);
       }
     ));
-    
-    // Notice: We completely removed serializeUser and deserializeUser!
 };
