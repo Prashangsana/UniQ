@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./src/config/db'); // Database connection logic
 
 // 1. Connect to MongoDB
-//connectDB();
+connectDB();
 
 const app = express();
 

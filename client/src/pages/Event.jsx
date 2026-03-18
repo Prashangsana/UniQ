@@ -32,7 +32,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
   /* LOAD NOTIFICATIONS */
   useEffect(() => {
 
-    fetch("http://localhost:5000/api/events/notifications")
+    fetch("http://localhost:5000/api/events/notifications", {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
 
@@ -211,7 +213,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           method: "POST",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          credentials: "include"
         }
       );
 
@@ -239,7 +242,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           method: "DELETE",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          credentials: "include"
         }
       );
 
@@ -388,7 +392,8 @@ export const SocietyProfilePage = () => {
     if (following) {
 
       await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
-        method: "DELETE"
+        method: "DELETE",
+        credentials: "include"
       });
 
       setFollowing(false);
@@ -396,7 +401,8 @@ export const SocietyProfilePage = () => {
     } else {
 
       await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
-        method: "POST"
+        method: "POST",
+        credentials: "include"
       });
 
       setFollowing(true);
@@ -422,7 +428,9 @@ export const SocietyProfilePage = () => {
 
 
   /* LOAD FOLLOW STATUS */
-  fetch(`http://localhost:5000/api/societies/${id}/follow-status`)
+  fetch(`http://localhost:5000/api/societies/${id}/follow-status`, {
+    credentials: "include"
+  })
     .then(res => res.json())
     .then(data => {
 
