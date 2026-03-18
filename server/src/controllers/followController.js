@@ -19,6 +19,9 @@ exports.followSociety = async (req, res) => {
     const follow = new Follow({ user: userId, society: societyId });
     await follow.save();
 
+    // Increment followers count
+    await Society.findByIdAndUpdate(societyId, { $inc: { followersCount: 1 } });
+
     res.json({
       success: true,
       message: "Now following"
@@ -38,7 +41,12 @@ exports.unfollowSociety = async (req, res) => {
     const userId = req.user.id;
     const societyId = req.params.id;
 
-    await Follow.findOneAndDelete({ user: userId, society: societyId });
+    const deletedFollow = await Follow.findOneAndDelete({ user: userId, society: societyId });
+
+    if (deletedFollow) {
+      // Decrement followers count
+      await Society.findByIdAndUpdate(societyId, { $inc: { followersCount: -1 } });
+    }
 
     res.json({
       success: true,
