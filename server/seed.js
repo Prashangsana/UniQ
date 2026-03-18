@@ -35,8 +35,14 @@ const seedDB = async () => {
     const eventsToInsert = eventsData.map(e => ({
       title: e.title,
       date: new Date(e.date),
-      society: societyMap[e.society] || e.society, // Use mapped ObjectId if available
+      society: societyMap[e.society] || e.society,
       bannerImage: e.bannerImage,
+      description: e.description || "This is a great event you should attend!",
+      instagramLink: e.instagramLink || "https://instagram.com",
+      registerLink: e.registerLink || "https://forms.google.com",
+      time: e.time || "09:00 AM",
+      place: e.place || "IIT Auditorium",
+      price: e.price || "LKR 1000",
       createdAt: e.createdAt ? new Date(e.createdAt) : new Date()
     }));
 

@@ -48,7 +48,7 @@ exports.getSocietyProfile = async (req, res) => {
       });
     }
 
-    // Filter events belonging to this society
+    // Filter events belonging to this society, latest first
     const societyEvents = await Event.find({ society: societyId })
       .sort({ createdAt: -1 });
 

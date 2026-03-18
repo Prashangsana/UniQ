@@ -176,30 +176,26 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const eventId = params.eventId || params.id;
   const navigate = useNavigate();
 
+  const [eventData, setEventData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const isAdded = (myEventsList || []).some(
-    e => (typeof e === "string" ? e === eventId : e.event === eventId)
+    e => (typeof e === "string" ? e === eventId : (e.event?._id === eventId || e.event === eventId))
   );
 
-  const displayTitle = eventId ? eventId.replace(/-/g, " ") : "";
+  useEffect(() => {
+    if (!eventId) return;
 
-  const getHeroImage = (id) => {
-
-    if (!id) return "/images-e/default.jpg";
-
-    if (id === "main-hackathon-2026") {
-      return "/images-e/events/main-event.jpg";
-    }
-
-    if (id.includes("-event-")) {
-      const [clubName, eventPart] = id.split("-event-");
-      return `/images-e/club-events/${clubName}/event${eventPart}.jpg`;
-    }
-
-    return `/images-e/events/${id}.jpg`;
-
-  };
-
-  const heroImagePath = getHeroImage(eventId);
+    fetch(`http://localhost:5000/api/events/${eventId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setEventData(data.data);
+        }
+      })
+      .catch(err => console.error("Error loading event details:", err))
+      .finally(() => setLoading(false));
+  }, [eventId]);
 
   const handleAddEvent = async () => {
 
@@ -259,6 +255,12 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
   };
 
+  if (loading) return <div className="loading">Loading Event Details...</div>;
+  if (!eventData) return <div className="error">Event not found</div>;
+
+  const displayTitle = eventData.title || "";
+  const heroImagePath = eventData.bannerImage || "/images-e/default.jpg";
+
   return (
     <div className="event-details-page">
 
@@ -292,28 +294,32 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <p className="event-description-text">
               <strong>Description:</strong>
-              {" "}This is a unique event detail page for {displayTitle}.
+              {" "}{eventData.description}
             </p>
 
             <div className="event-links">
 
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn insta"
-              >
-                Instagram
-              </a>
+              {eventData.instagramLink && (
+                <a
+                  href={eventData.instagramLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-btn insta"
+                >
+                  Instagram
+                </a>
+              )}
 
-              <a
-                href="https://forms.google.com"
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn register"
-              >
-                Participate
-              </a>
+              {eventData.registerLink && (
+                <a
+                  href={eventData.registerLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-btn register"
+                >
+                  Participate
+                </a>
+              )}
 
             </div>
 
@@ -323,22 +329,22 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <div className="meta-item">
               <span>📅 Date:</span>
-              <p>Oct 25, 2026</p>
+              <p>{new Date(eventData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
             </div>
 
             <div className="meta-item">
               <span>⏰ Time:</span>
-              <p>09:00 AM</p>
+              <p>{eventData.time}</p>
             </div>
 
             <div className="meta-item">
               <span>📍 Place:</span>
-              <p>IIT Auditorium</p>
+              <p>{eventData.place}</p>
             </div>
 
             <div className="meta-item">
               <span>💰 Price:</span>
-              <p>LKR 1000</p>
+              <p>{eventData.price}</p>
             </div>
 
           </div>

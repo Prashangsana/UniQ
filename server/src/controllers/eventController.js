@@ -1,26 +1,47 @@
 const Event = require("../models/Event");
 const SavedEvent = require("../models/SavedEvent");
 const Society = require("../models/Society");
+const Notification = require("../models/Notification");
+const Follow = require("../models/Follow");
+
+/* ================= NOTIFICATIONS HELPERS ================= */
+
+// Helper function to notify all followers of a society
+exports.notifyFollowersOfNewEvent = async (societyId, societyName) => {
+  try {
+    const followers = await Follow.find({ society: societyId });
+    const notifications = followers.map(f => ({
+      user: f.user,
+      message: `${societyName} has added a new event.`
+    }));
+    
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+  } catch (error) {
+    console.error("Error creating notifications:", error);
+  }
+};
 
 /* ================= MAIN EVENT ================= */
 
 exports.getMainEvent = async (req, res) => {
   try {
+    const today = new Date();
     const event = await Event
-      .find()
-      .sort({ date: 1 })
-      .limit(1);
+      .findOne({ date: { $gte: today } })
+      .sort({ date: 1 });
 
-    if (!event || event.length === 0) {
+    if (!event) {
       return res.status(404).json({
         success: false,
-        message: "No events found"
+        message: "No upcoming events found"
       });
     }
 
     res.json({
       success: true,
-      data: event[0]
+      data: event
     });
   } catch (error) {
     res.status(500).json({
@@ -57,8 +78,9 @@ exports.getLatestEvents = async (req, res) => {
 
 exports.getTopEvents = async (req, res) => {
   try {
+    const today = new Date();
     const topEvents = await Event
-      .find()
+      .find({ date: { $gte: today } })
       .sort({ date: 1 })
       .limit(6);
 
@@ -223,10 +245,13 @@ GET NOTIFICATIONS
 exports.getNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
-    // For now, returning empty array as notifications logic is not yet implemented with DB
+    const userNotifications = await Notification
+      .find({ user: userId })
+      .sort({ createdAt: -1 });
+
     res.json({
       success: true,
-      data: []
+      data: userNotifications
     });
   } catch (error) {
     res.status(500).json({
