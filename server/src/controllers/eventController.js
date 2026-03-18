@@ -1,277 +1,262 @@
-const events = require('../mockData/events.json');
-const societies = require('../mockData/societies.json');
 const Event = require("../models/Event");
+const SavedEvent = require("../models/SavedEvent");
+const Society = require("../models/Society");
+const Notification = require("../models/Notification");
+const Follow = require("../models/Follow");
 
-/*
-TEMP STORAGE (until DB exists)
-*/
-let savedEvents = [];
-let notifications = [];
+/* ================= NOTIFICATIONS HELPERS ================= */
 
+// Helper function to notify all followers of a society
+exports.notifyFollowersOfNewEvent = async (societyId, societyName) => {
+  try {
+    const followers = await Follow.find({ society: societyId });
+    const notifications = followers.map(f => ({
+      user: f.user,
+      message: `${societyName} has added a new event.`
+    }));
+    
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+  } catch (error) {
+    console.error("Error creating notifications:", error);
+  }
+};
 
 /* ================= MAIN EVENT ================= */
 
 exports.getMainEvent = async (req, res) => {
-
   try {
-
+    const today = new Date();
     const event = await Event
-      .find()
-      .sort({ date: 1 })
-      .limit(1);
+      .findOne({ date: { $gte: today } })
+      .sort({ date: 1 });
 
-    /* fallback to mock data if DB empty */
-    if (!event || event.length === 0) {
-
-      const sorted = [...events].sort(
-        (a, b) => new Date(a.date) - new Date(b.date)
-      );
-
-      return res.json({
-        success: true,
-        data: sorted[0]
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "No upcoming events found"
       });
     }
 
     res.json({
       success: true,
-      data: event[0]
+      data: event
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: "Error fetching main event"
     });
-
   }
-
 };
 
 
 /* ================= LATEST EVENTS ================= */
 
 exports.getLatestEvents = async (req, res) => {
-
   try {
-
     const latest = await Event
       .find()
       .sort({ createdAt: -1 })
       .limit(6);
 
-    /* fallback if DB empty */
-    if (!latest || latest.length === 0) {
-
-      const sorted = [...events]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 6);
-
-      return res.json({
-        success: true,
-        data: sorted
-      });
-    }
-
     res.json({
       success: true,
       data: latest
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: "Error fetching latest events"
     });
-
   }
-
 };
 
 
 /* ================= TOP EVENTS THIS WEEK ================= */
 
 exports.getTopEvents = async (req, res) => {
-
   try {
-
+    const today = new Date();
     const topEvents = await Event
-      .find()
+      .find({ date: { $gte: today } })
       .sort({ date: 1 })
       .limit(6);
-
-    /* fallback if DB empty */
-    if (!topEvents || topEvents.length === 0) {
-
-      const sorted = [...events]
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .slice(0, 6);
-
-      return res.json({
-        success: true,
-        data: sorted
-      });
-    }
 
     res.json({
       success: true,
       data: topEvents
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: "Error fetching top events"
     });
-
   }
-
 };
 
 
 /*
 GET EVENT DETAILS
 */
-exports.getEventDetails = (req, res) => {
+exports.getEventDetails = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const event = await Event.findById(eventId);
 
-  const eventId = req.params.id;
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found"
+      });
+    }
 
-  const event = events.find(e => e._id === eventId);
-
-  if (!event) {
-    return res.status(404).json({
+    res.json({
+      success: true,
+      data: event
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      message: "Event not found"
+      message: "Error fetching event details"
     });
   }
-
-  res.json({
-    success: true,
-    data: event
-  });
 };
 
 
 /*
 GET EVENTS BY SOCIETY
 */
-exports.getSocietyEvents = (req, res) => {
+exports.getSocietyEvents = async (req, res) => {
+  try {
+    const societyId = req.params.societyId;
+    const society = await Society.findById(societyId);
 
-  const societyId = req.params.societyId;
+    if (!society) {
+      return res.status(404).json({
+        success: false,
+        message: "Society not found"
+      });
+    }
 
-  const society = societies.find(s => s._id === societyId);
+    const societyEvents = await Event.find({ society: societyId });
 
-  if (!society) {
-    return res.status(404).json({
+    res.json({
+      success: true,
+      data: societyEvents
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      message: "Society not found"
+      message: "Error fetching society events"
     });
   }
-
-  const societyEvents = events.filter(e => e.society === societyId);
-
-  res.json({
-    success: true,
-    data: societyEvents
-  });
 };
 
 
 /*
 ADD EVENT
 */
-exports.addEventToMyEvents = (req, res) => {
+exports.addEventToMyEvents = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming req.user is populated by authMiddleware
+    const eventId = req.params.id;
 
-  const userId = "mock-user-001";
-  const eventId = req.params.id;
+    const eventExists = await Event.findById(eventId);
+    if (!eventExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found"
+      });
+    }
 
-  const eventExists = events.find(e => e._id === eventId);
+    const exists = await SavedEvent.findOne({ user: userId, event: eventId });
+    if (exists) {
+      return res.json({
+        success: true,
+        message: "Event already added"
+      });
+    }
 
-  if (!eventExists) {
-    return res.status(404).json({
-      success: false,
-      message: "Event not found"
-    });
-  }
+    const savedEvent = new SavedEvent({ user: userId, event: eventId });
+    await savedEvent.save();
 
-  const exists = savedEvents.find(
-    e => e.user === userId && e.event === eventId
-  );
-
-  if (exists) {
-    return res.json({
+    res.json({
       success: true,
-      message: "Event already added"
+      message: "Event added"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error adding event"
     });
   }
-
-  savedEvents.push({
-    user: userId,
-    event: eventId
-  });
-
-  res.json({
-    success: true,
-    message: "Event added"
-  });
-
 };
 
 
 /*
 REMOVE EVENT
 */
-exports.removeEventFromMyEvents = (req, res) => {
+exports.removeEventFromMyEvents = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const eventId = req.params.id;
 
-  const userId = "mock-user-001";
-  const eventId = req.params.id;
+    await SavedEvent.findOneAndDelete({ user: userId, event: eventId });
 
-  savedEvents = savedEvents.filter(
-    e => !(e.user === userId && e.event === eventId)
-  );
-
-  res.json({
-    success: true,
-    message: "Event removed"
-  });
-
+    res.json({
+      success: true,
+      message: "Event removed"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error removing event"
+    });
+  }
 };
 
 
 /*
 GET MY EVENTS
 */
-exports.getMyEvents = (req, res) => {
+exports.getMyEvents = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userEvents = await SavedEvent.find({ user: userId }).populate('event');
 
-  const userId = "mock-user-001";
-
-  const userEvents = savedEvents.filter(e => e.user === userId);
-
-  res.json({
-    success: true,
-    data: userEvents
-  });
-
+    res.json({
+      success: true,
+      data: userEvents
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching my events"
+    });
+  }
 };
 
 
 /*
 GET NOTIFICATIONS
 */
-exports.getNotifications = (req, res) => {
+exports.getNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userNotifications = await Notification
+      .find({ user: userId })
+      .sort({ createdAt: -1 });
 
-  const userId = "mock-user-001";
-
-  const userNotifications = notifications.filter(
-    n => n.user === userId
-  );
-
-  res.json({
-    success: true,
-    data: userNotifications
-  });
-
+    res.json({
+      success: true,
+      data: userNotifications
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching notifications"
+    });
+  }
 };
