@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "user_id_lecturer_1",
+    "name": "Nilakshi Nonis",
+    "email": "nilakshi.n@iit.ac.lk",
+    "role": "lecturer"
+  },
+  {
+    "_id": "user_id_lecturer_2",
+    "name": "Sankeeetha Elancheliyen",
+    "email": "sankeetha.e@iit.ac.lk",
+    "role": "lecturer"
+  },
+  {
+    "_id": "user_id_lecturer_3",
+    "name": "Ajeevan Sivandhan",
+    "email": "ajeevan.s@iit.ac.lk",
+    "role": "lecturer"
+  },
+  {
+    "_id": "user_id_lecturer_4",
+    "name": "Uthpala Nimanthi",
+    "email": "uthpala.n@iit.ac.lk",
+    "role": "lecturer"
+  },
+  {
+    "_id": "user_id_lecturer_5",
+    "name": "Akarshani Ramanayake",
+    "email": "akarshani.r@iit.ac.lk",
+    "role": "lecturer"
+  }
+]
