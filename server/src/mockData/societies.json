@@ -1,0 +1,29 @@
+[
+  {
+    "_id": "rotaract-club",
+    "name": "ROTARACT CLUB",
+    "shortName": "ROTARACT",
+    "description": "Rotaract clubs bring together people ages 18 and older to exchange ideas with leaders in the community.",
+    "logo": "/images-e/societies/rotaract-club.png",
+    "leader": "Admin User",
+    "followersCount": 150
+  },
+  {
+    "_id": "ieee-club",
+    "name": "IEEE CLUB",
+    "shortName": "IEEE",
+    "description": "Advancing technology for the benefit of humanity through technical workshops and networking.",
+    "logo": "/images-e/societies/ieee-club.png",
+    "leader": "Admin User",
+    "followersCount": 98
+  },
+  {
+    "_id": "youth-pulse-club",
+    "name": "YOUTH PULSE CLUB",
+    "shortName": "YPC",
+    "description": "Youth Pulse empowers students through leadership and innovation.",
+    "logo": "/images-e/societies/youth-pulse-club.png",
+    "leader": "Admin User",
+    "followersCount": 75
+  }
+]

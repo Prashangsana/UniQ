@@ -26,19 +26,16 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// 3. Initialize Passport 
-// (Notice: passport.session() and express-session are completely removed)
 app.use(passport.initialize());
 
-// Load Passport Configuration
 require('./src/config/passport')(passport);
 
-// 4. Routes
-// Make sure you rename your old 'auth.js' to 'authRoutes.js' inside the src/routes/ folder!
 const authRoutes = require('./src/routes/authRoutes'); 
+const societyRoutes = require('./src/routes/societyRoutes');
+const eventRoutes = require('./src/routes/eventRoutes');
 
-// Mount auth routes under '/auth'
 app.use('/auth', authRoutes);
+app.use('/api/societies', societyRoutes);
+app.use('/api/events', eventRoutes);
 
-// 5. Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,28 +1,13 @@
-import React, { useState, useEffect,use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Home.css';
 
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
-
 import GroupsPage from '../pages/GroupsPage';
 import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
-
-// const SocietyView = () => (
-//     <div className="content-section fade-in">
-//         <h2>Society & Events</h2>
-//         <p>Browse upcoming university events and joined societies.</p>
-//     </div>
-// );
-
-// const GroupsView = () => (
-//     <div className="content-section fade-in">
-//         <h2>Study Groups</h2>
-//         <p>Find study partners or manage your current project groups.</p>
-//     </div>
-// );
 
 const SkillsView = () => (
     <div className="content-section fade-in">
@@ -42,31 +27,39 @@ const Home = ({ myEventsList }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const location = useLocation();
 
-    // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
     const sidebarUser = {
         name: 'Alex',
         img: 'https://i.pravatar.cc/300?img=47' 
     };
 
+    // Sync tab with location state
     useEffect(() => {
         if (location.state && location.state.tab) {
             setActiveTab(location.state.tab);
         }
     }, [location.state]);
 
+    // Consistently render content based on activeTab
     const renderContent = () => {
         switch(activeTab) {
-            case 'dashboard': return <DashboardView />;
-            case 'profile':   return <Profile />;
-            case 'society':   return <EventsPage />;
-            case 'groups':    return <GroupsPage />;
-            case 'skills':    return <SkillsView />;
-            case 'articles':  return <ArticlesView />;
-            case 'settings':  return <SettingsView />;
-            default:          return <DashboardView />;
+            case 'dashboard': 
+                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+            case 'profile':   
+                return <Profile />;
+            case 'society':   
+                return <EventsPage myEventsList={myEventsList} />;
+            case 'groups':    
+                return <GroupsPage />;
+            case 'skills':    
+                return <SkillsView />;
+            case 'articles':  
+                return <ArticlesView />;
+            case 'settings':  
+                return <SettingsView />;
+            default:          
+                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
         }
     };
 
@@ -76,10 +69,9 @@ const Home = ({ myEventsList }) => {
                 <div className="sidebar-brand-mobile">
                     <span className="brand-text">UniQ</span>
                 </div>
-                
 
                 <div className="sidebar-profile">
-                    <div className="profile-img-container" onClick={() =>setActiveTab('profile')} style={{cursor:'pointer'}}>
+                    <div className="profile-img-container" onClick={() => setActiveTab('profile')} style={{cursor:'pointer'}}>
                         <img 
                             src={sidebarUser.img} 
                             alt="User Profile" 
