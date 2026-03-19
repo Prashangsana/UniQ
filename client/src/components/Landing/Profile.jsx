@@ -25,20 +25,25 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/users/profile');
+        const response = await fetch('http://localhost:5000/api/users/profile',
+          //*
+          {credentials:'include'});
         const result = await response.json();
 
         if (result.success) {
-          setUser(result.data);
-          // Sync the comma-separated strings with the arrays from backend
-          
+          const data =result.data;
+          setUser({
+            ...data,
+          skills: data.skills || [],
+          modules: data.modules || []
+          });
+         
           setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
         } else {
           setError(result.message);
         }
       } catch (err) {
         setError("Could not connect to the server. Make sure your Node backend is running on port 5000.");
-        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -94,6 +99,8 @@ const Profile = () => {
 
     try {
       const response = await fetch('http://localhost:5000/api/users/profile', {
+        //*
+        credentials:'include',
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData),

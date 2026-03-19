@@ -6,8 +6,11 @@ const {
   getPublicProfile
 } = require("../controllers/userController");
 
+//import middleware*
+//const { protect } = require("../middleware/authMiddleware");
+
 router.get("/profile", getUserProfile);
-router.put("/profile", updateUserProfile);
+router.put("/profile",updateUserProfile);
 
 // Public route to view any user by their ID
 

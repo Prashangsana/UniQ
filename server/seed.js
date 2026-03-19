@@ -1,10 +1,11 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Event = require('./src/models/Event');
-const Society = require('./src/models/Society');
+//thconst Society = require('./src/models/Society');
+//const User = require('./src/models/user');
 const eventsData = require('./src/mockData/events.json');
 const societiesData = require('./src/mockData/societies.json');
-const studentsData = require('./data/mockstudent.json');
+const studentsData = require('./src/data/mockStudents.json');
 
 const seedDB = async () => {
   try {
@@ -12,13 +13,14 @@ const seedDB = async () => {
     console.log('Connected to MongoDB for seeding...');
 
     // Clear existing data (optional, but good for fresh start)
-    await Event.deleteMany({});
-    await Society.deleteMany({});
-    await User.deleteMany({});
+    //await Event.deleteMany({});
+    //await Society.deleteMany({});
+   // await User.deleteMany({});
 
+   
     // 1. Insert Societies
     const societyMap = {};
-
+/*
     for (const s of societiesData) {
       const society = new Society({
         name: s.name,
@@ -31,13 +33,13 @@ const seedDB = async () => {
       const savedSociety = await society.save();
       societyMap[s._id] = savedSociety._id;
     }
-    console.log('Societies seeded!');
+    console.log('Societies seeded!');*/
 
     // 2. Insert Events
     const eventsToInsert = eventsData.map(e => ({
       title: e.title,
       date: new Date(e.date),
-      society: societyMap[e.society] || e.society, // Use mapped ObjectId if available
+      //society: societyMap[e.society] || e.society, // Use mapped ObjectId if available
       bannerImage: e.bannerImage,
       createdAt: e.createdAt ? new Date(e.createdAt) : new Date()
     }));

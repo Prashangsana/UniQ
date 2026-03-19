@@ -27,4 +27,4 @@ const userSchema = new mongoose.Schema({
   lastLogin: { type: Date, default: Date.now } // Track last login
 }, { timestamps: true }); // timestamps automatically adds createdAt and updatedAt
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);
