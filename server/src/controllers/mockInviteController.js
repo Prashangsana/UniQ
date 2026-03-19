@@ -1,5 +1,3 @@
-const mockUser = require('../data/mockUser.json');
-
 const { groupsDb } = require('./mockGroupController');
 
 // Temporary in-memory DB for invites
@@ -11,7 +9,7 @@ let invitesDb = [
     groupId: "CS-105-Alpha", // Helper for UI
     domain: "Web Development", // Helper for UI
     members: 3, // Helper for UI
-    invitedUser: mockUser._id,
+    invitedUser: "user_id_student_1",
     message: "Hey! Join our React project.",
     status: 'pending',
     createdAt: new Date()
@@ -59,13 +57,13 @@ exports.acceptInvite = async (req, res) => {
       group = {
         _id: "test_group_123",
         name: "CS-105-Alpha",
-        // CHANGE THE LINE BELOW to match a Module ID on your Dashboard!
-        moduleId: "5COSC019C ", 
+        moduleId: "5COSC019C", 
         domain: "Web Development",
         maxMembers: 5,
         leader: { _id: "fake_leader", name: "System Admin" },
         members: [], 
-        isFinalised: false
+        isFinalised: false,
+        status: 'open'
       };
       groupsDb.push(group); // Push the new group into our mock database
     }
@@ -81,7 +79,7 @@ exports.acceptInvite = async (req, res) => {
 
     const existingGroup = groupsDb.find(g => 
       g.moduleId === group.moduleId && 
-      g.members.some(m => (m._id || m) === mockUser._id)
+      g.members.some(m => (m._id || m) === req.user.id)
     );
 
     if (existingGroup) {
@@ -89,7 +87,7 @@ exports.acceptInvite = async (req, res) => {
     }
 
     // Add user to the group!
-    group.members.push(mockUser);
+    group.members.push(req.user);
     invite.status = 'accepted';
     
     res.status(200).json({ success: true, message: 'Successfully joined the group!' });
@@ -112,7 +110,7 @@ exports.rejectInvite = async (req, res) => {
 // POST /api/groups/:groupId/leave
 exports.leaveGroup = async (req, res) => {
   const { groupId } = req.params;
-  const userId = mockUser._id; // Using our mock user ID
+  const userId = req.user.id;
 
   // 1. Find the group in our mock database
   const groupIndex = groupsDb.findIndex(g => g._id === groupId);

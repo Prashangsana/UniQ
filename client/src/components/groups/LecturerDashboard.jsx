@@ -4,9 +4,11 @@ import './groups.css';
 const LecturerDashboard = () => {
   const [activeTab, setActiveTab] = useState('setup');
 
-  // --- NEW STATE FOR MODULES ---
   const [myModules, setMyModules] = useState([]);
   const [isLoadingModules, setIsLoadingModules] = useState(true);
+
+  const [pendingGroups, setPendingGroups] = useState([]);
+  const [finalisedGroups, setFinalisedGroups] = useState([]);
   
   // Form States for setting up a project
   const [moduleId, setModuleId] = useState('');
@@ -15,31 +17,78 @@ const LecturerDashboard = () => {
   const [deadline, setDeadline] = useState('');
   const [prefixes, setPrefixes] = useState('SE, CS, AI');
 
-  // --- NEW: FETCH MODULES ON LOAD ---
   useEffect(() => {
-    // In the real app, this will be: fetch('/api/modules/my-modules')
-    // For now, we simulate the backend response:
-    setTimeout(() => {
-      const mockFetchedModules = [
-        { _id: '5COSC019C', name: 'Software Engineering' },
-        { _id: '5COSC021C', name: 'Database Systems' }
-      ];
-      setMyModules(mockFetchedModules);
-      if (mockFetchedModules.length > 0) {
-        setModuleId(mockFetchedModules[0]._id); // Auto-select the first one
+    const fetchData = async () => {
+      try {
+        // Fetch Lecturer's Modules
+        const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules');
+        const modData = await modRes.json();
+        if (modData.success) {
+          setMyModules(modData.data);
+          if (modData.data.length > 0) setModuleId(modData.data[0]._id);
+        }
+
+        // Fetch Groups (Pending & Finalised)
+        const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups');
+        const grpData = await grpRes.json();
+        if (grpData.success) {
+          setPendingGroups(grpData.data.pending);
+          setFinalisedGroups(grpData.data.finalised);
+        }
+      } catch (error) {
+        console.error("Error fetching lecturer data", error);
+      } finally {
+        setIsLoadingModules(false);
       }
-      setIsLoadingModules(false);
-    }, 500); // slight delay to simulate network
-  }, []);
+    };
+    fetchData();
+  }, [activeTab]); // Re-fetch when changing tabs to get latest data
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
     const prefixArray = prefixes.split(',').map(p => p.trim());
+    const selectedModule = myModules.find(m => m._id === moduleId);
     
-    // In reality, this would hit your /api/modules/:moduleId/group-project endpoint
-    alert(`Created Group Project for ${moduleId}!\nPrefixes allowed: ${prefixArray.join(', ')}`);
-    // Reset form
-    setModuleId('');
+    try {
+      const response = await fetch(`http://localhost:5000/api/lecturer/modules/${moduleId}/group-project`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ minMembers, maxMembers, deadline, allowedPrefixes: prefixArray, moduleName: selectedModule?.name })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(`Success! Project for ${moduleId} opened for students!`);
+      }
+    } catch (error) {
+      console.error("Frontend Fetch Error:", error);
+      alert("Failed to connect to server. Check your backend terminal for crash logs!");
+    }
+  };
+
+  // --- NEW: Handle Approve/Reject Action ---
+  const handleReview = async (groupId, action) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, feedback: action === 'reject' ? "Please adjust members" : "Approved" })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`Group ${action}ed successfully!`);
+        // Remove from pending locally to update UI immediately
+        setPendingGroups(prev => prev.filter(g => g._id !== groupId));
+        if (action === 'approve') {
+          // Add to finalised groups list locally
+          setFinalisedGroups(prev => [...prev, data.data]);
+        }
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      alert("Failed to process review.");
+    }
   };
 
   return (
@@ -61,7 +110,8 @@ const LecturerDashboard = () => {
           onClick={() => setActiveTab('review')}
           style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'review' ? '3px solid #f59e0b' : 'none', fontWeight: activeTab === 'review' ? 'bold' : 'normal', cursor: 'pointer' }}
         >
-          Pending Reviews (2)
+          {/* Dynamically show the number of pending reviews */}
+          Pending Reviews ({pendingGroups.length})
         </button>
         <button 
           onClick={() => setActiveTab('finalised')}
@@ -131,38 +181,44 @@ const LecturerDashboard = () => {
       {/* TAB 2: PENDING REVIEWS */}
       {activeTab === 'review' && (
         <div>
-          {/* We will map real data here later, using dummy UI for now */}
-          <div className="gf-card-simple" style={{ padding: '1.5rem', marginBottom: '1rem', borderLeft: '4px solid #f59e0b' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ margin: 0 }}>TechTitans (Module: 5COSC019C)</h4>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Requested Prefix: <strong>SE</strong> • Members: 5/5</p>
+          {pendingGroups.length === 0 ? (
+            <p style={{ color: '#64748b' }}>No pending reviews at this time.</p>
+          ) : (
+            pendingGroups.map(group => (
+              <div key={group._id} className="gf-card-simple" style={{ padding: '1.5rem', marginBottom: '1rem', borderLeft: '4px solid #f59e0b' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: 0 }}>{group.name} (Module: {group.moduleId})</h4>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                      Requested Prefix: <strong>{group.prefix || "N/A"}</strong> • Members: {group.members ? group.members.length : 0}/{group.maxMembers}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => handleReview(group._id, 'reject')} className="gf-btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }}>Reject</button>
+                    <button onClick={() => handleReview(group._id, 'approve')} className="gf-btn-primary" style={{ background: '#10b981' }}>Approve</button>
+                  </div>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="gf-btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }}>Reject</button>
-                <button className="gf-btn-primary" style={{ background: '#10b981' }}>Approve (Becomes SE-1)</button>
-              </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       )}
 
       {/* TAB 3: FINALISED GROUPS */}
       {activeTab === 'finalised' && (
         <div className="gf-grid">
-           {/* Dummy Data for Finalised UI */}
-           <div className="gf-card-simple" style={{ padding: '1.5rem', borderTop: '4px solid #10b981' }}>
-              <h3 style={{ margin: 0, color: '#10b981' }}>SE-1</h3>
-              <p style={{ margin: '5px 0', fontWeight: 'bold' }}>TechTitans</p>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Module: 5COSC019C</p>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Members: 5</p>
-           </div>
-           <div className="gf-card-simple" style={{ padding: '1.5rem', borderTop: '4px solid #10b981' }}>
-              <h3 style={{ margin: 0, color: '#10b981' }}>CS-1</h3>
-              <p style={{ margin: '5px 0', fontWeight: 'bold' }}>CodeCrafters</p>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Module: 5COSC019C</p>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Members: 4</p>
-           </div>
+           {finalisedGroups.length === 0 ? (
+             <p style={{ color: '#64748b' }}>No finalised groups yet.</p>
+           ) : (
+             finalisedGroups.map(group => (
+               <div key={group._id} className="gf-card-simple" style={{ padding: '1.5rem', borderTop: '4px solid #10b981' }}>
+                  <h3 style={{ margin: 0, color: '#10b981' }}>{group.finalisedCode}</h3>
+                  <p style={{ margin: '5px 0', fontWeight: 'bold' }}>{group.name}</p>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Module: {group.moduleId}</p>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Members: {group.members ? group.members.length : 0}</p>
+               </div>
+             ))
+           )}
         </div>
       )}
     </div>

@@ -5,15 +5,13 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
   const [moduleGroups, setModuleGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Temporary hardcoded logic until further backend implementation: Assume user is NOT in a group 
-  // (In a real app, the backend would tell us if the logged-in user is in one of these groups)
-  const isAlreadyInGroup = false; 
+  // MATCH THIS TO IMASHA'S ID
+  const CURRENT_USER_ID = "user_id_student_1";
 
-  // Fetch groups from backend when the module view opens
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/modules/${module.id}/groups`);
+        const response = await fetch(`http://localhost:5000/api/modules/${module._id}/groups`);
         const data = await response.json();
         
         if (data.success) {
@@ -26,10 +24,22 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
       }
     };
 
-    fetchGroups();
-  }, [module.id]);
+    if (module && module._id) {
+      fetchGroups();
+    } else {
+      setLoading(false); // Failsafe
+    }
+  }, [module]);
 
   if (loading) return <div className="gf-main" style={{textAlign: 'center', padding: '3rem'}}>Loading groups...</div>;
+
+  // SAFEGUARD: Prevents the blank page crash!
+  if (!module) return <div className="gf-main">Error: Module not found <button onClick={onBack}>Go Back</button></div>;
+
+  // Smart check to see if you are already in a group here
+  const isAlreadyInGroup = moduleGroups.some(g => 
+    g.members && g.members.some(m => (m._id || m) === CURRENT_USER_ID)
+  );
 
   return (
     <div className="gf-main">
@@ -37,11 +47,10 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
         <button className="gf-btn-back" onClick={onBack}>&larr; Back to Modules</button>
 
         <div className="gf-header">
-          <h2>{module.id} Groups</h2>
+          <h2>{module._id} Groups</h2>
           <p>Showing all available project groups for {module.name}</p>
         </div>
         
-        {/* Only show Create button if user is NOT in a group for this module */}
         {!isAlreadyInGroup && (
           <button className="gf-btn-primary" style={{width:'auto'}} onClick={onCreateGroup}>
             + Create New Group
@@ -58,32 +67,37 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
         </div>
       ) : (
         <div className="gf-grid">
-          {moduleGroups.map(group => (
-            <div 
-              key={group._id} 
-              className="gf-card-visual"
-              onClick={() => onSelectGroup(group)}
-            >
-              {/* Use group image or a fallback */}
-              <img src={group.img || `https://via.placeholder.com/300x200?text=${group.name}`} alt={group.name} />
-              
-              <div className="gf-card-gradient">
-                {/* Status Badge */}
-                <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
-                  {group.joined ? (
-                    <span className="gf-badge-joined">Your Group</span>
-                  ) : (
-                    <span className="gf-badge-open">Open</span>
-                  )}
-                </div>
+          {moduleGroups.map(group => {
+            if (!group) return null; // Failsafe
+            
+            // Checks if Imasha is in this specific card
+            const isMyGroup = group.members && group.members.some(m => (m._id || m) === CURRENT_USER_ID);
 
-                <div className="gf-card-title">{group.name}</div>
-                <div className="gf-card-sub">
-                  {group.memberCount}/{group.maxMembers} Members • {group.domain}
+            return (
+              <div 
+                key={group._id} 
+                className="gf-card-visual"
+                onClick={() => onSelectGroup(group)}
+              >
+                <img src={group.img || `https://via.placeholder.com/300x200?text=${group.name}`} alt={group.name} />
+                
+                <div className="gf-card-gradient">
+                  <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+                    {isMyGroup ? (
+                      <span className="gf-badge-joined">Your Group</span>
+                    ) : (
+                      <span className="gf-badge-open">Open</span>
+                    )}
+                  </div>
+
+                  <div className="gf-card-title">{group.name}</div>
+                  <div className="gf-card-sub">
+                    {group.memberCount}/{group.maxMembers} Members • {group.domain}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

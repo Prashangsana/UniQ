@@ -1,6 +1,13 @@
 const mockUser = require('../data/mockUser.json');
+const mockStudents = require('../data/mockStudents.json');
 
+// This stores the modules that lecturers have opened for group formation.
+let openModulesDb = [
+  { _id: '5COSC019C', name: 'Software Engineering' }
+];
+exports.openModulesDb = openModulesDb; // Export it so LecturerController can push to it
 // This array acts as our temporary MongoDB
+
 let groupsDb = [
   {
     _id: "test_group_123",
@@ -9,27 +16,16 @@ let groupsDb = [
     domain: "Web Development",
     maxMembers: 5,
     leader: { _id: "fake_leader", name: "System Admin" },
-    
-    // --- THE FIX IS HERE --- 
-    // We removed mockUser so you aren't in the group yet!
-    members: [{ _id: "fake_leader", name: "System Admin" }], 
-    // -----------------------
-    
-    isFinalised: false
+    members: [{ _id: "fake_leader", name: "System Admin" }],
+    isFinalised: false,
+    status: 'open'
   }
 ];
 
 // GET /api/modules/open
 exports.getOpenModules = async (req, res) => {
   try {
-    // In the real app, this will query: GroupProject.find({ isOpen: true }).populate('moduleId')
-    // For now, we mock the modules that the Lecturer just opened!
-    const openModules = [
-      { _id: '5COSC019C', name: 'Software Engineering' },
-      { _id: '5COSC021C', name: 'Database Systems' }
-    ];
-
-    res.status(200).json({ success: true, data: openModules });
+    res.status(200).json({ success: true, data: openModulesDb });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error fetching modules' });
   }
@@ -59,9 +55,10 @@ exports.createGroup = async (req, res) => {
       moduleId,
       domain,
       maxMembers,
-      leader: mockUser, 
-      members: [mockUser], // Store the full mock user to simulate "populate()"
-      isFinalised: false
+      leader: req.user, 
+      members: [req.user], 
+      isFinalised: false,
+      status: 'open'
     };
 
     groupsDb.push(newGroup);
@@ -115,29 +112,12 @@ exports.getGroupDetails = async (req, res) => {
 // GET /api/modules/:moduleId/available-students
 exports.getAvailableStudents = async (req, res) => {
   try {
-    // Create a dummy list of students for the mock roster
-    const dummyStudents = [
-      {
-        _id: "user_roster_1",
-        name: "Kamal Perera",
-        skills: ["Java", "Spring Boot", "SQL"],
-        bio: "Backend specialist looking for a heavy database project."
-      },
-      {
-        _id: "user_roster_2",
-        name: "Sarah Silva",
-        skills: ["Figma", "React", "CSS"],
-        bio: "Frontend developer and UI designer."
-      },
-      {
-        _id: mockUser._id, // Adding mock user as one of the options too!
-        name: mockUser.name,
-        skills: mockUser.skills,
-        bio: mockUser.bio
-      }
-    ];
-
-    res.status(200).json({ success: true, count: dummyStudents.length, data: dummyStudents });
+    // Simply return the mock students we created!
+    res.status(200).json({ 
+      success: true, 
+      count: mockStudents.length, 
+      data: mockStudents 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
@@ -181,5 +161,4 @@ exports.getMyAllGroups = async (req, res) => {
   }
 };
 
-// Add this at the very bottom of mockGroupController.js
 exports.groupsDb = groupsDb;

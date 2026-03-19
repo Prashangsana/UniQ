@@ -7,7 +7,7 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
   const [selectedPrefix, setSelectedPrefix] = useState(allowedPrefixes[0]);
   const [memberDetails, setMemberDetails] = useState(
     group?.members.map(m => ({ 
-      id: m.id, 
+      id: m._id || m.id, 
       name: m.name, 
       iitId: m.iitId || '', // Might come from profile later
       uowId: m.uowId || '', // Might come from profile later
@@ -28,7 +28,7 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
       selectedPrefix,
       formData: memberDetails
     };
-    onSubmit(group.id, submissionData);
+    onSubmit(group._id || group.id, submissionData);
   };
 
   return (

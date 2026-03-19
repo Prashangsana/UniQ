@@ -47,6 +47,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api', groupRoutes);
 app.use('/api', require('./src/routes/requestRoutes'));
 app.use('/api', require('./src/routes/inviteRoutes'));
-app.use('/api', require('./src/routes/lecturerRoutes'));
+
+app.use('/api/lecturer', require('./src/routes/lecturerRoutes'));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

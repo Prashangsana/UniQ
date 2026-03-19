@@ -24,7 +24,7 @@ const CreateGroupView = ({ module, onBack }) => {
         },
         body: JSON.stringify({
           name: groupName,
-          moduleId: module.id,
+          moduleId: module._id,
           domain: selectedDomain,
           maxMembers: maxMembers
         })
@@ -52,7 +52,7 @@ const CreateGroupView = ({ module, onBack }) => {
       
       <div className="gf-card-simple" style={{ padding: '2.5rem' }}>
         <h2 style={{ marginBottom: '0.5rem' }}>Start a New Group</h2>
-        <p style={{ color: '#64748b', marginBottom: '2rem' }}>Module: {module.id}</p>
+        <p style={{ color: '#64748b', marginBottom: '2rem' }}>Module: {module._id}</p>
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.5rem' }}>

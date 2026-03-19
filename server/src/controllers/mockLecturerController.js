@@ -1,49 +1,82 @@
 const mockUser = require('../data/mockUser.json');
-const { groupsDb } = require('./mockGroupController');
+const mockModules = require('../data/mockModules.json');
+const mockLecturers = require('../data/mockLecturers.json');
+const mockStudents = require('../data/mockStudents.json');
+const { groupsDb, openModulesDb } = require('./mockGroupController');
 
 // Mock Database for Group Projects
 let groupProjectsDb = [];
 
-// Add this near the top with your other mock databases
-const mockModulesDb = [
-  { _id: '5COSC019C', name: 'Software Engineering', moduleLeaders: ['lecturer_123'], moduleTeam: [] },
-  { _id: '5COSC021C', name: 'Database Systems', moduleLeaders: [], moduleTeam: ['lecturer_123'] },
-  { _id: '5COSC023C', name: 'Operating Systems', moduleLeaders: ['some_other_guy'], moduleTeam: [] }, // Lecturer shouldn't see this one
-];
 
-// Add this new function
 // GET /api/lecturer/my-modules
 exports.getMyModules = async (req, res) => {
-  // We simulate checking the logged-in user's ID
-  // In our mock setup, let's assume the logged-in lecturer is 'lecturer_123'
-  const lecturerId = req.user ? req.user.id : 'lecturer_123'; 
+  // Using user_id_lecturer_1 (Nilakshi Nonis) from your mock data
+  const lecturerId = req.user ? req.user.id : 'user_id_lecturer_1'; 
 
-  const authorizedModules = mockModulesDb.filter(m => 
+  const authorizedModules = mockModules.filter(m => 
     m.moduleLeaders.includes(lecturerId) || m.moduleTeam.includes(lecturerId)
   );
 
-  res.status(200).json({ success: true, data: authorizedModules });
+  const formattedModules = authorizedModules.map(m => ({ _id: m._id, name: m.name }));
+  res.status(200).json({ success: true, data: formattedModules });
+};
+
+// GET /api/lecturer/module-groups
+exports.getLecturerGroups = async (req, res) => {
+  const lecturerId = req.user ? req.user.id : 'user_id_lecturer_1'; 
+
+  // 1. Get module IDs this lecturer manages
+  const myModuleIds = mockModules
+    .filter(m => m.moduleLeaders.includes(lecturerId) || m.moduleTeam.includes(lecturerId))
+    .map(m => m._id);
+
+  // 2. Filter groups in those modules
+  const relevantGroups = groupsDb.filter(g => myModuleIds.includes(g.moduleId));
+
+  // 3. Separate them
+  const pendingGroups = relevantGroups.filter(g => g.status === 'pending_review');
+  const finalisedGroups = relevantGroups.filter(g => g.status === 'finalised');
+
+  res.status(200).json({ 
+    success: true, 
+    data: { pending: pendingGroups, finalised: finalisedGroups }
+  });
 };
 
 // POST /api/modules/:moduleId/group-project
 exports.createGroupProject = async (req, res) => {
-  const { moduleId } = req.params;
-  const { minMembers, maxMembers, deadline, allowedPrefixes } = req.body;
+  try {
+    const { moduleId } = req.params;
+    const { minMembers, maxMembers, deadline, allowedPrefixes, moduleName } = req.body;
 
-  const newProject = {
-    _id: "proj_" + Date.now(),
-    moduleId,
-    minMembers,
-    maxMembers,
-    deadline,
-    // Store an array of prefixes (e.g. ["SE", "CS", "AI"])
-    allowedPrefixes: allowedPrefixes || ["SE", "CS"], 
-    isOpen: true,
-    createdBy: req.user.id
-  };
+    const newProject = {
+      _id: "proj_" + Date.now(),
+      moduleId,
+      minMembers,
+      maxMembers,
+      deadline,
+      // Store an array of prefixes (e.g. ["SE", "CS", "AI"])
+      allowedPrefixes: allowedPrefixes || ["SE", "CS"], 
+      isOpen: true,
+      createdBy: req.user ? req.user.id : 'user_id_lecturer_1'
+    };
 
-  groupProjectsDb.push(newProject);
-  res.status(201).json({ success: true, data: newProject });
+    groupProjectsDb.push(newProject);
+
+    // Add to openModulesDb so students can see it
+    const isAlreadyOpen = openModulesDb.find(m => m._id === moduleId);
+    if (!isAlreadyOpen) {
+      openModulesDb.push({
+        _id: moduleId,
+        name: moduleName || `Module ${moduleId}`
+      });
+    }
+    
+    res.status(201).json({ success: true, data: newProject });
+  } catch (error) {
+    console.error("Error creating group project:", error);
+    res.status(500).json({ success: false, message: 'Server encountered an error saving the project' });
+  }
 };
 
 // POST /api/groups/:groupId/submit-finalisation (STUDENT LEADER)

@@ -1,5 +1,3 @@
-const mockUser = require('../data/mockUser.json');
-
 const { groupsDb } = require('./mockGroupController');
 
 // Temporary in-memory DB for requests
@@ -7,7 +5,7 @@ let requestsDb = [];
 
 exports.createRequest = async (req, res) => {
   const { groupId } = req.params;
-  const userId = mockUser._id; // Use mock user ID for validation
+  const userId = req.user.id;
   
   // 1. Find target group
   const targetGroup = groupsDb.find(g => g._id === groupId);
@@ -21,7 +19,7 @@ exports.createRequest = async (req, res) => {
   // 3. VALIDATION: Check if user is already in another group for this module
   const existingGroup = groupsDb.find(g => 
     g.moduleId === targetGroup.moduleId && 
-    g.members.some(m => m._id === userId)
+    g.members.some(m => (m._id || m) == userId)
   );
 
   if (existingGroup) {
@@ -33,7 +31,7 @@ exports.createRequest = async (req, res) => {
 
   // 4. VALIDATION: Check for existing pending request
   const existingRequest = requestsDb.find(r => 
-    r.group === groupId && r.requester._id === userId && r.status === 'pending'
+    r.group === groupId && (r.requester._id || r.requester) === userId && r.status === 'pending'
   );
 
   if (existingRequest) {
@@ -44,7 +42,7 @@ exports.createRequest = async (req, res) => {
   const newRequest = {
     _id: "req_" + Date.now(),
     group: groupId,
-    requester: mockUser, 
+    requester: req.user, 
     approvals: [],
     status: 'pending',
     createdAt: new Date()
@@ -73,6 +71,15 @@ exports.approveRequest = async (req, res) => {
 
   // Simulate unanimous approval logic (assuming 1 member in mock group for now)
   request.status = 'approved'; 
+
+  const group = groupsDb.find(g => g._id === request.group);
+  if (group) {
+    // Only add them if they aren't already in the array
+    const isAlreadyMember = group.members.some(m => (m._id || m) === request.requester._id);
+    if (!isAlreadyMember) {
+      group.members.push(request.requester);
+    }
+  }
 
   res.status(200).json({ success: true, message: 'Approved (Mock)', data: request });
 };

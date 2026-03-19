@@ -7,6 +7,9 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
 
+  // MATCH THIS TO IMASHA'S ID
+  const CURRENT_USER_ID = "user_id_student_1"; 
+
   const handleLeaveGroup = async () => {
     if(window.confirm(`Are you sure you want to leave ${group.name}?`)) {
       try {
@@ -18,7 +21,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
         
         if (data.success) {
           alert(data.message);
-          onBack(); // Send user back to the dashboard/module view
+          onBack(); 
         } else {
           alert(`Error: ${data.message}`);
         }
@@ -28,28 +31,6 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
     }
   };
 
-  // Fetch full details with populated members when clicked
-  useEffect(() => {
-    const fetchGroupDetails = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/groups/${initialGroupData._id}`);
-        const data = await response.json();
-        
-        if (data.success) {
-          setGroup(data.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch group details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (initialGroupData && initialGroupData._id) {
-      fetchGroupDetails();
-    }
-  }, [initialGroupData]);
-
   const handleRequestJoin = async () => {
     setRequesting(true);
     try {
@@ -58,113 +39,75 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
         headers: { 'Content-Type': 'application/json' }
       });
       const data = await response.json();
-      
-      if (data.success) {
-        alert("Request sent successfully! Waiting for group approval.");
-      } else {
-        alert(`Error: ${data.message}`);
-      }
-    } catch (error) {
-      alert("Failed to send request. Is the server running?");
+      alert(data.message);
+    } catch(e) {
+      alert("Server error");
     } finally {
       setRequesting(false);
     }
-  };
+  }
 
-  if (loading || !group) return <div className="gf-main">Loading details...</div>;
+  useEffect(() => {
+    const fetchGroupDetails = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/groups/${initialGroupData._id}`);
+        const data = await response.json();
+        if (data.success) {
+          setGroup(data.data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if(initialGroupData && initialGroupData._id) fetchGroupDetails();
+  }, [initialGroupData]);
 
-  const CURRENT_USER_ID = "60d0fe4f5311236168a109ca"; // Mock user ID
-  const isMember = group.members.some(member => member._id === CURRENT_USER_ID);
+  if (loading || !group) return <div className="gf-main" style={{padding: '3rem', textAlign: 'center'}}>Loading group details...</div>;
+
+  // SMART MEMBERSHIP CHECK
+  const isMember = group.members.some(m => (m._id || m) === CURRENT_USER_ID);
+  const isLeader = group.leader && (group.leader._id === CURRENT_USER_ID || group.leader === CURRENT_USER_ID);
 
   return (
     <div className="gf-layout">
       <div className="gf-main">
         <button className="gf-btn-back" onClick={onBack}>&larr; Back</button>
-
-        <div className="gf-header">
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'start'}}>
-            <div>
-              <h1 style={{margin:0, fontSize:'2.5rem', color:'#1e293b', display: 'flex', alignItems: 'center', gap: '15px'}}>
-                {group.name}
-                {group.status === 'finalised' && (
-                  <span style={{ background: '#10b981', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold' }}>
-                    Finalised: {group.finalisedCode}
-                  </span>
+        <div className="gf-header" style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+          <div>
+            <h2>{group.name}</h2>
+            <p>{group.domain} • {group.members.length}/{group.maxMembers} Members</p>
+          </div>
+          <div>
+            {isMember ? (
+              <div style={{display:'flex', gap:'10px'}}>
+                <button className="gf-btn-outline" style={{color: '#ef4444', borderColor: '#ef4444'}} onClick={handleLeaveGroup}>Leave Group</button>
+                {/* Once the group is full, the leader can submit it! */}
+                {isLeader && group.members.length === group.maxMembers && (
+                   <button className="gf-btn-primary" onClick={() => onFinalise(group)}>Submit for Finalisation</button>
                 )}
-                {group.status === 'pending_review' && (
-                  <span style={{ background: '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold' }}>
-                    Pending Review
-                  </span>
-                )}
-              </h1>
-              <p style={{fontSize:'1.1rem'}}>
-                <span style={{fontWeight:'600', color:'#5b7cbd'}}>{group.moduleId}</span> 
-                {' '}— {group.domain} Domain
-              </p>
-            </div>
-
-            {/* --- Submit for Finalisation Button --- */}
-              {isMember && group.members.length === group.maxMembers && (!group.status || group.status === 'open') && (
-                <button 
-                  className="gf-btn-primary" 
-                  onClick={onFinalise} 
-                  style={{ background: '#10b981', width:'auto', padding:'0.5rem 1.2rem' }}
-                >
-                  Submit for Finalisation
-                </button>
-              )}
-
-            <div style={{display: 'flex', gap: '10px'}}>
-              {/* Find Members Button (Only show if in group and group isn't full) */}
-              {isMember && group.members.length < group.maxMembers && (
-                <button 
-                  className="gf-btn-outline" 
-                  onClick={() => onFindMembers(group.moduleId, group._id)} 
-                  style={{width:'auto', padding:'0.5rem 1.2rem'}}
-                >
-                  Find Members
-                </button>
-              )}
-
-              
-
-              {isMember ? (
-                <button className="gf-btn-danger" onClick={handleLeaveGroup} style={{width:'auto', padding:'0.5rem 1.2rem'}}>
-                  Leave Group
-                </button>
-              ) : (
-                <button 
-                  className="gf-btn-primary" 
-                  onClick={handleRequestJoin} 
-                  disabled={requesting || group.members.length >= group.maxMembers}
-                  style={{width:'auto', padding:'0.5rem 1.2rem', opacity: (requesting || group.members.length >= group.maxMembers) ? 0.5 : 1}}
-                >
-                  {requesting ? 'Sending...' : group.members.length >= group.maxMembers ? 'Group Full' : 'Request to Join'}
-                </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <button className="gf-btn-primary" onClick={handleRequestJoin} disabled={requesting}>
+                {requesting ? 'Sending...' : 'Request to Join'}
+              </button>
+            )}
           </div>
         </div>
 
-        <h3 className="gf-section-title">Members ({group.members.length}/{group.maxMembers})</h3>
-
+        <h3 className="gf-section-title">Members</h3>
         <div className="gf-grid">
-          {/* Display actual fetched members */}
-          {group.members.map((member, index) => (
-            <div 
-              key={member._id || index} 
-              className="gf-card-simple"
-              onClick={() => onViewProfile(member)} // Clickable Member
-            >
+          {group.members.map(member => (
+            <div key={member._id} className="gf-card-simple" onClick={() => onViewProfile(member)}>
               <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px'}}>
                 <div style={{width:'40px', height:'40px', borderRadius:'50%', background:'#cbd5e1'}}></div>
                 <div>
                   <strong style={{display:'block'}}>{member.name}</strong>
-                  <small style={{color:'#64748b'}}>{member._id === group.leader._id ? 'Leader' : 'Member'}</small>
+                  <small style={{color:'#64748b'}}>{member._id === (group.leader._id || group.leader) ? 'Leader' : 'Member'}</small>
                 </div>
               </div>
               <div>
-                {/* Fallback if skills don't exist yet on mock user */}
                 {(member.skills || ['Student']).map(skill => (
                   <span key={skill} className="gf-skill-chip">{skill}</span>
                 ))}
@@ -172,21 +115,22 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
             </div>
           ))}
           
-          {/* Vacancy placeholders */}
-          {[...Array(group.maxMembers - group.members.length)].map((_, i) => (
-            <div key={`vac-${i}`} className="gf-card-simple" style={{borderStyle:'dashed', display:'flex', alignItems:'center', justifyContent:'center', color:'#94a3b8'}}>
-              Empty Spot
+          {/* Vacant slots logic */}
+          {[...Array(Math.max(0, group.maxMembers - group.members.length))].map((_, i) => (
+            <div 
+              key={`vac-${i}`} 
+              className="gf-card-simple" 
+              style={{borderStyle:'dashed', display:'flex', alignItems:'center', justifyContent:'center', color:'#94a3b8', cursor: isMember ? 'pointer' : 'default'}} 
+              onClick={() => isMember && onFindMembers(group.moduleId, group._id)}
+            >
+              {isMember ? '+ Find Member' : 'Empty Spot'}
             </div>
           ))}
         </div>
       </div>
 
       {isMember && (
-        <GroupsSidebar 
-          type="group" 
-          groupId={group._id} 
-          onViewProfile={onViewProfile}
-        />
+        <GroupsSidebar type="group" groupId={group._id} onViewProfile={onViewProfile} />
       )}
     </div>
   );

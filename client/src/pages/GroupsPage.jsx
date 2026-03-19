@@ -55,11 +55,27 @@ const GroupsPage = () => {
     setView('create-group');
   };
 
-  const handleFinalisationSubmit = (groupId, data) => {
-  console.log("Submitting finalisation for group", groupId, data);
-  alert(`Successfully submitted to lecturer as ${data.selectedPrefix}!`);
-  // Update the backend here, then update the local state to show 'pending_review'
-  setView('group'); 
+  const handleFinalisationSubmit = async (groupId, data) => {
+  try {
+      // Send the form data to the backend
+      const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/submit-finalisation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`Successfully submitted to lecturer as ${data.selectedPrefix}!`);
+        // Update the local state so the UI changes to pending immediately
+        setSelectedGroup(result.data); 
+        setView('group'); 
+      } else {
+        alert(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      alert("Failed to submit finalisation. Is the server running?");
+    } 
 };
 
   // --- LECTURER VIEW OVERRIDE ---
@@ -105,6 +121,7 @@ const GroupsPage = () => {
           onBack={() => setView(originView)}
           onViewProfile={handleProfileClick}
           onFindMembers={handleFindMembers}
+          onFinalise={() => setView('finalise')}
         />
       )}
 
