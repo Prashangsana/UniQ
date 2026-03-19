@@ -18,7 +18,10 @@ let groupsDb = [
     leader: { _id: "fake_leader", name: "System Admin" },
     members: [{ _id: "fake_leader", name: "System Admin" }],
     isFinalised: false,
-    status: 'open'
+    status: 'open',
+    finalisationForm: null, 
+    finalisedCode: null,
+    prefix: null
   }
 ];
 

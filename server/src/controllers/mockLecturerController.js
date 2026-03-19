@@ -82,13 +82,24 @@ exports.createGroupProject = async (req, res) => {
 // POST /api/groups/:groupId/submit-finalisation (STUDENT LEADER)
 exports.submitFinalisation = async (req, res) => {
   const { groupId } = req.params;
-  const { formData, selectedPrefix } = req.body; // Student now sends their prefix!
+  const { tutorialGroup, memberExtraInfo, selectedPrefix } = req.body; // Student now sends their prefix!
 
   const group = groupsDb.find(g => g._id === groupId);
   if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
+  // Rule: Ensure the group has reached the required member count before finalising
+  if (group.members.length < group.maxMembers) {
+    return res.status(400).json({ 
+      success: false, 
+      message: `You need ${group.maxMembers} members to finalise. Currently you only have ${group.members.length}.` 
+    });
+  }
+
   group.status = 'pending_review';
-  group.finalisationForm = formData;
+  group.finalisationForm = {
+    tutorialGroup,    // e.g. "Group B"
+    memberExtraInfo   // Array of { userId, phone, iitId, uowId }
+  };
   group.prefix = selectedPrefix || "GRP"; // Save the student's choice
 
   res.status(200).json({ success: true, message: 'Submitted for review!', data: group });

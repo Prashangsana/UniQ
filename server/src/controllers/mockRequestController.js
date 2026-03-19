@@ -22,6 +22,14 @@ exports.createRequest = async (req, res) => {
     g.members.some(m => (m._id || m) == userId)
   );
 
+  // Rule: Students cannot request to join if the group is already submitted to the lecturer
+  if (targetGroup.status !== 'open') {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'This group is no longer accepting new members as it is being finalised.' 
+    });
+  }
+
   if (existingGroup) {
     return res.status(400).json({ 
       success: false, 
@@ -63,6 +71,11 @@ exports.approveRequest = async (req, res) => {
   const request = requestsDb.find(r => r._id === requestId);
   
   if (!request) return res.status(404).json({ success: false, message: 'Request not found' });
+
+  if (group.members.length >= group.maxMembers) {
+    request.status = 'rejected';
+    return res.status(400).json({ success: false, message: 'Group is now full. Request auto-rejected.' });
+  }
 
   // Simulate adding approval
   if (!request.approvals.includes(req.user.id)) {

@@ -20,6 +20,14 @@ let invitesDb = [
 exports.inviteUser = async (req, res) => {
   const { groupId } = req.params;
   const { invitedUserId, message } = req.body;
+
+  const group = groupsDb.find(g => g._id === groupId);
+  if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+
+  // Rule: Cannot invite new people if the group is locked/finalised
+  if (group && group.status !== 'open') {
+    return res.status(400).json({ success: false, message: 'Group is locked for finalisation.' });
+  }
   
   const newInvite = {
     _id: "inv_" + Date.now(),
@@ -119,6 +127,14 @@ exports.leaveGroup = async (req, res) => {
   }
 
   const group = groupsDb[groupIndex];
+
+  // Rule: Students cannot leave once the group is sent for finalization
+  if (group.status !== 'open') {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Group is locked. You cannot leave a group that is pending review or finalised.' 
+    });
+  }
 
   // 2. Logic: Leader can only leave if they are the last person
   const isLeader = (group.leader._id === userId || group.leader === userId);
