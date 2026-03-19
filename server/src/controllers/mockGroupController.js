@@ -39,6 +39,12 @@ exports.createGroup = async (req, res) => {
     const { name, moduleId, domain, maxMembers } = req.body;
     const userId = req.user.id;
 
+    const { groupProjectsDb } = require('./mockLecturerController');
+
+    const projectSettings = groupProjectsDb.find(p => p.moduleId === moduleId);
+
+    const allowedMax = projectSettings ? projectSettings.maxMembers : 5;
+
     // Constraint Check: Prevent multiple groups per module
     const existingGroup = groupsDb.find(g => 
       g.moduleId === moduleId && g.members.some(m => m._id === userId)
@@ -57,7 +63,7 @@ exports.createGroup = async (req, res) => {
       name,
       moduleId,
       domain,
-      maxMembers,
+      maxMembers: allowedMax,
       leader: req.user, 
       members: [req.user], 
       isFinalised: false,
@@ -67,6 +73,7 @@ exports.createGroup = async (req, res) => {
     groupsDb.push(newGroup);
     res.status(201).json({ success: true, data: newGroup });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
@@ -98,12 +105,18 @@ exports.getModuleGroups = async (req, res) => {
 exports.getGroupDetails = async (req, res) => {
   try {
     const { groupId } = req.params;
+    const { groupProjectsDb } = require('./mockLecturerController');
 
     // Find specific group in array
     const group = groupsDb.find(g => g._id === groupId);
 
     if (!group) {
       return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+
+    const project = groupProjectsDb.find(p => p.moduleId === group.moduleId);
+    if (project) {
+      group.maxMembers = project.maxMembers;
     }
 
     res.status(200).json({ success: true, data: group });
@@ -131,6 +144,7 @@ exports.getMyGroup = async (req, res) => {
   try {
     const { moduleId } = req.params;
     const userId = req.user.id; 
+    const { groupProjectsDb } = require('./mockLecturerController');
 
     // Find a group for this module where the members array includes our mock user
     const myGroup = groupsDb.find(g => 
@@ -141,6 +155,11 @@ exports.getMyGroup = async (req, res) => {
     if (!myGroup) {
       // User is not in a group, send back null
       return res.status(200).json({ success: true, data: null });
+    }
+
+    const project = groupProjectsDb.find(p => p.moduleId === moduleId);
+    if (project) {
+      myGroup.maxMembers = project.maxMembers;
     }
 
     // User is in a group, send the group data
