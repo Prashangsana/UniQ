@@ -79,30 +79,31 @@ exports.createGroupProject = async (req, res) => {
   }
 };
 
-// POST /api/groups/:groupId/submit-finalisation (STUDENT LEADER)
+// POST /api/groups/:groupId/submit-finalisation
 exports.submitFinalisation = async (req, res) => {
   const { groupId } = req.params;
-  const { tutorialGroup, memberExtraInfo, selectedPrefix } = req.body; // Student now sends their prefix!
+  // This body comes from your Frontend Finalisation Form
+  const { tutorialGroup, memberExtraInfo, selectedPrefix } = req.body; 
 
   const group = groupsDb.find(g => g._id === groupId);
   if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-  // Rule: Ensure the group has reached the required member count before finalising
-  if (group.members.length < group.maxMembers) {
-    return res.status(400).json({ 
-      success: false, 
-      message: `You need ${group.maxMembers} members to finalise. Currently you only have ${group.members.length}.` 
-    });
-  }
-
+  // Update the group in our "database" with the form data
   group.status = 'pending_review';
+  group.prefix = selectedPrefix;
+  
+  // This is the CRITICAL part: 
+  // We save the tutorialGroup and the array of IDs exactly as the student typed them.
   group.finalisationForm = {
-    tutorialGroup,    // e.g. "Group B"
-    memberExtraInfo   // Array of { userId, phone, iitId, uowId }
+    tutorialGroup,
+    memberExtraInfo // This should be the array of { userId, iitId, uowId }
   };
-  group.prefix = selectedPrefix || "GRP"; // Save the student's choice
 
-  res.status(200).json({ success: true, message: 'Submitted for review!', data: group });
+  res.status(200).json({ 
+    success: true, 
+    message: 'Submitted for review!', 
+    data: group 
+  });
 };
 
 // POST /api/groups/:groupId/review
@@ -116,16 +117,19 @@ exports.reviewGroup = async (req, res) => {
   if (action === 'approve') {
     group.status = 'finalised';
     group.isFinalised = true;
+
+    const chosenPrefix = group.prefix || "GRP";
     
-    // COUNTING LOGIC: Count only finalised groups in THIS module with THIS specific prefix
+    // COUNT ONLY groups that are ALREADY finalised in this module with this prefix
     const count = groupsDb.filter(g => 
-      g.isFinalised && 
-      g.moduleId === group.moduleId && 
-      g.prefix === group.prefix
+        g.isFinalised === true && 
+        g.moduleId === group.moduleId && 
+        g.prefix === chosenPrefix &&
+        g._id !== group._id // Don't count the current group we are currently approving
     ).length;
     
-    // Assign the new code (e.g., SE-1, CS-1)
-    group.finalisedCode = `${group.prefix}-${count + 1}`;
+    // 3. Assign the code (e.g., CS-1 if count was 0)
+    group.finalisedCode = `${chosenPrefix}-${count + 1}`;
     group.feedback = "Approved";
   } else {
     group.status = 'open'; 

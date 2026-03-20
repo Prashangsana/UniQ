@@ -56,25 +56,25 @@ const GroupsPage = () => {
   };
 
   const handleFinalisationSubmit = async (groupId, data) => {
-  try {
-      // Send the form data to the backend
+    try {
+      // Data here is { selectedPrefix, tutorialGroup, memberExtraInfo }
       const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/submit-finalisation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data) // Sends the structured object
       });
       const result = await response.json();
       
       if (result.success) {
-        alert(`Successfully submitted to lecturer as ${data.selectedPrefix}!`);
-        // Update the local state so the UI changes to pending immediately
+        alert(`Successfully submitted for review!`);
+        // Update local state and go back to details
         setSelectedGroup(result.data); 
         setView('group'); 
       } else {
         alert(`Error: ${result.message}`);
       }
     } catch (error) {
-      alert("Failed to submit finalisation. Is the server running?");
+      alert("Failed to submit finalisation.");
     } 
 };
 

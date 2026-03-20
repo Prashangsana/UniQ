@@ -24,10 +24,20 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const memberExtraInfo = memberDetails.map(m => ({
+      userId: m.id,      // Ensure this matches the member._id
+      iitId: m.iitId,
+      uowId: m.uowId,
+      phone: m.phone     // Additional info if needed
+    }));
+
     const submissionData = {
       selectedPrefix,
-      formData: memberDetails
+      tutorialGroup: memberDetails[0]?.tutorialGroup || 'N/A', 
+      memberExtraInfo: memberExtraInfo
     };
+
     onSubmit(group._id || group.id, submissionData);
   };
 

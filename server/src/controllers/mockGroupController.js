@@ -100,12 +100,17 @@ exports.getGroupDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
 
+    const responseData = {
+      ...group,
+      finalisationForm: group.finalisationForm || null 
+    };
+
     const project = groupProjectsDb.find(p => p.moduleId === group.moduleId);
     if (project) {
       group.maxMembers = project.maxMembers;
     }
 
-    res.status(200).json({ success: true, data: group });
+    res.status(200).json({ success: true, data: responseData });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }

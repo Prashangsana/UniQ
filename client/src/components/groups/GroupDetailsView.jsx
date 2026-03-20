@@ -82,10 +82,27 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
           <div>
             {isMember ? (
               <div style={{display:'flex', gap:'10px'}}>
-                <button className="gf-btn-outline" style={{color: '#ef4444', borderColor: '#ef4444'}} onClick={handleLeaveGroup}>Leave Group</button>
-                {/* Once the group is full, the leader can submit it! */}
-                {isLeader && group.members.length === group.maxMembers && (
-                   <button className="gf-btn-primary" onClick={() => onFinalise(group)}>Submit for Finalisation</button>
+                {/* Only show Leave button if group isn't finalised/pending */}
+                {group.status === 'open' && (
+                  <button className="gf-btn-outline" style={{color: '#ef4444', borderColor: '#ef4444'}} onClick={handleLeaveGroup}>Leave Group</button>
+                )}
+
+                {/* ONLY show Submit button if Leader AND Group is Full AND status is still 'open' */}
+                {isLeader && group.members.length === group.maxMembers && group.status === 'open' && (
+                    <button className="gf-btn-primary" onClick={() => onFinalise(group)}>Submit for Finalisation</button>
+                )}
+
+                {/* NEW: Show status indicators for the student */}
+                {group.status === 'pending_review' && (
+                  <span style={{padding: '8px 12px', background: '#fef3c7', color: '#92400e', borderRadius: '6px', fontWeight: 'bold'}}>
+                    Pending Lecturer Review
+                  </span>
+                )}
+                
+                {group.status === 'finalised' && (
+                  <span style={{padding: '8px 12px', background: '#dcfce7', color: '#166534', borderRadius: '6px', fontWeight: 'bold'}}>
+                    Group Finalised ({group.finalisedCode})
+                  </span>
                 )}
               </div>
             ) : (

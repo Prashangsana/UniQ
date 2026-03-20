@@ -17,6 +17,8 @@ const LecturerDashboard = () => {
   const [deadline, setDeadline] = useState('');
   const [prefixes, setPrefixes] = useState('SE, CS, AI');
 
+  const [expandedGroupId, setExpandedGroupId] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -184,41 +186,196 @@ const LecturerDashboard = () => {
           {pendingGroups.length === 0 ? (
             <p style={{ color: '#64748b' }}>No pending reviews at this time.</p>
           ) : (
-            pendingGroups.map(group => (
-              <div key={group._id} className="gf-card-simple" style={{ padding: '1.5rem', marginBottom: '1rem', borderLeft: '4px solid #f59e0b' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4 style={{ margin: 0 }}>{group.name} (Module: {group.moduleId})</h4>
-                    <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
-                      Requested Prefix: <strong>{group.prefix || "N/A"}</strong> • Members: {group.members ? group.members.length : 0}/{group.maxMembers}
-                    </p>
+            pendingGroups.map(group => {
+              const isExpanded = expandedGroupId === group._id;
+
+              return (
+                <div 
+                  key={group._id} 
+                  className="gf-card-simple" 
+                  style={{ 
+                    padding: '1.5rem', 
+                    marginBottom: '1rem', 
+                    borderLeft: '4px solid #f59e0b',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => setExpandedGroupId(isExpanded ? null : group._id)}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ margin: 0 }}>{group.name} <small style={{color:'#64748b'}}>({group.moduleId})</small></h4>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: isExpanded ? '#5b7cbd' : '#64748b' }}>
+                        {isExpanded ? '▴ Click to collapse' : '▾ Click to view submission details'}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'reject'); }} 
+                        className="gf-btn-outline" 
+                        style={{ color: '#ef4444', borderColor: '#ef4444', padding: '5px 15px' }}
+                      >
+                        Reject
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'approve'); }} 
+                        className="gf-btn-primary" 
+                        style={{ background: '#10b981', padding: '5px 15px' }}
+                      >
+                        Approve
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => handleReview(group._id, 'reject')} className="gf-btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }}>Reject</button>
-                    <button onClick={() => handleReview(group._id, 'approve')} className="gf-btn-primary" style={{ background: '#10b981' }}>Approve</button>
-                  </div>
+
+                  {/* EXPANDED SECTION */}
+                  {isExpanded && group.finalisationForm && (
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }} onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '1.5rem' }}>
+                        <div className="detail-item">
+                          <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Tutorial Group</label>
+                          <strong>{group.finalisationForm.tutorialGroup}</strong>
+                        </div>
+                        <div className="detail-item">
+                          <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Requested Prefix</label>
+                          <strong style={{ color: '#5b7cbd' }}>{group.prefix}</strong>
+                        </div>
+                      </div>
+
+                      <h5 style={{ marginBottom: '10px' }}>Member Registration Details</h5>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <thead>
+                          <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
+                            <th style={{ padding: '10px' }}>Name</th>
+                            <th style={{ padding: '10px' }}>IIT ID</th>
+                            <th style={{ padding: '10px' }}>UOW ID</th>
+                            <th style={{ padding: '10px' }}>Phone Number</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.members.map(member => {
+                            const mId = member._id || member;
+                            const extra = group.finalisationForm.memberExtraInfo?.find(info => info.userId === mId);
+
+                            return (
+                              <tr key={mId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '10px' }}>{member.name || "Student"}</td>
+                                <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.iitId || 'Not Provided'}</td>
+                                <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.uowId || 'Not Provided'}</td>
+                                <td style={{ padding: '10px' }}>{extra?.phone || 'N/A'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
 
       {/* TAB 3: FINALISED GROUPS */}
       {activeTab === 'finalised' && (
-        <div className="gf-grid">
-           {finalisedGroups.length === 0 ? (
-             <p style={{ color: '#64748b' }}>No finalised groups yet.</p>
-           ) : (
-             finalisedGroups.map(group => (
-               <div key={group._id} className="gf-card-simple" style={{ padding: '1.5rem', borderTop: '4px solid #10b981' }}>
-                  <h3 style={{ margin: 0, color: '#10b981' }}>{group.finalisedCode}</h3>
-                  <p style={{ margin: '5px 0', fontWeight: 'bold' }}>{group.name}</p>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Module: {group.moduleId}</p>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem' }}>Members: {group.members ? group.members.length : 0}</p>
-               </div>
-             ))
-           )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {finalisedGroups.length === 0 ? (
+            <p style={{ color: '#64748b', textAlign: 'center', marginTop: '2rem' }}>No finalised groups yet.</p>
+          ) : (
+            finalisedGroups.map(group => {
+              const isExpanded = expandedGroupId === group._id;
+
+              return (
+                <div 
+                  key={group._id} 
+                  className="gf-card-simple" 
+                  style={{ 
+                    padding: '1.25rem', 
+                    borderLeft: '5px solid #10b981',
+                    cursor: 'pointer',
+                    background: '#fff',
+                    transition: 'transform 0.1s ease'
+                  }}
+                  onClick={() => setExpandedGroupId(isExpanded ? null : group._id)}
+                >
+                  {/* Top Row: Summary Info */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <div style={{ 
+                        background: '#dcfce7', 
+                        color: '#166534', 
+                        padding: '8px 12px', 
+                        borderRadius: '6px', 
+                        fontWeight: 'bold',
+                        minWidth: '60px',
+                        textAlign: 'center',
+                        fontSize: '0.9rem'
+                      }}>
+                        {group.finalisedCode}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{group.name}</h4>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                          Module: {group.moduleId} • <span style={{ color: '#10b981' }}>{isExpanded ? 'Click to collapse' : 'Click to view details'}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#10b981', fontWeight: '600' }}>
+                      <span style={{ fontSize: '1.2rem' }}>✓</span> Finalised
+                    </div>
+                  </div>
+
+                  {/* Expanded Section: Content now uses full card width */}
+                  {isExpanded && group.finalisationForm && (
+                    <div 
+                      style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }} 
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Meta Details Row */}
+                      <div style={{ display: 'flex', gap: '40px', marginBottom: '1.5rem', background: '#f8fafc', padding: '15px', borderRadius: '8px' }}>
+                        <div>
+                          <label style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' }}>Tutorial Group</label>
+                          <strong style={{ fontSize: '1rem' }}>{group.finalisationForm.tutorialGroup}</strong>
+                        </div>
+                        <div>
+                          <label style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' }}>Assigned Prefix</label>
+                          <strong style={{ fontSize: '1rem', color: '#10b981' }}>{group.prefix}</strong>
+                        </div>
+                      </div>
+
+                      <h5 style={{ marginBottom: '12px', color: '#334155', fontSize: '0.95rem' }}>Confirmed Member Details</h5>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left', color: '#64748b' }}>
+                              <th style={{ padding: '12px 8px' }}>Name</th>
+                              <th style={{ padding: '12px 8px' }}>IIT ID</th>
+                              <th style={{ padding: '12px 8px' }}>UOW ID</th>
+                              <th style={{ padding: '12px 8px' }}>Phone</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.members.map(member => {
+                              const mId = member._id || member;
+                              const extra = group.finalisationForm.memberExtraInfo?.find(info => info.userId === mId);
+                              return (
+                                <tr key={mId} style={{ borderBottom: '1px solid #f8fafc' }}>
+                                  <td style={{ padding: '12px 8px', fontWeight: '500' }}>{member.name || "Student"}</td>
+                                  <td style={{ padding: '12px 8px', fontFamily: 'monospace', color: '#475569' }}>{extra?.iitId || 'N/A'}</td>
+                                  <td style={{ padding: '12px 8px', fontFamily: 'monospace', color: '#475569' }}>{extra?.uowId || 'N/A'}</td>
+                                  <td style={{ padding: '12px 8px', color: '#475569' }}>{extra?.phone || 'N/A'}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       )}
     </div>
