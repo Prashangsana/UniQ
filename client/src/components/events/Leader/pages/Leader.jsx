@@ -28,8 +28,8 @@ export const LeaderDashboard = () => {
       })
       .catch(err => console.error("Error loading user info:", err));
 
-    // Load Leader's Societies
-    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
+    // Load all Societies
+    fetch(`${API_URL}/api/societies`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data.length > 0) setSocieties(data.data);
@@ -78,7 +78,7 @@ export const LeaderDashboard = () => {
             <h3>Your societies</h3>
             <div className="societies-list-container">
               {societies.map(s => (
-                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} />
+                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
               ))}
             </div>
           </div>
