@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-const { oauthLogin, logout } = require('../controllers/authController');
+const { oauthLogin, logout, getMe } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
@@ -25,10 +25,7 @@ router.get('/google/callback',
 );
 
 // 3. Check Session (Protected Route)
-router.get('/me', protect, (req, res) => {
-    // If the 'protect' middleware passes, it means the user is logged in
-    res.status(200).json({ success: true, user: req.user });
-});
+router.get('/me', protect, getMe);
 
 // 4. Logout
 router.get('/logout', logout);

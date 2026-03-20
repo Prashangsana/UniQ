@@ -79,6 +79,7 @@ export const LeaderSidebar = ({ title }) => {
 };
 
 // 4. Admin Society Card
+<<<<<<< HEAD
 export const LeaderSocietyCard = ({ name }) => {
   const urlName = name.replace(/\s+/g, '-');
   return (
@@ -87,6 +88,15 @@ export const LeaderSocietyCard = ({ name }) => {
         <div className="leader-card-logo">Logo</div>
         <span className="leader-card-name">{name}</span>
         <div className="leader-manage-tag">Manage</div>
+=======
+export const LeaderSocietyCard = ({ name, id }) => {
+  return (
+    <Link to={`/society/${id}`} className="leader-card-link">
+      <div className="leader-card">
+        <div className="leader-card-logo">Logo</div>
+        <span className="leader-card-name">{name}</span>
+        <div className="leader-manage-tag">✏️ Manage</div>
+>>>>>>> yahani
       </div>
     </Link>
   );
