@@ -10,45 +10,40 @@ const {
   addEventToMyEvents,
   removeEventFromMyEvents,
   getMyEvents,
-  getNotifications
+  getNotifications,
+  createEvent,
+  getLeaderEvents,
+  updateEvent,
+  deleteEvent
 } = require('../controllers/eventController');
 
-
-/* ================= STAGE 4 ROUTES ================= */
+const protect = (req, res, next) => {
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ success: false, message: "Not authorized" });
+};
 
 router.get("/main", getMainEvent);
 router.get("/latest", getLatestEvents);
 router.get("/top-week", getTopEvents);
 
-
-/* ================= NOTIFICATIONS ================= */
-
 router.get("/notifications", getNotifications);
-
-
-/* ================= SOCIETY EVENTS ================= */
 
 router.get('/society/:societyId', getSocietyEvents);
 
-
-/* ================= MY EVENTS ================= */
-
 router.get('/my', getMyEvents);
 
-
-/* ================= ADD EVENT ================= */
-
 router.post('/:id/add', addEventToMyEvents);
-
-
-/* ================= REMOVE EVENT ================= */
-
 router.delete('/:id/remove', removeEventFromMyEvents);
 
+router.route('/')
+  .post(protect, createEvent)
+  .get(protect, getLeaderEvents);
 
-/* ================= EVENT DETAILS ================= */
-
-router.get('/:id', getEventDetails);
-
+router.route('/:id')
+  .get(getEventDetails)
+  .put(protect, updateEvent)
+  .delete(protect, deleteEvent);
 
 module.exports = router;
