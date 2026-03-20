@@ -14,6 +14,7 @@ import Footer from './components/Landing/Footer';
 // Dashboard Components
 import Home from './dashboard/Home';
 
+import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 
 function App() {
@@ -86,6 +87,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home myEventsList={myEventsList} />} />
           <Route path="/dashboard" element={<Home myEventsList={myEventsList} />} />
+
+          <Route path="/groups" element={<GroupsPage />} />
+
           <Route
             path="/event/:eventId"
             element={

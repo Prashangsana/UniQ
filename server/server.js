@@ -1,12 +1,14 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose'); // Merged: Mongoose for database connection
 const passport = require('passport');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./src/config/db'); // Database connection logic
 
 // 1. Connect to MongoDB
-connectDB();
+// connectDB();
+const groupRoutes = require('./src/routes/groupRoutes'); // Merged: Grouping routes
 
 const app = express();
 
@@ -26,16 +28,26 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-app.use(passport.initialize());
+app.use(express.urlencoded({ extended: true })); // Good practice for form-encoded data
 
+// 3. Initialize Passport 
+app.use(passport.initialize());
 require('./src/config/passport')(passport);
 
+// 4. Routes
 const authRoutes = require('./src/routes/authRoutes'); 
 const societyRoutes = require('./src/routes/societyRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
 
-app.use('/auth', authRoutes);
+app.use('/auth', authRoutes); // Teammate's real auth routes
 app.use('/api/societies', societyRoutes);
 app.use('/api/events', eventRoutes);
+
+// Grouping APIs
+app.use('/api', groupRoutes);
+app.use('/api', require('./src/routes/requestRoutes'));
+app.use('/api', require('./src/routes/inviteRoutes'));
+
+app.use('/api/lecturer', require('./src/routes/lecturerRoutes'));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
