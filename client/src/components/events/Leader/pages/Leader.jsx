@@ -12,6 +12,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 export const LeaderDashboard = () => {
   const navigate = useNavigate();
   
+<<<<<<<<< Temporary merge branch 1
+  // Keep original placeholders as fallback
   const [societies, setSocieties] = useState([
     { _id: "rotaract-club", name: "Rotaract Club" },
     { _id: "ieee-club", name: "IEEE Club" },
@@ -21,6 +23,14 @@ export const LeaderDashboard = () => {
   
   const [activeEvents, setActiveEvents] = useState(["main-hackathon-2026", "rec-event-1", "rec-event-2"]);
   const [draftEvents, setDraftEvents] = useState(["old-event-1"]);
+
+  useEffect(() => {
+=========
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const [societies, setSocieties] = useState([]);
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [draftEvents, setDraftEvents] = useState([]);
   const [userName, setUserName] = useState('Leader');
 
   useEffect(() => {
@@ -118,9 +128,27 @@ export const LeaderEventEditor = () => {
   const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
+  const [societies, setSocieties] = useState([]);
+  const [selectedSociety, setSelectedSociety] = useState('');
 
   // Load existing data if editing
   useEffect(() => {
+<<<<<<<<< Temporary merge branch 1
+=========
+    // Load Leader's Societies
+    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSocieties(data.data);
+          if (data.data.length > 0 && !selectedSociety) {
+            setSelectedSociety(data.data[0]._id);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading societies:", err));
+
+>>>>>>>>> Temporary merge branch 2
     if (!isNewEvent) {
       fetch(`${API_URL}/api/events/${eventId}`, { 
         headers: { 'Accept': 'application/json' },
@@ -138,6 +166,7 @@ export const LeaderEventEditor = () => {
             setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
+            setSelectedSociety(ev.society?._id || ev.society || '');
             
             if (ev.date) {
               // Use UTC methods to avoid timezone shift for date-only values from the backend
@@ -181,7 +210,7 @@ export const LeaderEventEditor = () => {
       tickets,
       status: 'Active',
       bannerImage,
-      society: "ROTARACT" 
+      society: "rotaract-club" 
     };
 
     const url = isNewEvent 
@@ -350,6 +379,19 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
+            <div className="input-group">
+              <label>Host Society</label>
+              <select 
+                value={selectedSociety} 
+                onChange={(e) => setSelectedSociety(e.target.value)}
+                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
+              >
+                {societies.map(s => (
+                  <option key={s._id} value={s._id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
             {/* DYNAMIC TICKET TIERS SECTION */}
             <div className="input-group">
               <label>Ticket Pricing & Tiers (Max 5)</label>
@@ -453,7 +495,10 @@ export const LeaderSocietyManager = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
+<<<<<<<<< Temporary merge branch 1
     // 1. Try to fetch from backend
+    fetch(`http://localhost:5000/api/societies/${id}`, { credentials: 'include' })
+=========
     fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
