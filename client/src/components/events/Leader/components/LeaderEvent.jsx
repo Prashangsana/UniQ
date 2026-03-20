@@ -8,7 +8,7 @@ export const LeaderEventBanner = ({ large, id = "sample-event" }) => {
   return (
     <div 
       className={`leader-banner ${large ? "large" : ""}`} 
-      onClick={() => navigate(`/admin/event/${id}`)}
+      onClick={() => navigate(`/event/${id}`)}
       style={{ cursor: 'pointer', position: 'relative' }}
     >
       <div className="leader-banner-text">

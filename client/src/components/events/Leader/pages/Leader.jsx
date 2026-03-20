@@ -32,9 +32,7 @@ export const LeaderDashboard = () => {
     fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
-          setSocieties(data.data);
-        }
+        if (data.success && data.data.length > 0) setSocieties(data.data);
       })
       .catch(err => console.error("Error loading societies:", err));
 
@@ -42,7 +40,7 @@ export const LeaderDashboard = () => {
     fetch(`${API_URL}/api/events`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
+        if (data.success && data.data.length > 0) {
           const allEvents = data.data;
           setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
           setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
@@ -60,18 +58,14 @@ export const LeaderDashboard = () => {
               <h1>Society Leader Portal</h1>
               <p>Welcome back, {userName}</p>
             </div>
-            <button className="publish-btn" onClick={() => navigate('admin/event/new')}>
+            <button className="publish-btn" onClick={() => navigate('/event/new')}>
               + Create New Event
             </button>
           </header>
           
           <section className="admin-main-event">
             <h3>Featured Society Event</h3>
-            {activeEvents.length > 0 ? (
-              <LeaderEventBanner large id={activeEvents[0]} />
-            ) : (
-              <div className="leader-empty">No featured events yet. Create one!</div>
-            )}
+            <LeaderEventBanner large id={activeEvents[0] || "main-hackathon-2026"} />
           </section>
 
           <LeaderEventRow title="Active Events" events={activeEvents} />
@@ -83,13 +77,9 @@ export const LeaderDashboard = () => {
           <div className="manage-societies">
             <h3>Your societies</h3>
             <div className="societies-list-container">
-              {societies.length > 0 ? (
-                societies.map(s => (
-                  <LeaderSocietyCard key={s._id} id={s._id} name={s.name} />
-                ))
-              ) : (
-                <p>No societies assigned to you yet.</p>
-              )}
+              {societies.map(s => (
+                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} />
+              ))}
             </div>
           </div>
         </div>
@@ -97,6 +87,7 @@ export const LeaderDashboard = () => {
     </div>
   );
 };
+
 
 /* ==========================================
    2. LEADER EVENT EDITOR (Handles both Edit & Create)
@@ -121,7 +112,7 @@ export const LeaderEventEditor = () => {
   const [societies, setSocieties] = useState([]);
   const [selectedSociety, setSelectedSociety] = useState('');
 
-  // Load societies and existing data if editing
+  // Load existing data if editing
   useEffect(() => {
     // Load Leader's Societies
     fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
@@ -153,7 +144,7 @@ export const LeaderEventEditor = () => {
             setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
-            setSelectedSociety(ev.society || '');
+            setSelectedSociety(ev.society?._id || ev.society || '');
             
             if (ev.date) {
               const d = new Date(ev.date);
@@ -170,8 +161,8 @@ export const LeaderEventEditor = () => {
   }, [eventId, isNewEvent, API_URL]);
 
   const handleSave = async () => {
-    if (!title || !date.dd || !date.mm || !date.yyyy || !selectedSociety) {
-      alert("Please fill in the Event Name, Date, and Society.");
+    if (!title || !date.dd || !date.mm || !date.yyyy) {
+      alert("Please fill in the Event Name and Date.");
       return;
     }
 
@@ -205,10 +196,12 @@ export const LeaderEventEditor = () => {
       if (data.success) {
         alert(isNewEvent ? "Event Published Successfully!" : "Changes Saved Successfully!");
         navigate('/dashboard');
+      } else {
+        alert(`Failed to save: ${data.message || "Unknown error"}`);
       }
     } catch (err) {
       console.error("Save error:", err);
-      alert("Failed to save event");
+      alert("Network error: Failed to connect to server");
     }
   };
 
@@ -233,8 +226,15 @@ export const LeaderEventEditor = () => {
 
   // Simulated image upload
   const handleImageUpload = () => {
-    const url = prompt("Enter an image URL for the banner:", "https://via.placeholder.com/1200x400");
-    if (url) setBannerImage(url);
+    const url = prompt("Please paste the image URL for your banner:", bannerImage || "https://via.placeholder.com/1200x400");
+    if (url !== null) {
+      // Simple validation: check if it looks like a URL
+      if (url.trim() === "" || url.startsWith("http")) {
+        setBannerImage(url.trim());
+      } else {
+        alert("Please enter a valid image URL (starting with http:// or https://)");
+      }
+    }
   };
 
   // Function to add a ticket tier (now capped at 5)
@@ -265,18 +265,34 @@ export const LeaderEventEditor = () => {
         <div 
           className="editor-hero" 
           style={{ 
-            backgroundImage: bannerImage ? `url(${bannerImage})` : 'none',
+            backgroundImage: bannerImage ? `url("${bannerImage}")` : 'none',
             backgroundColor: bannerImage ? 'transparent' : '#cbd5e1',
             backgroundSize: 'cover',
-            backgroundPosition: 'center'
+            backgroundPosition: 'center',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <h2 style={{ textShadow: bannerImage ? '0 2px 4px rgba(0,0,0,0.5)' : 'none', color: bannerImage ? 'white' : 'inherit' }}>
+          <h2 style={{ 
+            textShadow: bannerImage ? '0 2px 8px rgba(0,0,0,0.8)' : 'none', 
+            color: bannerImage ? 'white' : 'inherit',
+            zIndex: 2,
+            position: 'relative'
+          }}>
             {title ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT EDITOR')}
           </h2>
-          <button className="change-img-btn" onClick={handleImageUpload}>
+          <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
           </button>
+          {bannerImage && <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            zIndex: 1
+          }} />}
         </div>
 
         <div className="editor-grid">
@@ -289,20 +305,6 @@ export const LeaderEventEditor = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Annual Hackathon 2026" 
               />
-            </div>
-
-            <div className="input-group">
-              <label>Managing Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-                className="society-select"
-                disabled={!isNewEvent} // Usually society doesn't change after creation
-              >
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
             </div>
 
             <div style={{ display: 'flex', gap: '20px' }}>
@@ -341,6 +343,19 @@ export const LeaderEventEditor = () => {
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
               />
+            </div>
+
+            <div className="input-group">
+              <label>Host Society</label>
+              <select 
+                value={selectedSociety} 
+                onChange={(e) => setSelectedSociety(e.target.value)}
+                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
+              >
+                {societies.map(s => (
+                  <option key={s._id} value={s._id}>{s.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* DYNAMIC TICKET TIERS SECTION */}
@@ -452,9 +467,31 @@ export const LeaderSocietyManager = () => {
         if (data.success) {
           setSociety(data.data.society);
           setEvents(data.data.events);
+        } else {
+          // 2. If backend returns error, use local fallback
+          useLocalFallback();
         }
       })
-      .catch(err => console.error("Error loading society manager:", err));
+      .catch(err => {
+        console.error("Backend unreachable, using local fallback:", err);
+        useLocalFallback();
+      });
+
+    // Local fallback logic for demos
+    function useLocalFallback() {
+      const mockSocieties = [
+        { _id: "rotaract-club", name: "ROTARACT CLUB", logo: "/images-e/societies/rotaract-club.png" },
+        { _id: "ieee-club", name: "IEEE CLUB", logo: "/images-e/societies/ieee-club.png" },
+        { _id: "bizlink-society", name: "BIZLINK SOCIETY", logo: "" },
+        { _id: "iit-sports-club", name: "IIT SPORTS CLUB", logo: "" }
+      ];
+      
+      const found = mockSocieties.find(s => s._id === id);
+      if (found) {
+        setSociety(found);
+        setEvents([{ _id: "mock-1", title: `${found.name} EVENT 1`, status: "Active" }]);
+      }
+    }
   }, [id, API_URL]);
 
   if (!society) return <div className="loading">Loading Admin Space...</div>;
@@ -472,8 +509,6 @@ export const LeaderSocietyManager = () => {
         </div>
       </header>
 
-      <hr className="admin-divider" />
-
       <section className="manager-events">
         <div className="manager-events-header">
           <h3>Managed Events</h3>
@@ -481,7 +516,7 @@ export const LeaderSocietyManager = () => {
         </div>
         <div className="manager-grid">
           {events.map((ev, i) => (
-            <LeaderEventBanner key={i} id={ev._id} />
+            <LeaderEventBanner key={i} id={ev._id} title={ev.title} />
           ))}
         </div>
       </section>
