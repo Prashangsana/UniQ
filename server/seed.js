@@ -1,11 +1,12 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Event = require('./src/models/Event');
-//thconst Society = require('./src/models/Society');
-//const User = require('./src/models/user');
+//const Society = require('./src/models/Society');
+const User = require('./src/models/user');
 const eventsData = require('./src/mockData/events.json');
 const societiesData = require('./src/mockData/societies.json');
-const studentsData = require('./src/data/mockStudents.json');
+
+const mockUsers = require('./src/mockData/mockUsers');
 
 const seedDB = async () => {
   try {
@@ -15,12 +16,21 @@ const seedDB = async () => {
     // Clear existing data (optional, but good for fresh start)
     //await Event.deleteMany({});
     //await Society.deleteMany({});
-   // await User.deleteMany({});
+    await User.deleteMany({});
+
+    console.log('Seeding your Student data...');
+    // This adds your data from mockUsers.js into Atlas
+    const cleanedUsers = mockUsers.map(user => {
+      const { _id, ...rest } = user; 
+      return rest;
+    });
+    await User.insertMany(cleanedUsers); 
+    console.log('✅ Students seeded successfully!');
 
    
     // 1. Insert Societies
     const societyMap = {};
-/*
+
     for (const s of societiesData) {
       const society = new Society({
         name: s.name,
@@ -33,7 +43,7 @@ const seedDB = async () => {
       const savedSociety = await society.save();
       societyMap[s._id] = savedSociety._id;
     }
-    console.log('Societies seeded!');*/
+    console.log('Societies seeded!');
 
     // 2. Insert Events
     const eventsToInsert = eventsData.map(e => ({
@@ -45,9 +55,8 @@ const seedDB = async () => {
     }));
 
     // 3. Insert student 
-    console.log('Seeding Students...');
-    await User.insertMany(studentsData); 
-    console.log('Students seeded with Bios and Skills!');
+   
+    
 
     await Event.insertMany(eventsToInsert);
     console.log('Events seeded!');
