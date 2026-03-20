@@ -59,7 +59,7 @@ function App() {
     }
   };
 
-  const handleAddEvent = (event: any): void => {
+  const handleAddEvent = (_event: any): void => {
     // If it's an object from the backend, it will have { event: { ... } }
     // If it's just the ID, we'll need to fetch the event details to show it in the list
     // For now, let's just refresh the whole list from the server to keep it in sync
