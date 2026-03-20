@@ -3,16 +3,18 @@ import { useNavigate, Link } from "react-router-dom";
 import "./LeaderEvent.css";
 
 // 1. Admin Event Banner
-export const LeaderEventBanner = ({ large, id = "sample-event" }) => {
+export const LeaderEventBanner = ({ large, id = "sample-event", title }) => {
   const navigate = useNavigate();
+  const displayTitle = title || id.replace(/-/g, ' ').toUpperCase();
+  
   return (
     <div 
       className={`leader-banner ${large ? "large" : ""}`} 
-      onClick={() => navigate(`/event/${id}`)}
+      onClick={() => navigate(`/admin/event/${id}`)}
       style={{ cursor: 'pointer', position: 'relative' }}
     >
       <div className="leader-banner-text">
-        {id.replace(/-/g, ' ').toUpperCase()}
+        {displayTitle}
       </div>
       <div className="leader-edit-badge">✏️ Edit</div>
     </div>
@@ -38,7 +40,11 @@ export const LeaderEventRow = ({ title, events = [] }) => {
         {events.length === 0 ? (
           <div className="leader-empty">No active events found in this category.</div>
         ) : (
-          displayItems.map((id, index) => <LeaderEventBanner key={index} id={id} />)
+          displayItems.map((event, index) => {
+            const eventId = typeof event === 'string' ? event : event._id;
+            const eventTitle = typeof event === 'string' ? null : event.title;
+            return <LeaderEventBanner key={index} id={eventId} title={eventTitle} />;
+          })
         )}
       </div>
     </section>
@@ -72,7 +78,7 @@ export const LeaderSidebar = ({ title }) => {
 // 4. Admin Society Card
 export const LeaderSocietyCard = ({ name, id, logo }) => {
   return (
-    <Link to={`/society/${id}`} className="leader-card-link">
+    <Link to={`/admin/society/${id}`} className="leader-card-link">
       <div className="leader-card">
         <img
           src={logo || `/images-e/societies/${id}.png`}

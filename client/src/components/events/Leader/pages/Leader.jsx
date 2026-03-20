@@ -58,7 +58,7 @@ export const LeaderDashboard = () => {
               <h1>Society Leader Portal</h1>
               <p>Welcome back, {userName}</p>
             </div>
-            <button className="publish-btn" onClick={() => navigate('/event/new')}>
+            <button className="publish-btn" onClick={() => navigate('/admin/event/new')}>
               + Create New Event
             </button>
           </header>
@@ -277,9 +277,11 @@ export const LeaderEventEditor = () => {
             textShadow: bannerImage ? '0 2px 8px rgba(0,0,0,0.8)' : 'none', 
             color: bannerImage ? 'white' : 'inherit',
             zIndex: 2,
-            position: 'relative'
+            position: 'relative',
+            fontWeight: '800',
+            letterSpacing: '1px'
           }}>
-            {title ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT EDITOR')}
+            {isNewEvent ? 'CREATE NEW EVENT' : title.toUpperCase()}
           </h2>
           <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
@@ -297,6 +299,19 @@ export const LeaderEventEditor = () => {
 
         <div className="editor-grid">
           <div className="editor-main">
+            <div className="input-group">
+              <label>Host Society</label>
+              <select 
+                value={selectedSociety} 
+                onChange={(e) => setSelectedSociety(e.target.value)}
+              >
+                <option value="">Select a society</option>
+                {societies.map(s => (
+                  <option key={s._id} value={s._id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="input-group">
               <label>Event Name</label>
               <input 
@@ -327,11 +342,15 @@ export const LeaderEventEditor = () => {
               </div>
               <div className="input-group" style={{ flex: 1 }}>
                 <label>Time</label>
-                <input 
-                  type="time" 
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    placeholder="-- : --"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                  />
+                  <span style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>🕒</span>
+                </div>
               </div>
             </div>
 
@@ -345,19 +364,6 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
-            <div className="input-group">
-              <label>Host Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
-              >
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
             {/* DYNAMIC TICKET TIERS SECTION */}
             <div className="input-group">
               <label>Ticket Pricing & Tiers (Max 5)</label>
@@ -366,7 +372,7 @@ export const LeaderEventEditor = () => {
                 <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                   <input 
                     type="text" 
-                    placeholder="Tier Name (e.g., VIP, Balcony)" 
+                    placeholder="Standard Ticket" 
                     value={ticket.name}
                     onChange={(e) => updateTicket(index, 'name', e.target.value)}
                     style={{ flex: 1 }}
@@ -376,34 +382,27 @@ export const LeaderEventEditor = () => {
                     placeholder="Price (e.g., Rs. 2500, Free)" 
                     value={ticket.price}
                     onChange={(e) => updateTicket(index, 'price', e.target.value)}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1.5 }}
                   />
                   
-                  {/* Only show the Remove button if there is more than 1 row */}
                   {tickets.length > 1 && (
                     <button 
                       onClick={() => removeTicketTier(index)}
                       style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '12px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}
-                      title="Remove Tier"
                     >
-                      X
+                      ✕
                     </button>
                   )}
                 </div>
               ))}
               
-              {/* Only show the Add button if there are less than 5 tiers */}
-              {tickets.length < 5 ? (
+              {tickets.length < 5 && (
                 <button 
                   onClick={addTicketTier}
                   style={{ background: '#e2e8f0', color: '#0f172a', border: 'none', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', marginTop: '5px' }}
                 >
                   + Add Another Ticket Tier
                 </button>
-              ) : (
-                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: '600', marginTop: '5px', display: 'inline-block' }}>
-                  Maximum of 5 ticket tiers reached.
-                </span>
               )}
             </div>
 
@@ -412,13 +411,13 @@ export const LeaderEventEditor = () => {
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows="5" 
+                rows="6" 
                 placeholder="Write all the exciting details about your event here..."
               />
             </div>
             
             <div className="admin-actions">
-              <button className="save-btn" onClick={handleSave}>
+              <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
                 {isNewEvent ? 'Publish Event' : 'Save Changes'}
               </button>
               {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
@@ -512,7 +511,7 @@ export const LeaderSocietyManager = () => {
       <section className="manager-events">
         <div className="manager-events-header">
           <h3>Managed Events</h3>
-          <button className="small-add-btn" onClick={() => navigate('/event/new')}>+ Add Event</button>
+          <button className="small-add-btn" onClick={() => navigate('/admin/event/new')}>+ Add Event</button>
         </div>
         <div className="manager-grid">
           {events.map((ev, i) => (
