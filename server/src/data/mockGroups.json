@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "test_group_123",
+    "name": "Csypher",
+    "moduleId": "5COSC019C",
+    "domain": "Web Development",
+    "maxMembers": 6,
+    "leader": { "_id": "user_id_student_1", "name": "Imasha Solomon" },
+    "members": [
+      { "_id": "user_id_student_1", "name": "Imasha Solomon" }
+    ],
+    "isFinalised": false,
+    "status": "open",
+    "finalisationForm": null,
+    "finalisedCode": null,
+    "prefix": null
+  }
+]

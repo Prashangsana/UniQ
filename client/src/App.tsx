@@ -14,6 +14,7 @@ import Footer from './components/Landing/Footer';
 // Dashboard Components
 import Home from './dashboard/Home';
 
+import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
 
@@ -102,6 +103,8 @@ function App() {
           <Route path="/dashboard" element={
             userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
           } />
+
+          <Route path="/groups" element={<GroupsPage />} />
 
           {/* Shared Routes */}
           <Route path="/society/:id" element={<SocietyProfilePage />} />

@@ -5,7 +5,9 @@
     "email": "imasha.20240068@iit.ac.lk",
     "role": "student",
     "uowId": "w2149635",
-    "iitId": "20240068"
+    "iitId": "20240068",
+    "skills": ["React", "UI/UX", "Node.js"],
+    "bio": "Third-year Computer Science undergrad looking for a Web Development project."
   },
   {
     "_id": "user_id_student_2",
