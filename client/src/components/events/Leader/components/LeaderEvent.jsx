@@ -70,11 +70,16 @@ export const LeaderSidebar = ({ title }) => {
 };
 
 // 4. Admin Society Card
-export const LeaderSocietyCard = ({ name, id }) => {
+export const LeaderSocietyCard = ({ name, id, logo }) => {
   return (
     <Link to={`/society/${id}`} className="leader-card-link">
       <div className="leader-card">
-        <div className="leader-card-logo">Logo</div>
+        <img
+          src={logo || `/images-e/societies/${id}.png`}
+          alt={name}
+          className="leader-card-logo"
+          onError={(e) => { e.target.src = "/images-e/default.jpg"; }}
+        />
         <span className="leader-card-name">{name}</span>
         <div className="leader-manage-tag">✏️ Manage</div>
       </div>

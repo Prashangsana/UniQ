@@ -4,23 +4,17 @@ import './Leader.css';
 import { LeaderEventBanner, LeaderEventRow, LeaderSidebar, LeaderSocietyCard } from '../components/LeaderEvent';
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
 /* ==========================================
    1. LEADER DASHBOARD
 ========================================== */
 export const LeaderDashboard = () => {
   const navigate = useNavigate();
   
-  const [societies, setSocieties] = useState([
-    { _id: "rotaract-club", name: "Rotaract Club" },
-    { _id: "ieee-club", name: "IEEE Club" },
-    { _id: "bizlink-society", name: "Bizlink Society" },
-    { _id: "iit-sports-club", name: "IIT Sports Club" }
-  ]);
-  
-  const [activeEvents, setActiveEvents] = useState(["main-hackathon-2026", "rec-event-1", "rec-event-2"]);
-  const [draftEvents, setDraftEvents] = useState(["old-event-1"]);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const [societies, setSocieties] = useState([]);
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [draftEvents, setDraftEvents] = useState([]);
   const [userName, setUserName] = useState('Leader');
 
   useEffect(() => {
@@ -34,8 +28,8 @@ export const LeaderDashboard = () => {
       })
       .catch(err => console.error("Error loading user info:", err));
 
-    // Load Leader's Societies
-    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
+    // Load all Societies
+    fetch(`${API_URL}/api/societies`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data.length > 0) setSocieties(data.data);
@@ -48,15 +42,12 @@ export const LeaderDashboard = () => {
       .then(data => {
         if (data.success && data.data.length > 0) {
           const allEvents = data.data;
-          const liveActive = allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id);
-          const liveDraft = allEvents.filter(e => e.status === 'Draft' || e.status === 'Past').map(e => e._id);
-          
-          if (liveActive.length > 0) setActiveEvents(liveActive);
-          if (liveDraft.length > 0) setDraftEvents(liveDraft);
+          setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
+          setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
         }
       })
       .catch(err => console.error("Error loading events:", err));
-  }, []);
+  }, [API_URL]);
 
   return (
     <div className="admin-page">
@@ -87,7 +78,7 @@ export const LeaderDashboard = () => {
             <h3>Your societies</h3>
             <div className="societies-list-container">
               {societies.map(s => (
-                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} />
+                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
               ))}
             </div>
           </div>
@@ -156,28 +147,16 @@ export const LeaderEventEditor = () => {
             setSelectedSociety(ev.society?._id || ev.society || '');
             
             if (ev.date) {
-              // Use UTC methods to avoid timezone shift for date-only values from the backend
               const d = new Date(ev.date);
               setDate({
-                dd: String(d.getUTCDate()).padStart(2, '0'),
-                mm: String(d.getUTCMonth() + 1).padStart(2, '0'),
-                yyyy: String(d.getUTCFullYear())
+                dd: String(d.getDate()).padStart(2, '0'),
+                mm: String(d.getMonth() + 1).padStart(2, '0'),
+                yyyy: String(d.getFullYear())
               });
             }
           }
         })
         .catch(err => console.error("Error loading event:", err));
-    } else {
-      // Reset form when switching to 'Create New Event' mode
-      setTitle('');
-      setDescription('');
-      setVenue('');
-      setTime('');
-      setAdminLink('');
-      setTickets([{ name: 'Standard Ticket', price: '' }]);
-      setStatus('Draft');
-      setBannerImage('');
-      setDate({ dd: '', mm: '', yyyy: '' });
     }
   }, [eventId, isNewEvent, API_URL]);
 
@@ -197,7 +176,7 @@ export const LeaderEventEditor = () => {
       tickets,
       status: 'Active',
       bannerImage,
-      society: selectedSociety || "ROTARACT" 
+      society: selectedSociety
     };
 
     const url = isNewEvent 
@@ -366,7 +345,18 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
-
+            <div className="input-group">
+              <label>Host Society</label>
+              <select 
+                value={selectedSociety} 
+                onChange={(e) => setSelectedSociety(e.target.value)}
+                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
+              >
+                {societies.map(s => (
+                  <option key={s._id} value={s._id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
 
             {/* DYNAMIC TICKET TIERS SECTION */}
             <div className="input-group">
@@ -471,7 +461,6 @@ export const LeaderSocietyManager = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // 1. Try to fetch from backend
     fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
