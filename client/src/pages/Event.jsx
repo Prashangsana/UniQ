@@ -15,10 +15,14 @@ export const EventsPage = ({ myEventsList = [] }) => {
   const [latestEvents, setLatestEvents] = useState([]);
   const [topEvents, setTopEvents] = useState([]);
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   /* LOAD SOCIETIES */
   useEffect(() => {
 
-    fetch("http://localhost:5000/api/societies")
+    fetch(`${API_URL}/api/societies`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -27,12 +31,14 @@ export const EventsPage = ({ myEventsList = [] }) => {
       })
       .catch(err => console.error("Error loading societies:", err));
 
-  }, []);
+  }, [API_URL]);
 
   /* LOAD NOTIFICATIONS */
   useEffect(() => {
 
-    fetch("http://localhost:5000/api/events/notifications")
+    fetch(`${API_URL}/api/events/notifications`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
 
@@ -43,13 +49,15 @@ export const EventsPage = ({ myEventsList = [] }) => {
       })
       .catch(err => console.log(err));
 
-  }, []);
+  }, [API_URL]);
 
   /* LOAD STAGE 4 EVENT DISCOVERY DATA */
   useEffect(() => {
 
     /* MAIN EVENT */
-    fetch("http://localhost:5000/api/events/main")
+    fetch(`${API_URL}/api/events/main`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -59,7 +67,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .catch(err => console.log("Main event error:", err));
 
     /* MORE EVENTS FOR YOU */
-    fetch("http://localhost:5000/api/events/latest")
+    fetch(`${API_URL}/api/events/latest`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -69,7 +79,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .catch(err => console.log("Latest events error:", err));
 
     /* TOP EVENTS THIS WEEK */
-    fetch("http://localhost:5000/api/events/top-week")
+    fetch(`${API_URL}/api/events/top-week`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -78,7 +90,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
       })
       .catch(err => console.log("Top events error:", err));
 
-  }, []);
+  }, [API_URL]);
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
 
@@ -174,30 +186,29 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const eventId = params.eventId || params.id;
   const navigate = useNavigate();
 
+  const [eventData, setEventData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const isAdded = (myEventsList || []).some(
-    e => (typeof e === "string" ? e === eventId : e.event === eventId)
+    e => {
+      const savedEventId = e.event?._id || e.event || e;
+      return savedEventId.toString() === eventId?.toString();
+    }
   );
 
-  const displayTitle = eventId ? eventId.replace(/-/g, " ") : "";
+  useEffect(() => {
+    if (!eventId) return;
 
-  const getHeroImage = (id) => {
-
-    if (!id) return "/images-e/default.jpg";
-
-    if (id === "main-hackathon-2026") {
-      return "/images-e/events/main-event.jpg";
-    }
-
-    if (id.includes("-event-")) {
-      const [clubName, eventPart] = id.split("-event-");
-      return `/images-e/club-events/${clubName}/event${eventPart}.jpg`;
-    }
-
-    return `/images-e/events/${id}.jpg`;
-
-  };
-
-  const heroImagePath = getHeroImage(eventId);
+    fetch(`http://localhost:5000/api/events/${eventId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setEventData(data.data);
+        }
+      })
+      .catch(err => console.error("Error loading event details:", err))
+      .finally(() => setLoading(false));
+  }, [eventId]);
 
   const handleAddEvent = async () => {
 
@@ -211,7 +222,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           method: "POST",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          credentials: "include"
         }
       );
 
@@ -219,10 +231,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       if (data.success) {
         onAddEvent(eventId);
+      } else {
+        alert(data.message || "Failed to add event");
       }
 
     } catch (error) {
       console.error("Error adding event:", error);
+      alert("Error adding event. Make sure you are logged in.");
     }
 
   };
@@ -239,7 +254,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
           method: "DELETE",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          credentials: "include"
         }
       );
 
@@ -247,13 +263,22 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       if (data.success) {
         onRemoveEvent(eventId);
+      } else {
+        alert(data.message || "Failed to remove event");
       }
 
     } catch (error) {
       console.error("Error removing event:", error);
+      alert("Error removing event.");
     }
 
   };
+
+  if (loading) return <div className="loading">Loading Event Details...</div>;
+  if (!eventData) return <div className="error">Event not found</div>;
+
+  const displayTitle = eventData.title || "";
+  const heroImagePath = eventData.bannerImage || "/images-e/default.jpg";
 
   return (
     <div className="event-details-page">
@@ -288,28 +313,32 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <p className="event-description-text">
               <strong>Description:</strong>
-              {" "}This is a unique event detail page for {displayTitle}.
+              {" "}{eventData.description}
             </p>
 
             <div className="event-links">
 
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn insta"
-              >
-                Instagram
-              </a>
+              {eventData.instagramLink && (
+                <a
+                  href={eventData.instagramLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-btn insta"
+                >
+                  Instagram
+                </a>
+              )}
 
-              <a
-                href="https://forms.google.com"
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn register"
-              >
-                Participate
-              </a>
+              {eventData.registerLink && (
+                <a
+                  href={eventData.registerLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-btn register"
+                >
+                  Participate
+                </a>
+              )}
 
             </div>
 
@@ -319,22 +348,22 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <div className="meta-item">
               <span>📅 Date:</span>
-              <p>Oct 25, 2026</p>
+              <p>{new Date(eventData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
             </div>
 
             <div className="meta-item">
               <span>⏰ Time:</span>
-              <p>09:00 AM</p>
+              <p>{eventData.time}</p>
             </div>
 
             <div className="meta-item">
               <span>📍 Place:</span>
-              <p>IIT Auditorium</p>
+              <p>{eventData.place}</p>
             </div>
 
             <div className="meta-item">
               <span>💰 Price:</span>
-              <p>LKR 1000</p>
+              <p>{eventData.price}</p>
             </div>
 
           </div>
@@ -388,7 +417,8 @@ export const SocietyProfilePage = () => {
     if (following) {
 
       await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
-        method: "DELETE"
+        method: "DELETE",
+        credentials: "include"
       });
 
       setFollowing(false);
@@ -396,7 +426,8 @@ export const SocietyProfilePage = () => {
     } else {
 
       await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
-        method: "POST"
+        method: "POST",
+        credentials: "include"
       });
 
       setFollowing(true);
@@ -408,7 +439,9 @@ export const SocietyProfilePage = () => {
   useEffect(() => {
 
   /* LOAD SOCIETY PROFILE */
-  fetch(`http://localhost:5000/api/societies/${id}`)
+  fetch(`http://localhost:5000/api/societies/${id}`, {
+    credentials: "include"
+  })
     .then(res => res.json())
     .then(data => {
 
@@ -422,7 +455,9 @@ export const SocietyProfilePage = () => {
 
 
   /* LOAD FOLLOW STATUS */
-  fetch(`http://localhost:5000/api/societies/${id}/follow-status`)
+  fetch(`http://localhost:5000/api/societies/${id}/follow-status`, {
+    credentials: "include"
+  })
     .then(res => res.json())
     .then(data => {
 

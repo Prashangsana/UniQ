@@ -19,7 +19,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   res.status(statusCode).cookie("token", token, options).redirect(FRONTEND_URL);
 };
 
-exports.googleCallback = async (req, res) => {
+exports.oauthLogin = async (req, res) => {
   try {
     const { email, name, firstName, lastName, providerId, provider, photo } = req.user;
 
