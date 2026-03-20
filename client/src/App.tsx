@@ -116,6 +116,8 @@ function App() {
           {/* Student Specific Routes */}
           {userRole !== 'society_leader' && (
             <>
+              {/* Fix: Specifically handle 'new' for students if they use the Leader tab */}
+              <Route path="/event/new" element={<LeaderEventEditor />} />
               <Route
                 path="/event/:eventId"
                 element={

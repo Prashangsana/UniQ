@@ -49,14 +49,6 @@ export const LeaderEventRow = ({ title, events = [] }) => {
 export const LeaderSidebar = ({ title }) => {
   const navigate = useNavigate();
 
-  // Temporary function for the Student Dashboard button
-  const handleGoToStudentDashboard = () => {
-    // When your friend finishes the student dashboard, 
-    // you can change this to navigate to her route (e.g., navigate('/student'))
-    // or use window.location.href = "HER_LINK" if it's hosted elsewhere.
-    alert("This will navigate to the Student Dashboard once it is linked!");
-  };
-
   return (
     <div className="leader-sidebar">
       <h3 className="leader-sidebar-title">{title}</h3>
@@ -70,9 +62,8 @@ export const LeaderSidebar = ({ title }) => {
         ))}
       </div>
       
-      {/* Updated Button: Now points to the Student Dashboard placeholder */}
-      <button className="leader-sidebar-btn" onClick={handleGoToStudentDashboard}>
-        Student Dashboard &gt;
+      <button className="leader-sidebar-btn" onClick={() => navigate('/report')}>
+        Weekly Report &gt;
       </button>
     </div>
   );

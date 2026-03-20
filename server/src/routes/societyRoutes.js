@@ -4,12 +4,16 @@ const { protect } = require('../middleware/authMiddleware');
 const { followSociety, unfollowSociety, checkFollowStatus } = require("../controllers/followController");
 const {
   getAllSocieties,
-  getSocietyProfile
+  getSocietyProfile,
+  getLeaderSocieties
 } = require('../controllers/societyController');
 
 
 // GET ALL SOCIETIES
 router.get('/', getAllSocieties);
+
+// GET LEADER SOCIETIES (Admin view)
+router.get('/leader/all', protect, getLeaderSocieties);
 
 
 // GET SOCIETY PROFILE

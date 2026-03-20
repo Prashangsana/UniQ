@@ -40,15 +40,29 @@ const EventSchema = new mongoose.Schema({
     required: true
   },
 
-  place: {
+  venue: {
     type: String,
     required: true
   },
 
-  price: {
+  adminLink: {
+    type: String
+  },
+
+  registerLink: {
+    type: String
+  },
+
+  status: {
     type: String,
-    required: true
-  }
+    enum: ['Active', 'Draft', 'Featured', 'Past'],
+    default: 'Active'
+  },
+
+  tickets: [{
+    name: String,
+    price: String
+  }]
 
 }, { timestamps: true });
 

@@ -36,8 +36,11 @@ export const LeaderDashboard = () => {
       .then(data => {
         if (data.success && data.data.length > 0) {
           const allEvents = data.data;
-          setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
-          setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
+          const liveActive = allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id);
+          const liveDraft = allEvents.filter(e => e.status === 'Draft' || e.status === 'Past').map(e => e._id);
+          
+          if (liveActive.length > 0) setActiveEvents(liveActive);
+          if (liveDraft.length > 0) setDraftEvents(liveDraft);
         }
       })
       .catch(err => console.error("Error loading events:", err));
@@ -152,7 +155,7 @@ export const LeaderEventEditor = () => {
       tickets,
       status: 'Active',
       bannerImage,
-      society: "rotaract-club" 
+      society: "ROTARACT" 
     };
 
     const url = isNewEvent 
