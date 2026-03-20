@@ -19,7 +19,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   res.status(statusCode).cookie("token", token, options).redirect(FRONTEND_URL);
 };
 
-exports.oauthLogin = async (req, res) => {
+exports.googleCallback = async (req, res) => {
   try {
     const { email, name, firstName, lastName, providerId, provider, photo } = req.user;
 
@@ -68,4 +68,28 @@ exports.logout = (req, res) => {
 
   const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
   res.redirect(FRONTEND_URL);
+};
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(401).json({ authenticated: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      authenticated: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role, 
+        photo: user.photo
+      }
+    });
+  } catch (error) {
+    console.error("GetMe Error:", error);
+    res.status(500).json({ authenticated: false, message: "Server Error" });
+  }
 };

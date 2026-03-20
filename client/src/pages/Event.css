@@ -1,7 +1,7 @@
-/* ================= GLOBAL ================= */
+/* GLOBAL */
 body { background: #f8fafc; font-family: Arial, sans-serif; }
 
-/* ================= EVENTS PAGE (DASHBOARD) ================= */
+/* EVENTS PAGE (DASHBOARD) */
 .events-page { 
   padding: 5px 5px; 
   max-width: 98%; 
@@ -43,7 +43,15 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
 
 .sidebar-view-more:hover { background: #0a0254; }
 
-/* ================= EVENT DETAILS PAGE ================= */
+/* FIX: Grid distribution for dashboard rows to show 3 items per row */
+.row-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 30px; 
+  width: 100%;
+}
+
+/* EVENT DETAILS PAGE */
 .event-details-page { padding: 40px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; align-items: center; }
 .event-details-page .navigation-header { width: 100%; max-width: 1000px; margin-bottom: 20px; display: flex; justify-content: flex-start; }
 
@@ -57,7 +65,6 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
 .link-btn { text-align: center; padding: 12px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; }
 .insta { background: #e1306c; }
 .register { background: #2563eb; }
-.tickets { background: #059669; }
 
 .event-meta-sidebar { background: #f1f5f9; padding: 25px; border-radius: 15px; }
 .meta-item { margin-bottom: 18px; }
@@ -66,7 +73,7 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
 .external-action-area { margin-top: 40px; width: 100%; max-width: 1000px; display: flex; justify-content: center; }
 .add-to-events-btn, .remove-from-events-btn { width: 400px; max-width: 100%; padding: 16px; background: #1e3a8a; color: white; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; }
 
-/* ================= SOCIETY PROFILE PAGE ================= */
+/* SOCIETY PROFILE PAGE */
 .society-profile-page { padding: 20px 40px; text-align: center; background: #f5f6f8; min-height: 100vh; }
 
 /* Alignment for back button at the top corner */
@@ -101,9 +108,11 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
   border-radius: 15px;
 }
 
-/* ================= RESPONSIVE & UTILS ================= */
+/* RESPONSIVE & UTILS */
 @media (max-width: 900px) {
-  .events-layout, .event-info-grid, .events-grid-profile { grid-template-columns: 1fr; }
+  .events-layout, .event-info-grid, .events-grid-profile, .row-grid { 
+    grid-template-columns: 1fr; 
+  }
 }
 
 .notification-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; margin-bottom: 20px; border-radius: 8px; }

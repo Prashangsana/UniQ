@@ -24,11 +24,24 @@ app.use(cors({
 }));
 
 app.use(passport.initialize());
-
 require('./src/config/passport')(passport);
 
+// Routes
 const authRoutes = require('./src/routes/authRoutes');
+const societyRoutes = require('./src/routes/societyRoutes');
+const eventRoutes = require('./src/routes/eventRoutes');
 
 app.use('/auth', authRoutes);
+app.use('/api/societies', societyRoutes);
+app.use('/api/events', eventRoutes);
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  });
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
