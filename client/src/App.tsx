@@ -16,7 +16,7 @@ import Home from './dashboard/Home';
 import DashboardView from './dashboard/DashboardView';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 
-// Mentoring Components (The two files you provided)
+// Mentoring Components
 import LecturerMentoring from './pages/LecturerMentoring';
 import PeerMentoring from './pages/PeerMentoring';
 import MentorLogin from './pages/MentorLogin';

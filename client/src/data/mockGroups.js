@@ -17,7 +17,7 @@ export const groups = [
     membersList: [
       { id: 'st1', name: 'Prabhavi', role: 'Leader', skills: ['ML', 'Python'], bio: 'AI enthusiast looking to build cool tech.' },
       { id: 'st2', name: 'Sewmini', role: 'Member', skills: ['OOP', 'Java'], bio: 'Backend specialist.' },
-      { id: 'st3', name: 'Denimda', role: 'Member', skills: ['Backend', 'Node.js'], bio: 'Fullstack developer.' }
+      { id: 'st3', name: 'Deminda', role: 'Member', skills: ['Backend', 'Node.js'], bio: 'Fullstack developer.' }
     ]
   },
   {

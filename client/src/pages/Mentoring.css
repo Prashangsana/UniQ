@@ -2,137 +2,280 @@
   --deep-navy: #0d214f;
   --bg-silver: #f4f5f7;
   --accent-purple: #7a7fac;
+  --deep-banner-blue: #1a3a8a;
+  /* Status Colors */
+  --status-pending: #ffc107;
+  --status-accepted: #28a745;
+  --status-requested: #17a2b8;
 }
 
-.mentoring-container {
-  min-height: 100vh;
-  background-color: var(--bg-silver);
-  display: flex;
-  flex-direction: column;
-}
-
-.mentoring-navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 40px;
-  background: white;
-  border-bottom: 1px solid #ddd;
-}
-
-.nav-links a {
-  margin: 0 12px;
-  color: #666;
-  text-decoration: none;
-}
-
-.active-tab {
-  font-weight: 700;
-  color: var(--deep-navy) !important;
-  border-bottom: 3px solid var(--deep-navy);
-}
-
+/* --- Layout Structure (FULL WIDTH) --- */
 .mentoring-layout {
   display: flex;
   gap: 30px;
   padding: 30px;
+  width: 100%; /* Use 100% of the container */
+  min-height: 100vh;
+  background-color: var(--bg-silver);
+  box-sizing: border-box; /* Prevents horizontal scrollbars */
 }
 
 .mentoring-main {
-  flex: 3;
+  flex: 4; /* Main content takes up 4x the space of the sidebar */
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.mentoring-sidebar {
+  flex: 1.2; /* Sidebar is wide enough for the calendar but doesn't crowd the main area */
+}
+
+.sidebar-section {
   background: white;
   padding: 25px;
   border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 30px;
 }
 
-.expertise-row {
+/* --- Search & Navigation --- */
+.search-container {
   display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.lecturer-card {
-  background: #f8f9fa;
-  flex: 1;
-  height: 160px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 15px;
-}
-
-.avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #eee;
-}
-
-.avatar-placeholder img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.booking-item {
-  display: flex;
-  justify-content: space-between;
   background: #f0f2f5;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 10px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  margin-bottom: 35px;
+  gap: 15px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
-.btn-view-calendar {
-  background-color: var(--deep-navy);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 13px;
-  transition: opacity 0.2s ease;
+.search-container:focus-within {
+  background: white;
+  border-color: var(--deep-navy);
+  box-shadow: 0 4px 12px rgba(13, 33, 79, 0.08);
 }
 
-.btn-view-calendar:hover {
-  opacity: 0.85;
-}
-
-.mentoring-search-input {
+.search-container input {
   border: none;
   background: transparent;
   outline: none;
   width: 100%;
-  font-size: 15px;
+  font-size: 16px;
   font-family: inherit;
 }
 
 .back-navigation-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: transparent;
   border: none;
-  color: var(--medium-ui-blue-purple, #666);
+  color: #666;
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   font-weight: 600;
-  font-size: 15px;
-  padding: 8px 12px; 
-  border-radius: 8px;
+  padding: 10px 15px;
+  border-radius: 10px;
   transition: all 0.2s ease;
-  font-family: inherit;
-  margin-left: -12px; 
+  margin-left: -12px;
 }
 
 .back-navigation-btn:hover {
-  background: #f0f4f8; 
+  background: #f0f4f8;
   color: var(--deep-banner-blue);
+}
+
+/* --- HORIZONTAL EXPERTISE GRID (EXPANSIVE) --- */
+.expertise-row {
+  display: grid;
+  /* Automatically adds columns as the screen gets wider */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+  gap: 25px;
+  margin-top: 15px;
+  margin-bottom: 50px;
+}
+
+.lecturer-card {
+  background: #f8f9fa;
+  border: 1px solid #eef0f2;
+  border-radius: 20px;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 200px;
+}
+
+.lecturer-card:hover {
+  transform: translateY(-10px);
+  background: white;
+  border-color: var(--deep-navy);
+  box-shadow: 0 15px 30px rgba(13, 33, 79, 0.12);
+}
+
+.lecturer-card img {
+  width: 85px;
+  height: 85px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 18px;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.expertise-pill {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--deep-navy);
+  text-align: center;
+}
+
+/* --- HORIZONTAL BOOKING ROWS --- */
+.bookings-list h3 {
+  margin-bottom: 25px;
+  font-size: 1.4rem;
+  color: var(--deep-navy);
+  font-weight: 800;
+}
+
+.booking-item {
+  display: flex;
+  flex-direction: row; /* Horizontal alignment */
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 20px 30px;
+  border-radius: 18px;
+  margin-bottom: 15px;
+  border: 1px solid #eef0f2;
+  transition: all 0.2s ease;
+}
+
+.booking-item:hover {
+  background: #fafbfc;
+  border-color: #d1d5db;
+}
+
+.lecturer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 2;
+}
+
+.lecturer-meta .lecturer-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--deep-navy);
+}
+
+.tag-pill {
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 180px;
+  padding: 0 30px;
+}
+
+.status-text {
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-text.pending { color: var(--status-pending); }
+.status-text.accepted { color: var(--status-accepted); }
+.status-text.requested { color: var(--status-requested); }
+
+/* --- BUTTONS --- */
+.join-btn {
+  background: #2D8CFF;
+  color: white;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(45, 140, 255, 0.2);
+}
+
+.join-btn:hover {
+  background: #1a73e8;
+  transform: scale(1.05);
+}
+
+.book-btn-main {
+  background: var(--deep-navy);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.book-btn-main:hover {
+  opacity: 0.9;
+  box-shadow: 0 6px 15px rgba(13, 33, 79, 0.2);
+}
+
+/* --- HORIZONTAL CATEGORY VIEW --- */
+.booking-item-card {
+  display: flex;
+  flex-direction: row; /* Ensure lecturers appear side-by-side with their buttons */
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 25px 35px;
+  border-radius: 22px;
+  border: 1px solid #eef0f2;
+  margin-bottom: 20px;
+}
+
+.avatar-circle {
+  width: 60px;
+  height: 60px;
+  background: #f0f4f8;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--deep-navy);
+  font-size: 28px;
+}
+
+/* --- UTILITIES --- */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-weight: 700;
+  color: var(--accent-purple);
+  font-size: 18px;
 }

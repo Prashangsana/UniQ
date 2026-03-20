@@ -33,9 +33,11 @@ require('./src/config/passport')(passport);
 const authRoutes = require('./src/routes/authRoutes'); 
 const societyRoutes = require('./src/routes/societyRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
+const mentoringRoutes = require('./src/routes/mentoringRoutes');
 
 app.use('/auth', authRoutes);
 app.use('/api/societies', societyRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/mentoring', mentoringRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
