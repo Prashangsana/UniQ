@@ -1,7 +1,7 @@
-/* ================= GLOBAL ================= */
+/* GLOBAL */
 body { background: #f8fafc; font-family: Arial, sans-serif; }
 
-/* ================= EVENTS PAGE (DASHBOARD) ================= */
+/* EVENTS PAGE (DASHBOARD) */
 .events-page { 
   padding: 5px 5px; 
   max-width: 98%; 
@@ -51,7 +51,7 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
   width: 100%;
 }
 
-/* ================= EVENT DETAILS PAGE ================= */
+/* EVENT DETAILS PAGE */
 .event-details-page { padding: 40px; min-height: 100vh; background: #f8fafc; display: flex; flex-direction: column; align-items: center; }
 .event-details-page .navigation-header { width: 100%; max-width: 1000px; margin-bottom: 20px; display: flex; justify-content: flex-start; }
 
@@ -73,7 +73,7 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
 .external-action-area { margin-top: 40px; width: 100%; max-width: 1000px; display: flex; justify-content: center; }
 .add-to-events-btn, .remove-from-events-btn { width: 400px; max-width: 100%; padding: 16px; background: #1e3a8a; color: white; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; }
 
-/* ================= SOCIETY PROFILE PAGE ================= */
+/* SOCIETY PROFILE PAGE */
 .society-profile-page { padding: 20px 40px; text-align: center; background: #f5f6f8; min-height: 100vh; }
 
 /* Alignment for back button at the top corner */
@@ -108,7 +108,7 @@ body { background: #f8fafc; font-family: Arial, sans-serif; }
   border-radius: 15px;
 }
 
-/* ================= RESPONSIVE & UTILS ================= */
+/* RESPONSIVE & UTILS */
 @media (max-width: 900px) {
   .events-layout, .event-info-grid, .events-grid-profile, .row-grid { 
     grid-template-columns: 1fr; 

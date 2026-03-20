@@ -11,7 +11,7 @@ const groupsData = [
   { id: 6, name: "Machine Learning", img: "/images-d/ml.jpg" },
 ];
 
-const DashboardView = ({ onSeeAll }) => {
+const DashboardView = () => {
   return (
     <div className="app-inner-container">
       {/* Hero Banner */}
@@ -41,8 +41,7 @@ const DashboardView = ({ onSeeAll }) => {
         <section className="content-panel groups-panel">
           <div className="section-header">
             <h3>My Groups</h3>
-            <button className="see-all" onClick={onSeeAll}>
-            See All &gt;</button>
+            <button className="see-all">See All &gt;</button>
           </div>
 
           <div className="groups-grid">
