@@ -17,10 +17,26 @@ import Home from './dashboard/Home';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
 
+interface Event {
+  _id: string;
+  title: string;
+  date: string;
+  society: string;
+  bannerImage?: string;
+  description: string;
+  instagramLink?: string;
+  registerLink?: string;
+  time: string;
+  place: string;
+  price: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface SavedEvent {
   _id: string;
   user: string;
-  event: any; // Keeping any for now as the inner event object is complex, but the array itself is typed
+  event: Event;
   createdAt: string;
   updatedAt: string;
 }
