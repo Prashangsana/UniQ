@@ -12,8 +12,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 export const LeaderDashboard = () => {
   const navigate = useNavigate();
   
-<<<<<<<<< Temporary merge branch 1
-  // Keep original placeholders as fallback
   const [societies, setSocieties] = useState([
     { _id: "rotaract-club", name: "Rotaract Club" },
     { _id: "ieee-club", name: "IEEE Club" },
@@ -23,14 +21,6 @@ export const LeaderDashboard = () => {
   
   const [activeEvents, setActiveEvents] = useState(["main-hackathon-2026", "rec-event-1", "rec-event-2"]);
   const [draftEvents, setDraftEvents] = useState(["old-event-1"]);
-
-  useEffect(() => {
-=========
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  const [societies, setSocieties] = useState([]);
-  const [activeEvents, setActiveEvents] = useState([]);
-  const [draftEvents, setDraftEvents] = useState([]);
   const [userName, setUserName] = useState('Leader');
 
   useEffect(() => {
@@ -133,8 +123,6 @@ export const LeaderEventEditor = () => {
 
   // Load existing data if editing
   useEffect(() => {
-<<<<<<<<< Temporary merge branch 1
-=========
     // Load Leader's Societies
     fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
       .then(res => res.json())
@@ -148,7 +136,6 @@ export const LeaderEventEditor = () => {
       })
       .catch(err => console.error("Error loading societies:", err));
 
->>>>>>>>> Temporary merge branch 2
     if (!isNewEvent) {
       fetch(`${API_URL}/api/events/${eventId}`, { 
         headers: { 'Accept': 'application/json' },
@@ -210,7 +197,7 @@ export const LeaderEventEditor = () => {
       tickets,
       status: 'Active',
       bannerImage,
-      society: "rotaract-club" 
+      society: selectedSociety || "ROTARACT" 
     };
 
     const url = isNewEvent 
@@ -495,10 +482,7 @@ export const LeaderSocietyManager = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-<<<<<<<<< Temporary merge branch 1
     // 1. Try to fetch from backend
-    fetch(`http://localhost:5000/api/societies/${id}`, { credentials: 'include' })
-=========
     fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
