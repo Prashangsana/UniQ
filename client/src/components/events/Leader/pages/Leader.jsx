@@ -366,18 +366,7 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
-            <div className="input-group">
-              <label>Host Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
-              >
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
+
 
             {/* DYNAMIC TICKET TIERS SECTION */}
             <div className="input-group">
