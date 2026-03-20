@@ -1,5 +1,8 @@
 const mockUser = require('../data/mockUser.json');
 const mockStudents = require('../data/mockStudents.json');
+const mockGroups = require('../data/mockGroups.json');
+
+let groupsDb = [...mockGroups];
 
 // This stores the modules that lecturers have opened for group formation.
 let openModulesDb = [
@@ -7,23 +10,6 @@ let openModulesDb = [
 ];
 exports.openModulesDb = openModulesDb; // Export it so LecturerController can push to it
 // This array acts as our temporary MongoDB
-
-let groupsDb = [
-  {
-    _id: "test_group_123",
-    name: "CS-105-Alpha",
-    moduleId: "5COSC019C", // (Or whichever module ID you used)
-    domain: "Web Development",
-    maxMembers: 5,
-    leader: { _id: "fake_leader", name: "System Admin" },
-    members: [{ _id: "fake_leader", name: "System Admin" }],
-    isFinalised: false,
-    status: 'open',
-    finalisationForm: null, 
-    finalisedCode: null,
-    prefix: null
-  }
-];
 
 // GET /api/modules/open
 exports.getOpenModules = async (req, res) => {
