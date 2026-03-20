@@ -4,13 +4,14 @@ import './Leader.css';
 import { LeaderEventBanner, LeaderEventRow, LeaderSidebar, LeaderSocietyCard } from '../components/LeaderEvent';
 
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 /* ==========================================
    1. LEADER DASHBOARD
 ========================================== */
 export const LeaderDashboard = () => {
   const navigate = useNavigate();
   
-  // Keep original placeholders as fallback
   const [societies, setSocieties] = useState([
     { _id: "rotaract-club", name: "Rotaract Club" },
     { _id: "ieee-club", name: "IEEE Club" },
@@ -20,10 +21,21 @@ export const LeaderDashboard = () => {
   
   const [activeEvents, setActiveEvents] = useState(["main-hackathon-2026", "rec-event-1", "rec-event-2"]);
   const [draftEvents, setDraftEvents] = useState(["old-event-1"]);
+  const [userName, setUserName] = useState('Leader');
 
   useEffect(() => {
+    // Load User Info
+    fetch(`${API_URL}/api/auth/me`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated) {
+          setUserName(data.user.name);
+        }
+      })
+      .catch(err => console.error("Error loading user info:", err));
+
     // Load Leader's Societies
-    fetch("http://localhost:5000/api/societies/leader/all", { credentials: 'include' })
+    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data.length > 0) setSocieties(data.data);
@@ -31,7 +43,7 @@ export const LeaderDashboard = () => {
       .catch(err => console.error("Error loading societies:", err));
 
     // Load Leader's Events
-    fetch("http://localhost:5000/api/events", { credentials: 'include' })
+    fetch(`${API_URL}/api/events`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data.length > 0) {
@@ -53,7 +65,7 @@ export const LeaderDashboard = () => {
           <header className="admin-header">
             <div>
               <h1>Society Leader Portal</h1>
-              <p>Welcome back, Leader</p>
+              <p>Welcome back, {userName}</p>
             </div>
             <button className="publish-btn" onClick={() => navigate('/event/new')}>
               + Create New Event
@@ -94,6 +106,8 @@ export const LeaderEventEditor = () => {
   const navigate = useNavigate();
   const isNewEvent = eventId === 'new';
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -108,7 +122,7 @@ export const LeaderEventEditor = () => {
   // Load existing data if editing
   useEffect(() => {
     if (!isNewEvent) {
-      fetch(`http://localhost:5000/api/events/${eventId}`, { 
+      fetch(`${API_URL}/api/events/${eventId}`, { 
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       })
@@ -126,18 +140,30 @@ export const LeaderEventEditor = () => {
             setBannerImage(ev.bannerImage || '');
             
             if (ev.date) {
+              // Use UTC methods to avoid timezone shift for date-only values from the backend
               const d = new Date(ev.date);
               setDate({
-                dd: String(d.getDate()).padStart(2, '0'),
-                mm: String(d.getMonth() + 1).padStart(2, '0'),
-                yyyy: String(d.getFullYear())
+                dd: String(d.getUTCDate()).padStart(2, '0'),
+                mm: String(d.getUTCMonth() + 1).padStart(2, '0'),
+                yyyy: String(d.getUTCFullYear())
               });
             }
           }
         })
         .catch(err => console.error("Error loading event:", err));
+    } else {
+      // Reset form when switching to 'Create New Event' mode
+      setTitle('');
+      setDescription('');
+      setVenue('');
+      setTime('');
+      setAdminLink('');
+      setTickets([{ name: 'Standard Ticket', price: '' }]);
+      setStatus('Draft');
+      setBannerImage('');
+      setDate({ dd: '', mm: '', yyyy: '' });
     }
-  }, [eventId, isNewEvent]);
+  }, [eventId, isNewEvent, API_URL]);
 
   const handleSave = async () => {
     if (!title || !date.dd || !date.mm || !date.yyyy) {
@@ -159,8 +185,8 @@ export const LeaderEventEditor = () => {
     };
 
     const url = isNewEvent 
-      ? 'http://localhost:5000/api/events' 
-      : `http://localhost:5000/api/events/${eventId}`;
+      ? `${API_URL}/api/events` 
+      : `${API_URL}/api/events/${eventId}`;
     
     const method = isNewEvent ? 'POST' : 'PUT';
 
@@ -188,7 +214,7 @@ export const LeaderEventEditor = () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+      const res = await fetch(`${API_URL}/api/events/${eventId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -420,12 +446,15 @@ export const LeaderEventEditor = () => {
 export const LeaderSocietyManager = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [society, setSociety] = useState(null);
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
     // 1. Try to fetch from backend
-    fetch(`http://localhost:5000/api/societies/${id}`, { credentials: 'include' })
+    fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -456,7 +485,7 @@ export const LeaderSocietyManager = () => {
         setEvents([{ _id: "mock-1", title: `${found.name} EVENT 1`, status: "Active" }]);
       }
     }
-  }, [id]);
+  }, [id, API_URL]);
 
   if (!society) return <div className="loading">Loading Admin Space...</div>;
 

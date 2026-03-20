@@ -19,7 +19,7 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'https://uniq.lk', 'https://www.uniq.lk'],
-  credentials: true,
+  credentials: true, // This is crucial for cookies to work across domains!
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 

@@ -186,6 +186,8 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const eventId = params.eventId || params.id;
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [eventData, setEventData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -202,7 +204,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
       return;
     }
 
-    fetch(`http://localhost:5000/api/events/${eventId}`)
+    fetch(`${API_URL}/api/events/${eventId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -211,7 +213,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
       })
       .catch(err => console.error("Error loading event details:", err))
       .finally(() => setLoading(false));
-  }, [eventId]);
+  }, [eventId, API_URL]);
 
   const handleAddEvent = async () => {
 
@@ -220,7 +222,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     try {
 
       const res = await fetch(
-        `http://localhost:5000/api/events/${eventId}/add`,
+        `${API_URL}/api/events/${eventId}/add`,
         {
           method: "POST",
           headers: {
@@ -252,7 +254,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     try {
 
       const res = await fetch(
-        `http://localhost:5000/api/events/${eventId}/remove`,
+        `${API_URL}/api/events/${eventId}/remove`,
         {
           method: "DELETE",
           headers: {
@@ -409,6 +411,8 @@ export const SocietyProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -419,7 +423,7 @@ export const SocietyProfilePage = () => {
 
     if (following) {
 
-      await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
+      await fetch(`${API_URL}/api/societies/${id}/follow`, {
         method: "DELETE",
         credentials: "include"
       });
@@ -428,7 +432,7 @@ export const SocietyProfilePage = () => {
 
     } else {
 
-      await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
+      await fetch(`${API_URL}/api/societies/${id}/follow`, {
         method: "POST",
         credentials: "include"
       });
@@ -442,7 +446,7 @@ export const SocietyProfilePage = () => {
   useEffect(() => {
 
   /* LOAD SOCIETY PROFILE */
-  fetch(`http://localhost:5000/api/societies/${id}`, {
+  fetch(`${API_URL}/api/societies/${id}`, {
     credentials: "include"
   })
     .then(res => res.json())
@@ -458,7 +462,7 @@ export const SocietyProfilePage = () => {
 
 
   /* LOAD FOLLOW STATUS */
-  fetch(`http://localhost:5000/api/societies/${id}/follow-status`, {
+  fetch(`${API_URL}/api/societies/${id}/follow-status`, {
     credentials: "include"
   })
     .then(res => res.json())
@@ -471,7 +475,7 @@ export const SocietyProfilePage = () => {
     })
     .catch(err => console.error("Follow status error:", err));
 
-}, [id]);
+}, [id, API_URL]);
 
 
   if (loading) return <div className="loading">Loading Profile...</div>;
