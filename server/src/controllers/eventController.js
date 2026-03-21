@@ -292,6 +292,11 @@ CREATE EVENT (Admin only)
 */
 exports.createEvent = async (req, res) => {
   try {
+    console.log("\n=== CREATE EVENT ===");
+    console.log("User ID:", req.user?.id);
+    console.log("User Email:", req.user?.email);
+    console.log("Request Body:", JSON.stringify(req.body, null, 2));
+
     const { 
       title, 
       description, 
@@ -307,6 +312,27 @@ exports.createEvent = async (req, res) => {
       bannerImage, 
       society 
     } = req.body;
+
+    // Validate required fields
+    if (!title || !date || !time || !venue || !society) {
+      console.log("✗ Missing required fields");
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: title, date, time, venue, society"
+      });
+    }
+
+    // Verify society exists
+    const societyExists = await Society.findById(society);
+    if (!societyExists) {
+      console.log("✗ Society not found:", society);
+      return res.status(404).json({
+        success: false,
+        message: "Society not found"
+      });
+    }
+
+    console.log("✓ Society found:", societyExists.name);
 
     const event = new Event({
       title,
@@ -324,23 +350,29 @@ exports.createEvent = async (req, res) => {
       society
     });
 
-    await event.save();
+    const savedEvent = await event.save();
+    console.log("✓ Event saved:", savedEvent._id);
 
     // Notify followers
-    const soc = await Society.findById(society);
-    if (soc) {
-      exports.notifyFollowersOfNewEvent(society, soc.name);
+    try {
+      exports.notifyFollowersOfNewEvent(society, societyExists.name);
+      console.log("✓ Followers notified");
+    } catch (notifyErr) {
+      console.log("! Notification error:", notifyErr.message);
     }
 
+    console.log("================\n");
     res.status(201).json({
       success: true,
-      data: event
+      data: savedEvent,
+      message: "Event created successfully"
     });
   } catch (error) {
-    console.error("Create event error:", error);
+    console.log("✗ Create event error:", error);
+    console.log("================\n");
     res.status(500).json({
       success: false,
-      message: "Error creating event"
+      message: "Error creating event: " + error.message
     });
   }
 };

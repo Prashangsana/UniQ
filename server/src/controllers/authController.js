@@ -8,14 +8,18 @@ const sendTokenResponse = (user, statusCode, res) => {
     { expiresIn: "30d" }
   );
 
+  // Cookie options - handle both production and development
+  const isProduction = process.env.NODE_ENV === "production";
   const options = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProduction, // true in production, false in development
+    sameSite: isProduction ? "none" : "lax", // 'none' requires secure, 'lax' for development
+    path: "/"
   };
 
   const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+  console.log("Setting token cookie with options:", { ...options, token: token.substring(0, 10) + "..." });
   res.status(statusCode).cookie("token", token, options).redirect(FRONTEND_URL);
 };
 
@@ -60,10 +64,12 @@ exports.oauthLogin = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/"
   });
 
   const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
