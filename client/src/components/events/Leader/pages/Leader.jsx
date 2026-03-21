@@ -330,19 +330,6 @@ export const LeaderEventEditor = () => {
         <div className="editor-grid">
           <div className="editor-main">
             <div className="input-group">
-              <label>Host Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-              >
-                <option value="">Select a society</option>
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="input-group">
               <label>Event Name</label>
               <input 
                 type="text" 
