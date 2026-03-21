@@ -93,3 +93,84 @@ exports.getMe = async (req, res) => {
     res.status(500).json({ authenticated: false, message: "Server Error" });
   }
 };
+
+exports.localEmailLogin = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Basic Domain Check
+    if (!email || !email.endsWith('@iit.ac.lk')) {
+      return res.status(400).json({ success: false, message: 'Invalid email. Please log in with university email.' });
+    }
+
+    let role = '';
+    let firstNameRaw = '';
+
+    // 2. Format Validation via Regex
+    const studentRegex = /^([a-zA-Z]+)\.(\d{8,})@iit\.ac\.lk$/;
+    const lecturerRegex = /^([a-zA-Z]+)\.([a-zA-Z])@iit\.ac\.lk$/;
+
+    const studentMatch = email.match(studentRegex);
+    const lecturerMatch = email.match(lecturerRegex);
+
+    if (studentMatch) {
+      role = 'student';
+      firstNameRaw = studentMatch[1];
+    } else if (lecturerMatch) {
+      role = 'lecturer';
+      firstNameRaw = lecturerMatch[1]; 
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid email format. Use name.studentid@iit.ac.lk or name.initial@iit.ac.lk' 
+      });
+    }
+
+    // Format Names
+    const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
+    const lastName = 'LastName'; 
+    const fullName = `${firstName} ${lastName}`;
+
+    // Database Check/Creation
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name: fullName,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        role: role,
+        authProvider: 'local',
+        lastLogin: Date.now(),
+      });
+    } else {
+      user.lastLogin = Date.now();
+      await user.save();
+    }
+
+    // Generate Token and Cookie (Similar to Google OAuth)
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    const options = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
+
+    // Send JSON response instead of a redirect so React can handle the UI
+    res.status(200).cookie("token", token, options).json({
+      success: true,
+      user: { role: user.role }
+    });
+
+  } catch (error) {
+    console.error("Local Login Error:", error);
+    res.status(500).json({ success: false, message: "Login failed" });
+  }
+};
