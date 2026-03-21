@@ -2,14 +2,17 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  if (!process.env.MONGO_URI) {
+    console.warn('MONGO_URI is not set. Skipping MongoDB connection (mock mode).');
+    return;
+  }
+
   try {
-    // The connection string should be in your .env file as MONGO_URI
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
-    // Exit process with failure
-    process.exit(1); 
+    // Continue without failing for local mock usage
   }
 };
 

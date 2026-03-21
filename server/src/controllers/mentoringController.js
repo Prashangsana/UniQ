@@ -1,109 +1,143 @@
-// src/controllers/mentoringController.js
+// server/src/controllers/mentoringController.js
 
-// Mock Database
-let mentors = [
-    { id: 'f303', name: 'Dr. Nilaskshi', role: 'faculty', expertise: 'Machine Learning', tag: 'Neural Networks', email: 'n.nilaskshi@westminster.ac.uk' },
-    { id: 'f306', name: 'Dr. Suresh', role: 'faculty', expertise: 'Database Security', tag: 'Backend Auth', email: 's.suresh@westminster.ac.uk' },
-    { id: 'p202', name: 'Jordan', role: 'peer-mentor', expertise: 'Project Help', tag: 'React & Node.js', email: 'w1847263@my.westminster.ac.uk' },
-    { id: 'p203', name: 'Casey', role: 'peer-mentor', expertise: 'Exam Prep', tag: 'Java & OOP', email: 'w1938472@my.westminster.ac.uk' }
-];
+const { 
+    mentoringCategories, 
+    initialMentors, 
+    initialAppointments 
+} = require('../data/mockMentoringData');
 
-let appointments = [
-    { 
-        id: 'app_001', studentId: 's101', studentName: 'Alex', 
-        mentorId: 'f303', mentorName: 'Dr. Nilaskshi', 
-        topic: 'Machine Learning FYP', status: 'Accepted', 
-        date: '2026-03-25', time: '14:00', link: 'https://zoom.us/j/9988776655' 
-    },
-    { 
-        id: 'app_002', studentId: 's101', studentName: 'Alex', 
-        mentorId: 'p202', mentorName: 'Jordan', 
-        topic: 'React Context API help', status: 'Pending', 
-        date: '2026-03-28', time: '10:00 AM', link: '#' 
-    }
-];
+// State management for the session (Simulating a database)
+let mentors = [...initialMentors];
+let appointments = [...initialAppointments];
 
-// 1. GET ALL MENTORS
+/**
+ * 1. GET ALL MENTORS
+ * Returns the full list of 20 mentors.
+ */
 exports.getMentors = (req, res) => {
-    res.json(mentors);
+    try {
+        res.json(mentors);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching mentors", error });
+    }
 };
 
-// 2. SEARCH MENTORS (Added this to fix your crash)
-exports.searchMentors = (req, res) => {
-    const { query, role } = req.query;
-    let filtered = mentors;
-
-    if (role) {
-        filtered = filtered.filter(m => m.role === role);
-    }
-    if (query) {
-        const q = query.toLowerCase();
-        filtered = filtered.filter(m => 
-            m.name.toLowerCase().includes(q) || 
-            m.tag.toLowerCase().includes(q) || 
-            m.expertise.toLowerCase().includes(q)
-        );
-    }
-    res.json(filtered);
-};
-
-// 3. GET APPOINTMENTS
-exports.getAppointments = (req, res) => {
-    const { mentorId, studentId } = req.query;
-    if (mentorId) {
-        return res.json(appointments.filter(a => a.mentorId === mentorId));
-    }
-    if (studentId) {
-        return res.json(appointments.filter(a => a.studentId === studentId));
-    }
-    res.json(appointments);
-};
-
-// 4. BOOK SESSION (Fixed syntax and double-booking logic)
-exports.bookSession = (req, res) => {
-    const { mentorId, mentorName, studentId, studentName, topic, date, time } = req.body;
-
-    // Validation: Check if mentor is already busy at this time
-    const isBusy = appointments.some(app => 
-        app.mentorId === mentorId && app.date === date && app.time === time && app.status !== 'Declined'
-    );
-
-    if (isBusy) {
-        return res.status(400).json({ 
-            message: "Slot unavailable. This mentor already has a session at this time." 
-        });
-    }
-
-    const newBooking = {
-        id: `app_${Date.now()}`,
-        studentId,
-        studentName,
-        mentorId,
-        mentorName,
-        topic,
-        status: 'Pending',
-        date,
-        time,
-        link: '#' 
-    };
-
-    appointments.push(newBooking);
-    res.status(201).json(newBooking);
-};
-
-// 5. UPDATE STATUS
-exports.updateStatus = (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    const index = appointments.findIndex(a => a.id === id);
-    
-    if (index !== -1) {
-        appointments[index].status = status;
-        if (status === 'Accepted') {
-            appointments[index].link = `https://zoom.us/j/${Math.floor(Math.random() * 9000000000)}`;
+/**
+ * 2. GET CATEGORIES
+ * Returns the 10 expertise categories for the horizontal grid.
+ */
+exports.getCategories = (req, res) => {
+    try {
+        const { role } = req.query; 
+        // If role is provided (faculty/peer-mentor), filter them
+        if (role) {
+            const filteredCats = mentoringCategories.filter(c => c.role === role);
+            return res.json(filteredCats);
         }
-        res.json(appointments[index]);
-    } else {
-        res.status(404).json({ message: "Appointment not found" });
+        res.json(mentoringCategories);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching categories", error });
+    }
+};
+
+/**
+ * 3. SEARCH MENTORS
+ * Powers the search bar in the frontend.
+ */
+exports.searchMentors = (req, res) => {
+    try {
+        const { query, role } = req.query;
+        let filtered = mentors;
+
+        if (role) {
+            filtered = filtered.filter(m => m.role === role);
+        }
+        if (query) {
+            const q = query.toLowerCase();
+            filtered = filtered.filter(m => 
+                m.name.toLowerCase().includes(q) || 
+                m.tag.toLowerCase().includes(q) || 
+                m.expertise.toLowerCase().includes(q)
+            );
+        }
+        res.json(filtered);
+    } catch (error) {
+        res.status(500).json({ message: "Search failed", error });
+    }
+};
+
+/**
+ * 4. GET APPOINTMENTS
+ * Fetches sessions for Alex (s101) to display in the horizontal rows.
+ */
+exports.getAppointments = (req, res) => {
+    try {
+        const { mentorId, studentId } = req.query;
+        if (mentorId) {
+            return res.json(appointments.filter(a => a.mentorId === mentorId));
+        }
+        if (studentId) {
+            return res.json(appointments.filter(a => a.studentId === studentId));
+        }
+        res.json(appointments);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching appointments", error });
+    }
+};
+
+/**
+ * 5. BOOK SESSION
+ * Handles new bookings and prevents double-booking.
+ */
+exports.bookSession = (req, res) => {
+    try {
+        const { mentorId, date, time } = req.body;
+
+        // Validation: Check if mentor is already busy at this specific time
+        const isBusy = appointments.some(app => 
+            app.mentorId === mentorId && app.date === date && app.time === time && app.status !== 'Declined'
+        );
+
+        if (isBusy) {
+            return res.status(400).json({ 
+                message: "Slot unavailable. This mentor already has a session at this time." 
+            });
+        }
+
+        const newBooking = {
+            id: `app_${Date.now()}`,
+            ...req.body,
+            status: 'Pending',
+            link: '#' 
+        };
+
+        appointments.push(newBooking);
+        res.status(201).json(newBooking);
+    } catch (error) {
+        res.status(500).json({ message: "Booking failed", error });
+    }
+};
+
+/**
+ * 6. UPDATE STATUS
+ * Allows mentors to accept/decline and generates a random Zoom link if Accepted.
+ */
+exports.updateStatus = (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const index = appointments.findIndex(a => a.id === id);
+        
+        if (index !== -1) {
+            appointments[index].status = status;
+            if (status === 'Accepted') {
+                appointments[index].link = `https://zoom.us/j/${Math.floor(Math.random() * 9000000000)}`;
+            }
+            res.json(appointments[index]);
+        } else {
+            res.status(404).json({ message: "Appointment not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Status update failed", error });
     }
 };

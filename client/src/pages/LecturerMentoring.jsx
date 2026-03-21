@@ -18,15 +18,15 @@ const LecturerMentoring = ({ onBack }) => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        // Fetch Faculty Mentors
+        // Fetch ALL Mentors, but ONLY save the Faculty ones
         const mentorRes = await fetch('http://localhost:5000/api/mentoring/mentors');
         const mentorData = await mentorRes.json();
-        setLecturers(mentorData.filter(m => m.role === 'faculty'));
+        setLecturers(mentorData.filter(m => m.role === 'faculty')); // <-- THIS IS THE FIX
 
-        // Fetch Appointments for Alex (s101)
+        // Fetch ALL Appointments for Alex, but ONLY save Faculty ones (IDs starting with 'f')
         const apptRes = await fetch('http://localhost:5000/api/mentoring/appointments?studentId=s101');
         const apptData = await apptRes.json();
-        setBookings(apptData);
+        setBookings(apptData.filter(app => app.mentorId.startsWith('f'))); // <-- THIS IS THE FIX
       } catch (err) {
         console.error("Failed to load mentoring data:", err);
       } finally {
@@ -118,22 +118,29 @@ const LecturerMentoring = ({ onBack }) => {
             {/* Filter lecturers by selected category expertise */}
             {lecturers.filter(l => l.expertise === selectedCategory).map((lecturer, idx) => (
               <div key={idx} className="booking-item-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                   <div className="avatar-circle">
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px' }}>
+                  <div className="avatar-circle">
                       <Icon icon="lucide:user" width="30" />
-                   </div>
-                   <div>
-                      <h4 style={{ margin: 0 }}>{lecturer.name}</h4>
-                      <span className="tag-pill-purple">{lecturer.tag}</span>
-                   </div>
+                  </div>
+                  <div className="mentor-details">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <h4 style={{ margin: 0 }}>{lecturer.name}</h4>
+                        <span className="tag-pill-purple">{lecturer.tag}</span>
+                      </div>
+                      {/* New Bio and Email sections */}
+                      <p className="mentor-bio">{lecturer.bio}</p>
+                      <a href={`mailto:${lecturer.email}`} className="mentor-contact">
+                        <Icon icon="lucide:mail" width="16" /> {lecturer.email}
+                      </a>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                   <button 
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <button 
                     onClick={() => handleBookSlot(lecturer)} 
                     className="book-btn-main"
-                   >
+                  >
                       <Icon icon="lucide:calendar-plus" width="18" /> Book Slot
-                   </button>
+                  </button>
                 </div>
               </div>
             ))}
@@ -163,25 +170,42 @@ const LecturerMentoring = ({ onBack }) => {
 
             {/* My Appointments (Drawn from Backend) */}
             <div className="bookings-list">
-              <h3>My Faculty Appointments</h3>
-              {bookings.map((booking, idx) => (
-                <div key={idx} className="booking-item">
-                  <div className="lecturer-meta">
-                    <p className="lecturer-name">{booking.mentorName}</p>
-                    <span className="tag-pill">{booking.topic}</span>
+              <h3>{lecturers ? "My Faculty Appointments" : "Your Peer Sessions"}</h3>
+  
+              {bookings.length > 0 ? (
+                bookings.map((booking, idx) => (
+                  <div key={idx} className="booking-item">
+                    {/* Left Section: Mentor & Topic */}
+                    <div className="lecturer-meta">
+                      <p className="lecturer-name">{booking.mentorName}</p>
+                      <span className="tag-pill">{booking.topic}</span>
+                    </div>
+
+                    {/* Center Section: Status & Date */}
+                    <div className="status-info">
+                      {/* status.toLowerCase() triggers the CSS colors (accepted, pending, etc.) */}
+                      <p className={`status-text ${booking.status.toLowerCase()}`}>
+                        {booking.status}
+                      </p>
+                      <small>{booking.date} at {booking.time}</small>
+                    </div>
+
+                    {/* Right Section: Action Button */}
+                    {booking.status === 'Accepted' ? (
+                      <button 
+                        className="join-btn" 
+                        onClick={() => window.open(booking.link, '_blank')}
+                      >
+                        Join Session
+                      </button>
+                    ) : (
+                      <div style={{ width: '120px' }}></div> /* Spacer to keep alignment neat */
+                    )}
                   </div>
-                  <div className="status-info">
-                    <p className={`status-text ${booking.status.toLowerCase()}`}>{booking.status}</p>
-                    <small>{booking.date} at {booking.time}</small>
-                  </div>
-                  {/* Join Meeting button only appears if Accepted */}
-                  {booking.status === 'Accepted' && (
-                    <button className="join-btn" onClick={() => window.open(booking.link, '_blank')}>
-                       Join Session
-                    </button>
-                  )}
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="no-data-text">No upcoming sessions found.</p>
+              )}
             </div>
           </>
         )}

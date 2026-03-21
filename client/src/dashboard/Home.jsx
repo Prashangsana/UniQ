@@ -24,12 +24,12 @@ const SkillsView = () => (
     </div>
 );
 
-const ArticlesView = () => (
-    <div className="content-section fade-in">
-        <h2>Articles & Resources</h2>
-        <p>Read the latest academic articles and shared resources.</p>
-    </div>
-);
+// const ArticlesView = () => (
+//     <div className="content-section fade-in">
+//         <h2>Articles & Resources</h2>
+//         <p>Read the latest academic articles and shared resources.</p>
+//     </div>
+// );
 
 const Home = ({ myEventsList }) => {
     const location = useLocation();
@@ -40,7 +40,7 @@ const Home = ({ myEventsList }) => {
         if (path.includes('/society') || path.includes('/events')) return 'society';
         if (path.includes('/groups')) return 'groups';
         if (path.includes('/skills')) return 'skills';
-        if (path.includes('/articles')) return 'articles';
+        // if (path.includes('/articles')) return 'articles';
         if (path.includes('/settings')) return 'settings';
         return 'dashboard';
     });
@@ -68,7 +68,7 @@ const Home = ({ myEventsList }) => {
             case 'society':   return <EventsPage myEventsList={myEventsList} />;
             case 'groups':    return <GroupsPage />;
             case 'skills':    return <SkillsView />;
-            case 'articles':  return <ArticlesView />;
+            // case 'articles':  return <ArticlesView />;
             case 'settings':  return <SettingsView />;
             
             // Mentoring Views
@@ -137,12 +137,12 @@ const Home = ({ myEventsList }) => {
                                 <span>Skill Matching</span>
                             </a>
                         </li>
-                        <li className={activeTab === 'articles' ? 'active' : ''}>
+                        {/* <li className={activeTab === 'articles' ? 'active' : ''}>
                             <a href="#articles" onClick={(e) => { e.preventDefault(); setActiveTab('articles'); }}>
                                 <Icon icon="lucide:file-text" width="20" />
                                 <span>Articles</span>
                             </a>
-                        </li>
+                        </li> */}
                     </ul>
 
                     <div className="nav-divider"></div>
@@ -176,15 +176,16 @@ const Home = ({ myEventsList }) => {
                         </div>
                     </div>
 
-                    <div className="header-center">
+                    {/* <div className="header-center">
                         <div className="search-bar">
                             <Icon icon="lucide:search" className="search-icon" />
                             <input type="text" placeholder="Search..." />
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="header-right">
-                        <button className="icon-btn"><Icon icon="lucide:mail" width="22" /></button>
+                        {/* <button className="icon-btn">
+                            <Icon icon="lucide:mail" width="22" /></button> */}
                         <button className="icon-btn relative">
                             <Icon icon="lucide:bell" width="22" />
                             <span className="notification-dot"></span>

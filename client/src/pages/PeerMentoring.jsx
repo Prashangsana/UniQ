@@ -18,15 +18,15 @@ const PeerMentoring = ({ onBack }) => {
     const fetchPeerData = async () => {
       try {
         setLoading(true);
-        // Fetch Peer Mentors
+        // Fetch ALL Mentors, but ONLY save the Peer ones
         const mentorRes = await fetch('http://localhost:5000/api/mentoring/mentors');
         const mentorData = await mentorRes.json();
-        setMentors(mentorData.filter(m => m.role === 'peer-mentor'));
+        setMentors(mentorData.filter(m => m.role === 'peer-mentor')); // <-- THIS IS THE FIX
 
-        // Fetch Appointments for Alex (s101)
+        // Fetch ALL Appointments for Alex, but ONLY save Peer ones (IDs starting with 'p')
         const apptRes = await fetch('http://localhost:5000/api/mentoring/appointments?studentId=s101');
         const apptData = await apptRes.json();
-        setBookings(apptData);
+        setBookings(apptData.filter(app => app.mentorId.startsWith('p'))); // <-- THIS IS THE FIX
       } catch (err) {
         console.error("Failed to load peer mentoring data:", err);
       } finally {
@@ -118,19 +118,26 @@ const PeerMentoring = ({ onBack }) => {
             {/* Filter dynamic mentors by category */}
             {mentors.filter(m => m.expertise === selectedCategory).map((mentor, idx) => (
               <div key={idx} className="booking-item-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                   <div className="avatar-circle">
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px' }}>
+                  <div className="avatar-circle">
                       <Icon icon="lucide:user" width="30" />
-                   </div>
-                   <div>
-                      <h4 style={{ margin: 0 }}>{mentor.name}</h4>
-                      <span className="tag-pill-purple">{mentor.tag}</span>
-                   </div>
+                  </div>
+                  <div className="mentor-details">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <h4 style={{ margin: 0 }}>{mentor.name}</h4>
+                        <span className="tag-pill-purple">{mentor.tag}</span>
+                      </div>
+                      {/* New Bio and Email sections */}
+                      <p className="mentor-bio">{mentor.bio}</p>
+                      <a href={`mailto:${mentor.email}`} className="mentor-contact">
+                        <Icon icon="lucide:mail" width="16" /> {mentor.email}
+                      </a>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                   <button onClick={() => handleBookSlot(mentor)} className="book-btn-main">
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <button onClick={() => handleBookSlot(mentor)} className="book-btn-main">
                       <Icon icon="lucide:calendar-plus" width="18" /> Book Slot
-                   </button>
+                  </button>
                 </div>
               </div>
             ))}

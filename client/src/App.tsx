@@ -111,7 +111,6 @@ function App() {
               } 
             />
 
-            {/* Mentoring Routes (Mapped to your 2 specific files) */}
             <Route 
               path="/mentoring/lecturers" 
               element={<MentoringWrapper Component={LecturerMentoring} />} 

@@ -9,36 +9,36 @@
   --status-requested: #17a2b8;
 }
 
-/* --- Layout Structure (FULL WIDTH) --- */
+/* --- Layout Structure (Tighter & Optimized) --- */
 .mentoring-layout {
   display: flex;
-  gap: 30px;
-  padding: 30px;
-  width: 100%; /* Use 100% of the container */
+  gap: 20px; /* Reduced gap between main and sidebar */
+  padding: 20px; /* Tighter padding around the whole page */
+  width: 100%; 
   min-height: 100vh;
   background-color: var(--bg-silver);
-  box-sizing: border-box; /* Prevents horizontal scrollbars */
+  box-sizing: border-box; 
 }
 
 .mentoring-main {
-  flex: 4; /* Main content takes up 4x the space of the sidebar */
+  flex: 5; /* Takes up much more space to give the content room to breathe */
   background: white;
-  padding: 40px;
-  border-radius: 24px;
+  padding: 25px; /* Tighter internal padding */
+  border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 .mentoring-sidebar {
-  flex: 1.2; /* Sidebar is wide enough for the calendar but doesn't crowd the main area */
+  flex: 1; /* Shrunk the sidebar to just fit the calendar */
 }
 
 .sidebar-section {
   background: white;
-  padding: 25px;
-  border-radius: 20px;
+  padding: 20px;
+  border-radius: 18px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
   position: sticky;
-  top: 30px;
+  top: 20px;
 }
 
 /* --- Search & Navigation --- */
@@ -46,10 +46,10 @@
   display: flex;
   align-items: center;
   background: #f0f2f5;
-  padding: 16px 24px;
-  border-radius: 16px;
-  margin-bottom: 35px;
-  gap: 15px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  margin-bottom: 25px; /* Reduced bottom margin */
+  gap: 12px;
   border: 1px solid transparent;
   transition: all 0.2s ease;
 }
@@ -65,24 +65,24 @@
   background: transparent;
   outline: none;
   width: 100%;
-  font-size: 16px;
+  font-size: 15px;
   font-family: inherit;
 }
 
 .back-navigation-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: transparent;
   border: none;
   color: #666;
   cursor: pointer;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   font-weight: 600;
-  padding: 10px 15px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
   transition: all 0.2s ease;
-  margin-left: -12px;
+  margin-left: -10px;
 }
 
 .back-navigation-btn:hover {
@@ -90,71 +90,70 @@
   color: var(--deep-banner-blue);
 }
 
-/* --- HORIZONTAL EXPERTISE GRID (EXPANSIVE) --- */
+/* --- HORIZONTAL EXPERTISE GRID (Compact & Locked to 1 Row) --- */
 .expertise-row {
   display: grid;
-  /* Automatically adds columns as the screen gets wider */
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-  gap: 25px;
-  margin-top: 15px;
-  margin-bottom: 50px;
+  grid-template-columns: repeat(4, 1fr); /* Forces exactly 4 items side-by-side */
+  gap: 15px; /* Tighter spacing between cards */
+  margin-top: 10px;
+  margin-bottom: 30px;
 }
 
 .lecturer-card {
   background: #f8f9fa;
   border: 1px solid #eef0f2;
-  border-radius: 20px;
-  padding: 30px 20px;
+  border-radius: 16px;
+  padding: 15px 10px; /* Much smaller padding */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 200px;
+  transition: all 0.2s ease;
+  height: 140px; /* Shrunk height significantly */
 }
 
 .lecturer-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-5px);
   background: white;
   border-color: var(--deep-navy);
-  box-shadow: 0 15px 30px rgba(13, 33, 79, 0.12);
+  box-shadow: 0 8px 20px rgba(13, 33, 79, 0.1);
 }
 
 .lecturer-card img {
-  width: 85px;
-  height: 85px;
+  width: 50px; /* Smaller images */
+  height: 50px;
   object-fit: cover;
   border-radius: 50%;
-  margin-bottom: 18px;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 12px;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
 }
 
 .expertise-pill {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--deep-navy);
   text-align: center;
 }
 
-/* --- HORIZONTAL BOOKING ROWS --- */
+/* --- HORIZONTAL BOOKING ROWS (My Appointments) --- */
 .bookings-list h3 {
-  margin-bottom: 25px;
-  font-size: 1.4rem;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
   color: var(--deep-navy);
   font-weight: 800;
 }
 
 .booking-item {
   display: flex;
-  flex-direction: row; /* Horizontal alignment */
+  flex-direction: row; 
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  padding: 20px 30px;
-  border-radius: 18px;
-  margin-bottom: 15px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  margin-bottom: 12px;
   border: 1px solid #eef0f2;
   transition: all 0.2s ease;
 }
@@ -167,22 +166,23 @@
 .lecturer-meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   flex: 2;
 }
 
 .lecturer-meta .lecturer-name {
   font-weight: 700;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--deep-navy);
+  margin: 0;
 }
 
 .tag-pill {
   background: #eef2ff;
   color: #4f46e5;
-  padding: 5px 14px;
-  border-radius: 8px;
-  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 700;
   width: fit-content;
 }
@@ -191,15 +191,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-width: 180px;
-  padding: 0 30px;
+  min-width: 160px;
+  padding: 0 20px;
 }
 
 .status-text {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
+  margin: 0 0 4px 0;
 }
 
 .status-text.pending { color: var(--status-pending); }
@@ -211,8 +212,8 @@
   background: #2D8CFF;
   color: white;
   border: none;
-  padding: 12px 26px;
-  border-radius: 12px;
+  padding: 10px 22px;
+  border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -222,51 +223,99 @@
 
 .join-btn:hover {
   background: #1a73e8;
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .book-btn-main {
   background: var(--deep-navy);
   color: white;
   border: none;
-  padding: 14px 28px;
-  border-radius: 14px;
+  padding: 12px 24px;
+  border-radius: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .book-btn-main:hover {
   opacity: 0.9;
-  box-shadow: 0 6px 15px rgba(13, 33, 79, 0.2);
+  box-shadow: 0 4px 12px rgba(13, 33, 79, 0.15);
 }
 
-/* --- HORIZONTAL CATEGORY VIEW --- */
+/* --- INNER CATEGORY VIEW CARDS --- */
 .booking-item-card {
   display: flex;
-  flex-direction: row; /* Ensure lecturers appear side-by-side with their buttons */
+  flex-direction: row; 
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Aligns items to the top to accommodate the bio */
   background: white;
-  padding: 25px 35px;
-  border-radius: 22px;
+  padding: 20px 25px;
+  border-radius: 18px;
   border: 1px solid #eef0f2;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  transition: border-color 0.2s;
+}
+
+.booking-item-card:hover {
+  border-color: var(--accent-purple);
 }
 
 .avatar-circle {
-  width: 60px;
-  height: 60px;
+  width: 45px;
+  height: 45px;
   background: #f0f4f8;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--deep-navy);
-  font-size: 28px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.tag-pill-purple {
+  background: #f3f0ff;
+  color: #7c3aed;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* --- NEW: MENTOR BIO AND CONTACT STYLES --- */
+.mentor-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mentor-bio {
+  font-size: 13px;
+  color: #555;
+  margin: 4px 0 0 0;
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+.mentor-contact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--accent-purple);
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 4px;
+  width: fit-content;
+}
+
+.mentor-contact:hover {
+  text-decoration: underline;
+  color: var(--deep-navy);
 }
 
 /* --- UTILITIES --- */
@@ -274,8 +323,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 300px;
+  height: 250px;
   font-weight: 700;
   color: var(--accent-purple);
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.no-data-text {
+  color: #777;
+  font-size: 14px;
+  font-style: italic;
+  margin-top: 10px;
 }
