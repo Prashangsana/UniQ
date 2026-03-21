@@ -201,6 +201,8 @@ export const LeaderEventEditor = () => {
       time: `${time.hh}:${time.min} ${time.period}`,
       venue,
       adminLink,
+      registerLink,
+      instagramLink,
       tickets,
       status: 'Active',
       bannerImage,
@@ -474,12 +476,22 @@ export const LeaderEventEditor = () => {
 
           <div className="editor-sidebar">
             <div className="input-group">
-              <label>Administration Link</label>
+              <label>Participation Link</label>
               <input 
                 type="url" 
-                placeholder="https://docs.google.com/..." 
-                value={adminLink}
-                onChange={(e) => setAdminLink(e.target.value)}
+                placeholder="https://forms.gle/..." 
+                value={registerLink}
+                onChange={(e) => setRegisterLink(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Instagram Link</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/..." 
+                value={instagramLink}
+                onChange={(e) => setInstagramLink(e.target.value)}
               />
             </div>
           </div>

@@ -45,13 +45,23 @@ const EventSchema = new mongoose.Schema({
     required: true
   },
 
-  venue: {
+  place: {
     type: String
   },
 
   price: {
-    type: String,
-    required: true
+    type: String
+  },
+
+  tickets: [
+    {
+      name: String,
+      price: String
+    }
+  ],
+
+  adminLink: {
+    type: String
   }
 
 }, { timestamps: true });
