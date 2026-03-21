@@ -68,8 +68,8 @@ export const LeaderSidebar = ({ title }) => {
         ))}
       </div>
       
-      <button className="leader-sidebar-btn" onClick={() => navigate('/report')}>
-        Weekly Report &gt;
+      <button className="leader-sidebar-btn" onClick={() => navigate('/dashboard')}>
+        Student Dashboard &gt;
       </button>
     </div>
   );

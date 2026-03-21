@@ -199,7 +199,10 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   );
 
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || eventId === 'new') {
+      setLoading(false);
+      return;
+    }
 
     fetch(`${API_URL}/api/events/${eventId}`)
       .then(res => res.json())

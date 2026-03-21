@@ -16,6 +16,9 @@ router.get('/leader/all', protect, getLeaderSocieties);
 // GET ALL SOCIETIES
 router.get('/', getAllSocieties);
 
+// GET LEADER SOCIETIES (Admin view)
+router.get('/leader/all', protect, getLeaderSocieties);
+
 
 // GET SOCIETY PROFILE
 router.get('/:id', getSocietyProfile);
