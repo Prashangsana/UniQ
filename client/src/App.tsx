@@ -15,7 +15,7 @@ import Footer from './components/Landing/Footer';
 import Home from './dashboard/Home';
 
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
-import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
+import { LeaderDashboard, LeaderEventEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
 
 interface Event {
   _id: string;
@@ -142,32 +142,24 @@ function App() {
 
           {/* Shared Routes */}
           <Route path="/society/:id" element={<SocietyProfilePage />} />
+          <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
+          <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
 
-          {/* Leader Specific Routes */}
-          {userRole === 'society_leader' && (
-            <>
-              <Route path="/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
-
-          {/* Student Specific Routes */}
-          {userRole !== 'society_leader' && (
-            <>
-              {/* Fix: Specifically handle 'new' for students if they use the Leader tab */}
-              <Route path="/event/new" element={<LeaderEventEditor />} />
-              <Route
-                path="/event/:eventId"
-                element={
-                  <EventDetailsPage
-                    onAddEvent={handleAddEvent}
-                    onRemoveEvent={handleRemoveEvent}
-                    myEventsList={myEventsList as never}
-                  />
-                }
-              />
-              <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
+          {/* Dynamic Event Route based on Role */}
+          <Route 
+            path="/event/:eventId" 
+            element={
+              userRole === 'society_leader' ? (
+                <LeaderEventEditor />
+              ) : (
+                <EventDetailsPage
+                  onAddEvent={handleAddEvent}
+                  onRemoveEvent={handleRemoveEvent}
+                  myEventsList={myEventsList as never}
+                />
+              )
+            } 
+          />
         </Routes>
       </BrowserRouter>
     );
