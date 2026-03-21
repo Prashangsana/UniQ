@@ -103,10 +103,11 @@ export const LeaderEventEditor = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState({ dd: '', mm: '', yyyy: '' });
-  const [time, setTime] = useState('');
+  const [time, setTime] = useState({ hh: '09', min: '00', period: 'AM' });
   const [venue, setVenue] = useState('');
   const [adminLink, setAdminLink] = useState('');
-  const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
+  const [instagramLink, setInstagramLink] = useState('');
+  const [tickets, setTickets] = useState([{ name: 'Standard', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
   const [societies, setSocieties] = useState([]);
@@ -139,9 +140,37 @@ export const LeaderEventEditor = () => {
             setTitle(ev.title || '');
             setDescription(ev.description || '');
             setVenue(ev.venue || ev.location || '');
-            setTime(ev.time || '');
-            setAdminLink(ev.adminLink || '');
-            setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
+            
+            // Handle Time string parsing (Expected: "HH:MM AM/PM")
+            if (ev.time) {
+              const timeParts = ev.time.split(/[:\s]/); // Split by colon or space
+              if (timeParts.length >= 3) {
+                setTime({
+                  hh: timeParts[0],
+                  min: timeParts[1],
+                  period: timeParts[2].toUpperCase()
+                });
+              } else if (timeParts.length === 2) {
+                // Handle "HH:MM" 24h fallback if needed
+                let h = parseInt(timeParts[0]);
+                let p = h >= 12 ? 'PM' : 'AM';
+                if (h > 12) h -= 12;
+                if (h === 0) h = 12;
+                setTime({
+                  hh: String(h).padStart(2, '0'),
+                  min: timeParts[1],
+                  period: p
+                });
+              }
+            }
+
+            setAdminLink(ev.adminLink || ev.participationLink || '');
+            setInstagramLink(ev.instagramLink || '');
+            
+            // Ensure we at least have one 'Standard' ticket if the list is empty
+            const loadedTickets = ev.tickets || ev.ticketTiers || [];
+            setTickets(loadedTickets.length > 0 ? loadedTickets : [{ name: 'Standard', price: '' }]);
+            
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
             setSelectedSociety(ev.society?._id || ev.society || '');
@@ -157,6 +186,18 @@ export const LeaderEventEditor = () => {
           }
         })
         .catch(err => console.error("Error loading event:", err));
+    } else {
+      // Reset form when switching to 'Create New Event' mode
+      setTitle('');
+      setDescription('');
+      setVenue('');
+      setTime({ hh: '09', min: '00', period: 'AM' });
+      setAdminLink('');
+      setInstagramLink('');
+      setTickets([{ name: 'Standard', price: '' }]);
+      setStatus('Draft');
+      setBannerImage('');
+      setDate({ dd: '', mm: '', yyyy: '' });
     }
   }, [eventId, isNewEvent, API_URL]);
 
@@ -170,9 +211,10 @@ export const LeaderEventEditor = () => {
       title,
       description,
       date: `${date.yyyy}-${date.mm}-${date.dd}`,
-      time,
+      time: `${time.hh}:${time.min} ${time.period}`,
       venue,
-      adminLink,
+      participationLink: adminLink,
+      instagramLink,
       tickets,
       status: 'Active',
       bannerImage,
@@ -281,7 +323,7 @@ export const LeaderEventEditor = () => {
             fontWeight: '800',
             letterSpacing: '1px'
           }}>
-            {isNewEvent ? 'CREATE NEW EVENT' : title.toUpperCase()}
+            {title ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT EDITOR')}
           </h2>
           <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
@@ -300,19 +342,6 @@ export const LeaderEventEditor = () => {
         <div className="editor-grid">
           <div className="editor-main">
             <div className="input-group">
-              <label>Host Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-              >
-                <option value="">Select a society</option>
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="input-group">
               <label>Event Name</label>
               <input 
                 type="text" 
@@ -327,29 +356,49 @@ export const LeaderEventEditor = () => {
                 <label>Date (Day / Month / Year)</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input 
-                    type="text" placeholder="DD" maxLength="2" style={{ textAlign: 'center' }} 
-                    value={date.dd} onChange={(e) => setDate({...date, dd: e.target.value})}
+                    type="text" placeholder="DD" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.dd} 
+                    onChange={(e) => setDate({...date, dd: e.target.value})}
                   />
                   <input 
-                    type="text" placeholder="MM" maxLength="2" style={{ textAlign: 'center' }} 
-                    value={date.mm} onChange={(e) => setDate({...date, mm: e.target.value})}
+                    type="text" placeholder="MM" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.mm} 
+                    onChange={(e) => setDate({...date, mm: e.target.value})}
                   />
                   <input 
-                    type="text" placeholder="YYYY" maxLength="4" style={{ textAlign: 'center' }} 
-                    value={date.yyyy} onChange={(e) => setDate({...date, yyyy: e.target.value})}
+                    type="text" placeholder="YYYY" maxLength="4" 
+                    style={{ textAlign: 'center', width: '80px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.yyyy} 
+                    onChange={(e) => setDate({...date, yyyy: e.target.value})}
                   />
                 </div>
               </div>
-              <div className="input-group" style={{ flex: 1 }}>
+              <div className="input-group" style={{ flex: 1.5 }}>
                 <label>Time</label>
-                <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                   <input 
-                    type="text" 
-                    placeholder="-- : --"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
+                    type="text" placeholder="HH" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={time.hh} 
+                    onChange={(e) => setTime({...time, hh: e.target.value})}
                   />
-                  <span style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>🕒</span>
+                  <span>:</span>
+                  <input 
+                    type="text" placeholder="MM" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={time.min} 
+                    onChange={(e) => setTime({...time, min: e.target.value})}
+                  />
+                  <select 
+                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }} 
+                    value={time.period} 
+                    onChange={(e) => setTime({...time, period: e.target.value})}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -372,17 +421,17 @@ export const LeaderEventEditor = () => {
                 <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                   <input 
                     type="text" 
-                    placeholder="Standard Ticket" 
+                    placeholder="Standard" 
                     value={ticket.name}
                     onChange={(e) => updateTicket(index, 'name', e.target.value)}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
                   />
                   <input 
                     type="text" 
                     placeholder="Price (e.g., Rs. 2500, Free)" 
                     value={ticket.price}
                     onChange={(e) => updateTicket(index, 'price', e.target.value)}
-                    style={{ flex: 1.5 }}
+                    style={{ flex: 1.5, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
                   />
                   
                   {tickets.length > 1 && (
@@ -399,7 +448,7 @@ export const LeaderEventEditor = () => {
               {tickets.length < 5 && (
                 <button 
                   onClick={addTicketTier}
-                  style={{ background: '#e2e8f0', color: '#0f172a', border: 'none', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', marginTop: '5px' }}
+                  style={{ width: '100%', background: '#d1d5db', color: '#0f172a', border: 'none', padding: '12px', borderRadius: '15px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}
                 >
                   + Add Another Ticket Tier
                 </button>
@@ -425,19 +474,23 @@ export const LeaderEventEditor = () => {
           </div>
 
           <div className="editor-sidebar">
-            <div className="admin-stat-box">
-              <span>Total Registrations</span>
-              <strong>{isNewEvent ? '0' : '428'}</strong>
-              <button className="export-btn">Export List (CSV)</button>
-            </div>
-            
             <div className="input-group">
-              <label>Administration Link</label>
+              <label>Participation Link</label>
               <input 
                 type="url" 
                 placeholder="https://docs.google.com/..." 
                 value={adminLink}
                 onChange={(e) => setAdminLink(e.target.value)}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Instagram Link</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/..." 
+                value={instagramLink}
+                onChange={(e) => setInstagramLink(e.target.value)}
               />
             </div>
           </div>
@@ -500,11 +553,26 @@ export const LeaderSocietyManager = () => {
       <header className="manager-header">
         <button className="back-link" onClick={() => navigate('/')}>← Dashboard</button>
         <div className="manager-profile">
-          <div className="manager-logo" style={{ backgroundImage: `url(${society.logo})`, backgroundSize: 'cover' }}>
-            {!society.logo && "Logo"}
+          <div className="manager-logo" style={{ 
+            backgroundColor: '#e2e8f0', 
+            borderRadius: '50%', 
+            width: '120px', 
+            height: '120px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            overflow: 'hidden',
+            border: '4px solid white',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}>
+            {society.logo ? (
+              <img src={society.logo} alt={society.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ color: '#64748b', fontWeight: 'bold' }}>Logo</span>
+            )}
           </div>
-          <h1>{society.name} Admin Space</h1>
-          <button className="edit-profile-btn">Edit Society Profile</button>
+          <h1 style={{ marginTop: '15px' }}>{society.name.toUpperCase()} Admin Space</h1>
+          <button className="edit-profile-btn" style={{ marginTop: '10px' }}>Edit Society Profile</button>
         </div>
       </header>
 
@@ -514,10 +582,20 @@ export const LeaderSocietyManager = () => {
           <button className="small-add-btn" onClick={() => navigate('/admin/event/new')}>+ Add Event</button>
         </div>
         <div className="manager-grid">
-          {events.map((ev, i) => (
-            <LeaderEventBanner key={i} id={ev._id} title={ev.title} />
-          ))}
-        </div>
+            {events.length > 0 ? events.map((ev, i) => {
+              const eventId = (typeof ev === 'object' ? ev._id : ev) || `mock-${i}`;
+              const eventTitle = typeof ev === 'object' ? ev.title : (typeof ev === 'string' ? ev : undefined);
+              return (
+                <LeaderEventBanner 
+                  key={i} 
+                  id={eventId} 
+                  title={eventTitle} 
+                />
+              );
+            }) : (
+              <LeaderEventBanner id="mock-1" title={`${society.name} EVENT 1`} />
+            )}
+          </div>
       </section>
     </div>
   );
