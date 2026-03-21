@@ -32,7 +32,7 @@ export const LeaderEventRow = ({ title, events = [] }) => {
         <h2>{title}</h2>
         {events.length > 3 && (
           <button className="leader-more-btn" onClick={() => setShowAll(!showAll)}>
-            {showAll ? "Show less" : "View All Stats >"}
+            {showAll ? "Show less" : "Student Dashboard >"}
           </button>
         )}
       </div>

@@ -311,7 +311,7 @@ export const LeaderEventEditor = () => {
             fontWeight: '800',
             letterSpacing: '1px'
           }}>
-            {isNewEvent ? 'CREATE NEW EVENT' : title.toUpperCase()}
+            {title.trim() ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT NAME')}
           </h2>
           <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
@@ -579,7 +579,7 @@ export const LeaderSocietyManager = () => {
 
 
 /* ==========================================
-   4. LEADER REPORT VIEW
+   4. STUDENT DASHBOARD VIEW (Previously Weekly Report)
 ========================================== */
 export const LeaderReport = () => {
   const navigate = useNavigate();
@@ -596,11 +596,11 @@ export const LeaderReport = () => {
         {/* Report Header */}
         <div className="admin-header" style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '25px', marginBottom: '35px', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontSize: '26px', color: '#0f172a', margin: '0 0 8px 0' }}>Weekly Engagement Report</h1>
-            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Period: Feb 16, 2026 - Feb 23, 2026</p>
+            <h1 style={{ fontSize: '26px', color: '#0f172a', margin: '0 0 8px 0' }}>Student Dashboard View</h1>
+            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Previewing as a Student Member</p>
           </div>
-          <button className="publish-btn" onClick={() => alert("Downloading PDF...")}>
-            ⬇ Download PDF
+          <button className="publish-btn" onClick={() => navigate('/dashboard')}>
+            Student Dashboard {'>'}
           </button>
         </div>
 
