@@ -569,9 +569,26 @@ export const LeaderSocietyManager = () => {
           <button className="small-add-btn" onClick={() => navigate('/admin/event/new')}>+ Add Event</button>
         </div>
         <div className="manager-grid">
-          {events.map((ev, i) => (
-            <LeaderEventBanner key={i} id={ev._id} title={ev.title} />
+          {events.filter(e => e.status === 'Active' || e.status === 'Featured').map((ev, i) => (
+            <LeaderEventBanner key={`managed-${i}`} id={ev._id} title={ev.title} />
           ))}
+          {events.filter(e => e.status !== 'Active' && e.status !== 'Featured').length === 0 && events.length === 0 && (
+            <div className="leader-empty">No managed events yet.</div>
+          )}
+        </div>
+      </section>
+
+      <section className="manager-events" style={{ marginTop: '20px' }}>
+        <div className="manager-events-header">
+          <h3>Drafted / Past Events</h3>
+        </div>
+        <div className="manager-grid">
+          {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).map((ev, i) => (
+            <LeaderEventBanner key={`draft-${i}`} id={ev._id} title={ev.title} />
+          ))}
+          {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).length === 0 && (
+            <div className="leader-empty">No drafted or past events.</div>
+          )}
         </div>
       </section>
     </div>
