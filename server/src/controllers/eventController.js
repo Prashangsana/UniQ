@@ -269,6 +269,142 @@ exports.getMyEvents = async (req, res) => {
 
 
 /*
+GET ALL EVENTS
+*/
+exports.getAllEvents = async (req, res) => {
+  try {
+    const events = await Event.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching all events"
+    });
+  }
+};
+
+
+/*
+CREATE EVENT (Admin only)
+*/
+exports.createEvent = async (req, res) => {
+  try {
+    const { 
+      title, 
+      description, 
+      date, 
+      time, 
+      venue, 
+      place, 
+      adminLink, 
+      registerLink,
+      instagramLink,
+      tickets, 
+      status, 
+      bannerImage, 
+      society 
+    } = req.body;
+
+    const event = new Event({
+      title,
+      description,
+      date,
+      time,
+      venue: venue || place,
+      place: place || venue,
+      adminLink,
+      registerLink,
+      instagramLink,
+      tickets,
+      status: status || 'Active',
+      bannerImage,
+      society
+    });
+
+    await event.save();
+
+    // Notify followers
+    const soc = await Society.findById(society);
+    if (soc) {
+      exports.notifyFollowersOfNewEvent(society, soc.name);
+    }
+
+    res.status(201).json({
+      success: true,
+      data: event
+    });
+  } catch (error) {
+    console.error("Create event error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error creating event"
+    });
+  }
+};
+
+
+/*
+UPDATE EVENT (Admin only)
+*/
+exports.updateEvent = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const updateData = req.body;
+
+    // Map venue/place if only one is provided
+    if (updateData.venue && !updateData.place) updateData.place = updateData.venue;
+    if (updateData.place && !updateData.venue) updateData.venue = updateData.place;
+
+    const event = await Event.findByIdAndUpdate(eventId, updateData, { new: true });
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: event
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating event"
+    });
+  }
+};
+
+
+/*
+DELETE EVENT (Admin only)
+*/
+exports.deleteEvent = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    await Event.findByIdAndDelete(eventId);
+
+    // Also remove from SavedEvents
+    await SavedEvent.deleteMany({ event: eventId });
+
+    res.json({
+      success: true,
+      message: "Event deleted"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error deleting event"
+    });
+  }
+};
+
+
+/*
 GET NOTIFICATIONS
 */
 exports.getNotifications = async (req, res) => {

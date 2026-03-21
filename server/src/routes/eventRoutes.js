@@ -56,14 +56,6 @@ router.delete('/:id', protect, deleteEvent);
 router.delete('/:id/remove', protect, removeEventFromMyEvents);
 
 
-/* ================= EVENT MANAGEMENT ================= */
-
-router.get("/", getAllEvents);
-router.post("/", protect, createEvent);
-router.put("/:id", protect, updateEvent);
-router.delete("/:id", protect, deleteEvent);
-
-
 /* ================= EVENT DETAILS ================= */
 
 router.get('/:id', getEventDetails);

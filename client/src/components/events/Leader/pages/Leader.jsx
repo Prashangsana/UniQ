@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './Leader.css';
 import { LeaderEventBanner, LeaderEventRow, LeaderSidebar, LeaderSocietyCard } from '../components/LeaderEvent';
 
@@ -95,7 +95,12 @@ export const LeaderDashboard = () => {
 export const LeaderEventEditor = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const isNewEvent = eventId === 'new';
+
+  // Get societyId from query params if available
+  const queryParams = new URLSearchParams(location.search);
+  const preselectedSocietyId = queryParams.get('societyId');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -106,6 +111,8 @@ export const LeaderEventEditor = () => {
   const [time, setTime] = useState({ hh: '09', min: '00', period: 'AM' });
   const [venue, setVenue] = useState('');
   const [adminLink, setAdminLink] = useState('');
+  const [registerLink, setRegisterLink] = useState('');
+  const [instagramLink, setInstagramLink] = useState('');
   const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
@@ -121,7 +128,8 @@ export const LeaderEventEditor = () => {
         if (data.success) {
           setSocieties(data.data);
           if (data.data.length > 0 && !selectedSociety) {
-            setSelectedSociety(data.data[0]._id);
+            // Priority: Query Param > First Society in list
+            setSelectedSociety(preselectedSocietyId || data.data[0]._id);
           }
         }
       })
@@ -139,12 +147,19 @@ export const LeaderEventEditor = () => {
             setTitle(ev.title || '');
             setDescription(ev.description || '');
             setVenue(ev.venue || ev.location || '');
-            setTime(ev.time || '');
             setAdminLink(ev.adminLink || '');
+            setRegisterLink(ev.registerLink || '');
+            setInstagramLink(ev.instagramLink || '');
             setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
             setSelectedSociety(ev.society?._id || ev.society || '');
+            
+            if (ev.time) {
+              const [t, p] = ev.time.split(' ');
+              const [h, m] = t.split(':');
+              setTime({ hh: h, min: m, period: p || 'AM' });
+            }
             
             if (ev.date) {
               const d = new Date(ev.date);
@@ -164,8 +179,9 @@ export const LeaderEventEditor = () => {
       setVenue('');
       setTime({ hh: '09', min: '00', period: 'AM' });
       setAdminLink('');
+      setRegisterLink('');
       setInstagramLink('');
-      setTickets([{ name: 'Standard', price: '' }]);
+      setTickets([{ name: 'Standard Ticket', price: '' }]);
       setStatus('Draft');
       setBannerImage('');
       setDate({ dd: '', mm: '', yyyy: '' });
@@ -526,26 +542,11 @@ export const LeaderSocietyManager = () => {
       <header className="manager-header">
         <button className="back-link" onClick={() => navigate('/')}>← Dashboard</button>
         <div className="manager-profile">
-          <div className="manager-logo" style={{ 
-            backgroundColor: '#e2e8f0', 
-            borderRadius: '50%', 
-            width: '120px', 
-            height: '120px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            overflow: 'hidden',
-            border: '4px solid white',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-          }}>
-            {society.logo ? (
-              <img src={society.logo} alt={society.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ color: '#64748b', fontWeight: 'bold' }}>Logo</span>
-            )}
+          <div className="manager-logo" style={{ backgroundImage: `url(${society.logo})`, backgroundSize: 'cover' }}>
+            {!society.logo && "Logo"}
           </div>
-          <h1 style={{ marginTop: '15px' }}>{society.name.toUpperCase()} Admin Space</h1>
-          <button className="edit-profile-btn" style={{ marginTop: '10px' }}>Edit Society Profile</button>
+          <h1>{society.name} Admin Space</h1>
+          <button className="edit-profile-btn">Edit Society Profile</button>
         </div>
       </header>
 
@@ -555,20 +556,10 @@ export const LeaderSocietyManager = () => {
           <button className="small-add-btn" onClick={() => navigate('/admin/event/new')}>+ Add Event</button>
         </div>
         <div className="manager-grid">
-            {events.length > 0 ? events.map((ev, i) => {
-              const eventId = (typeof ev === 'object' ? ev._id : ev) || `mock-${i}`;
-              const eventTitle = typeof ev === 'object' ? ev.title : (typeof ev === 'string' ? ev : undefined);
-              return (
-                <LeaderEventBanner 
-                  key={i} 
-                  id={eventId} 
-                  title={eventTitle} 
-                />
-              );
-            }) : (
-              <LeaderEventBanner id="mock-1" title={`${society.name} EVENT 1`} />
-            )}
-          </div>
+          {events.map((ev, i) => (
+            <LeaderEventBanner key={i} id={ev._id} title={ev.title} />
+          ))}
+        </div>
       </section>
     </div>
   );
