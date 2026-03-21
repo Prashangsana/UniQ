@@ -76,7 +76,7 @@ export const LeaderSidebar = ({ title }) => {
 };
 
 // 4. Admin Society Card
-export const LeaderSocietyCard = ({ name, id }) => {
+export const LeaderSocietyCard = ({ name, id, logo }) => {
   return (
     <Link to={`/admin/society/${id}`} className="leader-card-link">
       <div className="leader-card">
@@ -88,7 +88,6 @@ export const LeaderSocietyCard = ({ name, id }) => {
         />
         <span className="leader-card-name">{name}</span>
         <div className="leader-manage-tag">✏️ Manage</div>
->>>>>>> yahani
       </div>
     </Link>
   );
