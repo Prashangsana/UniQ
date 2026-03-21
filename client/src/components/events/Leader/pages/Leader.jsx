@@ -63,17 +63,10 @@ export const LeaderDashboard = () => {
             </button>
           </header>
           
-          <section className="admin-main-event">
-            <h3>Featured Society Event</h3>
-            <LeaderEventBanner large id={activeEvents[0] || "main-hackathon-2026"} />
-          </section>
-
-          <LeaderEventRow title="Active Events" events={activeEvents} />
           <LeaderEventRow title="Drafted/Past Events" events={draftEvents} />
         </div>
 
         <div className="admin-right">
-          <LeaderSidebar title="Engagement Overview" />
           <div className="manage-societies">
             <h3>Your societies</h3>
             <div className="societies-list-container">
