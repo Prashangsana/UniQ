@@ -141,12 +141,14 @@ function App() {
           } />
 
           {/* Shared Routes */}
-          <Route 
-            path="/society/:id" 
-            element={userRole === 'society_leader' ? <LeaderSocietyManager /> : <SocietyProfilePage />} 
-          />
-          <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
-          <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
+          <Route path="/society/:id" element={<SocietyProfilePage />} />
+
+          {/* Leader Specific Routes */}
+          {userRole === 'society_leader' && (
+            <>
+              <Route path="/event/:eventId" element={<LeaderEventEditor />} />
+            </>
+          )}
 
           {/* Dynamic Event Route based on Role */}
           <Route 
