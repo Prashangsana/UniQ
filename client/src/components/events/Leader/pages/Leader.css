@@ -297,8 +297,6 @@
   border-radius: 24px;
   margin-bottom: 40px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-<<<<<<< HEAD
-=======
   position: relative;
 }
 
@@ -306,7 +304,6 @@
   position: absolute;
   top: 30px;
   left: 30px;
->>>>>>> yahani
 }
 
 .manager-logo { 
