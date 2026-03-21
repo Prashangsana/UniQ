@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Home.css';
-
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
 import GroupsPage from '../pages/GroupsPage';
 import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
+import { LeaderDashboard } from '../components/events/Leader/pages/Leader';
 
 const SkillsView = () => (
     <div className="content-section fade-in">
@@ -27,8 +27,10 @@ const Home = ({ myEventsList }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const location = useLocation();
 
+    // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
     const sidebarUser = {
         name: 'Alex',
         img: 'https://i.pravatar.cc/300?img=47' 
@@ -50,6 +52,8 @@ const Home = ({ myEventsList }) => {
                 return <Profile />;
             case 'society':   
                 return <EventsPage myEventsList={myEventsList} />;
+            case 'leader':    
+                return <LeaderDashboard />;
             case 'groups':    
                 return <GroupsPage />;
             case 'skills':    
@@ -91,6 +95,12 @@ const Home = ({ myEventsList }) => {
                             <a href="#dashboard" onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}>
                                 <Icon icon="lucide:layout-dashboard" width="20" />
                                 <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li className={activeTab === 'leader' ? 'active' : ''}>
+                            <a href="#leader" onClick={(e) => { e.preventDefault(); setActiveTab('leader'); }}>
+                                <Icon icon="lucide:shield-check" width="20" />
+                                <span>Society Leader</span>
                             </a>
                         </li>
                         <li className={activeTab === 'society' ? 'active' : ''}>

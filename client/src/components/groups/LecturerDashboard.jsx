@@ -1,0 +1,385 @@
+import React, { useState, useEffect } from 'react';
+import './groups.css';
+
+const LecturerDashboard = () => {
+  const [activeTab, setActiveTab] = useState('setup');
+
+  const [myModules, setMyModules] = useState([]);
+  const [isLoadingModules, setIsLoadingModules] = useState(true);
+
+  const [pendingGroups, setPendingGroups] = useState([]);
+  const [finalisedGroups, setFinalisedGroups] = useState([]);
+  
+  // Form States for setting up a project
+  const [moduleId, setModuleId] = useState('');
+  const [minMembers, setMinMembers] = useState(3);
+  const [maxMembers, setMaxMembers] = useState(5);
+  const [deadline, setDeadline] = useState('');
+  const [prefixes, setPrefixes] = useState('SE, CS, AI');
+
+  const [expandedGroupId, setExpandedGroupId] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch Lecturer's Modules
+        const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules');
+        const modData = await modRes.json();
+        if (modData.success) {
+          setMyModules(modData.data);
+          if (modData.data.length > 0) setModuleId(modData.data[0]._id);
+        }
+
+        // Fetch Groups (Pending & Finalised)
+        const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups');
+        const grpData = await grpRes.json();
+        if (grpData.success) {
+          setPendingGroups(grpData.data.pending);
+          setFinalisedGroups(grpData.data.finalised);
+        }
+      } catch (error) {
+        console.error("Error fetching lecturer data", error);
+      } finally {
+        setIsLoadingModules(false);
+      }
+    };
+    fetchData();
+  }, [activeTab]); // Re-fetch when changing tabs to get latest data
+
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+    const prefixArray = prefixes.split(',').map(p => p.trim());
+    const selectedModule = myModules.find(m => m._id === moduleId);
+    
+    try {
+      const response = await fetch(`http://localhost:5000/api/lecturer/modules/${moduleId}/group-project`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ minMembers, maxMembers, deadline, allowedPrefixes: prefixArray, moduleName: selectedModule?.name })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(`Success! Project for ${moduleId} opened for students!`);
+      }
+    } catch (error) {
+      console.error("Frontend Fetch Error:", error);
+      alert("Failed to connect to server. Check your backend terminal for crash logs!");
+    }
+  };
+
+  // --- NEW: Handle Approve/Reject Action ---
+  const handleReview = async (groupId, action) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, feedback: action === 'reject' ? "Please adjust members" : "Approved" })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`Group ${action}ed successfully!`);
+        // Remove from pending locally to update UI immediately
+        setPendingGroups(prev => prev.filter(g => g._id !== groupId));
+        if (action === 'approve') {
+          // Add to finalised groups list locally
+          setFinalisedGroups(prev => [...prev, data.data]);
+        }
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      alert("Failed to process review.");
+    }
+  };
+
+  return (
+    <div className="gf-main" style={{ maxWidth: '1000px', margin: '0 auto', paddingTop: '2rem' }}>
+      <div className="gf-header">
+        <h2>Lecturer Dashboard</h2>
+        <p>Manage group projects and review finalisation requests</p>
+      </div>
+
+      {/* TABS */}
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #e2e8f0', marginBottom: '2rem' }}>
+        <button 
+          onClick={() => setActiveTab('setup')}
+          style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'setup' ? '3px solid #5b7cbd' : 'none', fontWeight: activeTab === 'setup' ? 'bold' : 'normal', cursor: 'pointer' }}
+        >
+          Open Group Project
+        </button>
+        <button 
+          onClick={() => setActiveTab('review')}
+          style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'review' ? '3px solid #f59e0b' : 'none', fontWeight: activeTab === 'review' ? 'bold' : 'normal', cursor: 'pointer' }}
+        >
+          {/* Dynamically show the number of pending reviews */}
+          Pending Reviews ({pendingGroups.length})
+        </button>
+        <button 
+          onClick={() => setActiveTab('finalised')}
+          style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'finalised' ? '3px solid #10b981' : 'none', fontWeight: activeTab === 'finalised' ? 'bold' : 'normal', cursor: 'pointer' }}
+        >
+          Finalised Groups
+        </button>
+      </div>
+
+      {/* TAB 1: SETUP PROJECT */}
+      {activeTab === 'setup' && (
+        <div className="gf-card-simple" style={{ padding: '2rem' }}>
+          <h3>Open a New Group Project</h3>
+          <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Allow students to start forming groups for a module.</p>
+          
+          {isLoadingModules ? (
+            <p>Loading your assigned modules...</p>
+          ) : myModules.length === 0 ? (
+            <p style={{ color: '#ef4444' }}>You have not been assigned as a module leader to any modules yet.</p>
+          ) : (
+            <form onSubmit={handleCreateProject}>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Module</label>
+                <select 
+                  className="gf-input" 
+                  value={moduleId} 
+                  onChange={(e) => setModuleId(e.target.value)} 
+                  required
+                >
+                  {myModules.map(mod => (
+                    <option key={mod._id} value={mod._id}>
+                      {mod._id} - {mod.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Min Members</label>
+                  <input type="number" className="gf-input" value={minMembers} onChange={(e) => setMinMembers(e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Max Members</label>
+                  <input type="number" className="gf-input" value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Deadline</label>
+                <input type="date" className="gf-input" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Allowed Prefixes (Comma separated)</label>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px' }}>Students will choose one of these when finalising.</p>
+                <input type="text" className="gf-input" value={prefixes} onChange={(e) => setPrefixes(e.target.value)} placeholder="SE, CS, DS" required />
+              </div>
+
+              <button type="submit" className="gf-btn-primary">Open Group Formation</button>
+            </form>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: PENDING REVIEWS */}
+      {activeTab === 'review' && (
+        <div>
+          {pendingGroups.length === 0 ? (
+            <p style={{ color: '#64748b' }}>No pending reviews at this time.</p>
+          ) : (
+            pendingGroups.map(group => {
+              const isExpanded = expandedGroupId === group._id;
+
+              return (
+                <div 
+                  key={group._id} 
+                  className="gf-card-simple" 
+                  style={{ 
+                    padding: '1.5rem', 
+                    marginBottom: '1rem', 
+                    borderLeft: '4px solid #f59e0b',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => setExpandedGroupId(isExpanded ? null : group._id)}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ margin: 0 }}>{group.name} <small style={{color:'#64748b'}}>({group.moduleId})</small></h4>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: isExpanded ? '#5b7cbd' : '#64748b' }}>
+                        {isExpanded ? '▴ Click to collapse' : '▾ Click to view submission details'}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'reject'); }} 
+                        className="gf-btn-outline" 
+                        style={{ color: '#ef4444', borderColor: '#ef4444', padding: '5px 15px' }}
+                      >
+                        Reject
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'approve'); }} 
+                        className="gf-btn-primary" 
+                        style={{ background: '#10b981', padding: '5px 15px' }}
+                      >
+                        Approve
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* EXPANDED SECTION */}
+                  {isExpanded && group.finalisationForm && (
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }} onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '1.5rem' }}>
+                        <div className="detail-item">
+                          <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Tutorial Group</label>
+                          <strong>{group.finalisationForm.tutorialGroup}</strong>
+                        </div>
+                        <div className="detail-item">
+                          <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Requested Prefix</label>
+                          <strong style={{ color: '#5b7cbd' }}>{group.prefix}</strong>
+                        </div>
+                      </div>
+
+                      <h5 style={{ marginBottom: '10px' }}>Member Registration Details</h5>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <thead>
+                          <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
+                            <th style={{ padding: '10px' }}>Name</th>
+                            <th style={{ padding: '10px' }}>IIT ID</th>
+                            <th style={{ padding: '10px' }}>UOW ID</th>
+                            <th style={{ padding: '10px' }}>Phone Number</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.members.map(member => {
+                            const mId = member._id || member;
+                            const extra = group.finalisationForm.memberExtraInfo?.find(info => info.userId === mId);
+
+                            return (
+                              <tr key={mId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '10px' }}>{member.name || "Student"}</td>
+                                <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.iitId || 'Not Provided'}</td>
+                                <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.uowId || 'Not Provided'}</td>
+                                <td style={{ padding: '10px' }}>{extra?.phone || 'N/A'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: FINALISED GROUPS */}
+      {activeTab === 'finalised' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {finalisedGroups.length === 0 ? (
+            <p style={{ color: '#64748b', textAlign: 'center', marginTop: '2rem' }}>No finalised groups yet.</p>
+          ) : (
+            finalisedGroups.map(group => {
+              const isExpanded = expandedGroupId === group._id;
+
+              return (
+                <div 
+                  key={group._id} 
+                  className="gf-card-simple" 
+                  style={{ 
+                    padding: '1.25rem', 
+                    borderLeft: '5px solid #10b981',
+                    cursor: 'pointer',
+                    background: '#fff',
+                    transition: 'transform 0.1s ease'
+                  }}
+                  onClick={() => setExpandedGroupId(isExpanded ? null : group._id)}
+                >
+                  {/* Top Row: Summary Info */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <div style={{ 
+                        background: '#dcfce7', 
+                        color: '#166534', 
+                        padding: '8px 12px', 
+                        borderRadius: '6px', 
+                        fontWeight: 'bold',
+                        minWidth: '60px',
+                        textAlign: 'center',
+                        fontSize: '0.9rem'
+                      }}>
+                        {group.finalisedCode}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{group.name}</h4>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                          Module: {group.moduleId} • <span style={{ color: '#10b981' }}>{isExpanded ? 'Click to collapse' : 'Click to view details'}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#10b981', fontWeight: '600' }}>
+                      <span style={{ fontSize: '1.2rem' }}>✓</span> Finalised
+                    </div>
+                  </div>
+
+                  {/* Expanded Section: Content now uses full card width */}
+                  {isExpanded && group.finalisationForm && (
+                    <div 
+                      style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }} 
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Meta Details Row */}
+                      <div style={{ display: 'flex', gap: '40px', marginBottom: '1.5rem', background: '#f8fafc', padding: '15px', borderRadius: '8px' }}>
+                        <div>
+                          <label style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' }}>Tutorial Group</label>
+                          <strong style={{ fontSize: '1rem' }}>{group.finalisationForm.tutorialGroup}</strong>
+                        </div>
+                        <div>
+                          <label style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' }}>Assigned Prefix</label>
+                          <strong style={{ fontSize: '1rem', color: '#10b981' }}>{group.prefix}</strong>
+                        </div>
+                      </div>
+
+                      <h5 style={{ marginBottom: '12px', color: '#334155', fontSize: '0.95rem' }}>Confirmed Member Details</h5>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left', color: '#64748b' }}>
+                              <th style={{ padding: '12px 8px' }}>Name</th>
+                              <th style={{ padding: '12px 8px' }}>IIT ID</th>
+                              <th style={{ padding: '12px 8px' }}>UOW ID</th>
+                              <th style={{ padding: '12px 8px' }}>Phone</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.members.map(member => {
+                              const mId = member._id || member;
+                              const extra = group.finalisationForm.memberExtraInfo?.find(info => info.userId === mId);
+                              return (
+                                <tr key={mId} style={{ borderBottom: '1px solid #f8fafc' }}>
+                                  <td style={{ padding: '12px 8px', fontWeight: '500' }}>{member.name || "Student"}</td>
+                                  <td style={{ padding: '12px 8px', fontFamily: 'monospace', color: '#475569' }}>{extra?.iitId || 'N/A'}</td>
+                                  <td style={{ padding: '12px 8px', fontFamily: 'monospace', color: '#475569' }}>{extra?.uowId || 'N/A'}</td>
+                                  <td style={{ padding: '12px 8px', color: '#475569' }}>{extra?.phone || 'N/A'}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LecturerDashboard;

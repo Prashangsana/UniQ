@@ -14,6 +14,8 @@
     "skills": ["React", "JavaScript", "Node.js"],
     "modules": ["Software Engineering", "Database Systems"],
     "profileImage": "https://i.pravatar.cc/150?u=user1"
+
+
   },
   {
     "_id": "user_id_student_2",
