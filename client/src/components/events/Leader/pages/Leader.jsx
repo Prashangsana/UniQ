@@ -194,6 +194,11 @@ export const LeaderEventEditor = () => {
       return;
     }
 
+    if (!selectedSociety) {
+      alert("Please select a society for this event.");
+      return;
+    }
+
     const eventData = {
       title,
       description,
@@ -399,6 +404,22 @@ export const LeaderEventEditor = () => {
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
               />
+            </div>
+
+            <div className="input-group">
+              <label>Select Society</label>
+              <select 
+                value={selectedSociety}
+                onChange={(e) => setSelectedSociety(e.target.value)}
+                style={{ padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', width: '100%' }}
+              >
+                <option value="">Select a society...</option>
+                {societies.map(society => (
+                  <option key={society._id} value={society._id}>
+                    {society.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* DYNAMIC TICKET TIERS SECTION */}
