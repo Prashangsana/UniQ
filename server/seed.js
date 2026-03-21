@@ -41,6 +41,7 @@ const seedDB = async () => {
       instagramLink: e.instagramLink || "https://instagram.com",
       registerLink: e.registerLink || "https://forms.google.com",
       time: e.time || "09:00 AM",
+      venue: e.place || e.venue || "IIT Auditorium",
       place: e.place || "IIT Auditorium",
       price: e.price || "LKR 1000",
       createdAt: e.createdAt ? new Date(e.createdAt) : new Date()
