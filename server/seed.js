@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Event = require('./src/models/Event');
 //const Society = require('./src/models/Society');
-const User = require('./src/models/user');
+const User = require('./src/models/User');
 const eventsData = require('./src/mockData/events.json');
 const societiesData = require('./src/mockData/societies.json');
 
