@@ -12,7 +12,11 @@ const {
   addEventToMyEvents,
   removeEventFromMyEvents,
   getMyEvents,
-  getNotifications
+  getNotifications,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  getAllEvents
 } = require('../controllers/eventController');
 
 
@@ -46,6 +50,14 @@ router.post('/:id/add', protect, addEventToMyEvents);
 /* ================= REMOVE EVENT ================= */
 
 router.delete('/:id/remove', protect, removeEventFromMyEvents);
+
+
+/* ================= EVENT MANAGEMENT ================= */
+
+router.get("/", getAllEvents);
+router.post("/", protect, createEvent);
+router.put("/:id", protect, updateEvent);
+router.delete("/:id", protect, deleteEvent);
 
 
 /* ================= EVENT DETAILS ================= */

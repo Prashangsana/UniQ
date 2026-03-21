@@ -4,12 +4,16 @@ const User = require('../models/User');
 exports.protect = async (req, res, next) => {
   let token;
 
+  console.log("Protecting route:", req.method, req.originalUrl);
+  console.log("Cookies received:", req.cookies);
+
   // Check for token in cookies first
   if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   } 
   
   if (!token) {
+    console.log("No token found in cookies.");
     return res.status(401).json({ success: false, message: 'Not authorized, no token' });
   }
 

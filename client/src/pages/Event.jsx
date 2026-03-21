@@ -360,13 +360,24 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <div className="meta-item">
               <span>📍 Place:</span>
-              <p>{eventData.place}</p>
+              <p>{eventData.venue || eventData.place}</p>
             </div>
 
-            <div className="meta-item">
-              <span>💰 Price:</span>
-              <p>{eventData.price}</p>
-            </div>
+            {eventData.tickets && eventData.tickets.length > 0 ? (
+              <div className="meta-item">
+                <span>💰 Tickets:</span>
+                {eventData.tickets.map((t, i) => (
+                  <p key={i} style={{ fontSize: '14px', marginBottom: '4px' }}>
+                    {t.name}: {t.price}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <div className="meta-item">
+                <span>💰 Price:</span>
+                <p>{eventData.price || "Free"}</p>
+              </div>
+            )}
 
           </div>
 

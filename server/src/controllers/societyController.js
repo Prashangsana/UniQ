@@ -2,6 +2,29 @@ const Society = require("../models/Society");
 const Event = require("../models/Event");
 
 /*
+GET LEADER'S SOCIETIES
+API: GET /api/societies/leader/all
+*/
+exports.getLeaderSocieties = async (req, res) => {
+  try {
+    // For now, return all societies as we're in development
+    // In production, you'd filter by req.user.id
+    const societies = await Society.find();
+
+    res.status(200).json({
+      success: true,
+      data: societies
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching leader's societies"
+    });
+  }
+};
+
+
+/*
 -----------------------------------------
 GET ALL SOCIETIES
 API: GET /api/societies

@@ -19,7 +19,7 @@ export const LeaderDashboard = () => {
 
   useEffect(() => {
     // Load User Info
-    fetch(`${API_URL}/api/auth/me`, { credentials: 'include' })
+    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {
@@ -106,6 +106,8 @@ export const LeaderEventEditor = () => {
   const [time, setTime] = useState('');
   const [venue, setVenue] = useState('');
   const [adminLink, setAdminLink] = useState('');
+  const [registerLink, setRegisterLink] = useState('');
+  const [instagramLink, setInstagramLink] = useState('');
   const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
@@ -141,6 +143,8 @@ export const LeaderEventEditor = () => {
             setVenue(ev.venue || ev.location || '');
             setTime(ev.time || '');
             setAdminLink(ev.adminLink || '');
+            setRegisterLink(ev.registerLink || '');
+            setInstagramLink(ev.instagramLink || '');
             setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
@@ -173,6 +177,8 @@ export const LeaderEventEditor = () => {
       time,
       venue,
       adminLink,
+      registerLink,
+      instagramLink,
       tickets,
       status: 'Active',
       bannerImage,
@@ -432,12 +438,32 @@ export const LeaderEventEditor = () => {
             </div>
             
             <div className="input-group">
-              <label>Administration Link</label>
+              <label>Administration Link (Internal)</label>
               <input 
                 type="url" 
                 placeholder="https://docs.google.com/..." 
                 value={adminLink}
                 onChange={(e) => setAdminLink(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Public Registration Link (Participate)</label>
+              <input 
+                type="url" 
+                placeholder="https://forms.gle/..." 
+                value={registerLink}
+                onChange={(e) => setRegisterLink(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Instagram Link</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/..." 
+                value={instagramLink}
+                onChange={(e) => setInstagramLink(e.target.value)}
               />
             </div>
           </div>

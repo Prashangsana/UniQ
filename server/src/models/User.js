@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   
   password: { type: String, required: false }, 
   
-  role: { type: String, enum: ['student', 'lecturer'], default: 'student' },
+  role: { type: String, enum: ['student', 'lecturer', 'society_leader'], default: 'student' },
   
   // OAuth Fields
   authProvider: { type: String, default: 'local' },
