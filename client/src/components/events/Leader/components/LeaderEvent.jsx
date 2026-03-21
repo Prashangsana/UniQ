@@ -5,7 +5,7 @@ import "./LeaderEvent.css";
 // 1. Admin Event Banner
 export const LeaderEventBanner = ({ large, id = "sample-event", title }) => {
   const navigate = useNavigate();
-  const displayTitle = title || id.replace(/-/g, ' ').toUpperCase();
+  const displayTitle = title || (id ? id.toString().replace(/-/g, ' ').toUpperCase() : "EVENT");
   
   return (
     <div 

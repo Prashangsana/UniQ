@@ -96,6 +96,7 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Corrected endpoint from /api/auth/me back to /auth/me to match server.js
         const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const data = await response.json();
         if (data.authenticated) {
@@ -103,7 +104,8 @@ function App() {
         } else {
           handleLogout();
         }
-      } catch {
+      } catch (error) {
+        console.error("Auth check failed:", error);
         handleLogout();
       }
     };
@@ -126,65 +128,67 @@ function App() {
     return () => observer.disconnect();
   }, [isLoggedIn]);
 
-  // Logged-in View
-  if (isLoggedIn) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          {/* Default Routes */}
-          <Route path="/" element={
-            userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
-          } />
-          
-          <Route path="/dashboard" element={
-            userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
-          } />
-
-          {/* Shared Routes */}
-          <Route path="/society/:id" element={<SocietyProfilePage />} />
-
-          {/* Leader Specific Routes */}
-          {userRole === 'society_leader' && (
-            <>
-              <Route path="/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
-
-          {/* Dynamic Event Route based on Role */}
-          <Route 
-            path="/event/:eventId" 
-            element={
-              userRole === 'society_leader' ? (
-                <LeaderEventEditor />
-              ) : (
-                <EventDetailsPage
-                  onAddEvent={handleAddEvent}
-                  onRemoveEvent={handleRemoveEvent}
-                  myEventsList={myEventsList as never}
-                />
-              )
-            } 
-          />
-        </Routes>
-      </BrowserRouter>
-    );
-  }
-
-  // Logged-out View (Landing Page)
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={
-          <div className="app-container">
-            <Navbar onSignUpSuccess={() => handleLogin('student')} />
-            <Hero />
-            <Features />
-            <HowItWorks />
-            <Pricing />
-            <Team />
-            <Footer />
-          </div>
-        } />
+        {isLoggedIn ? (
+          <>
+            {/* Default Routes */}
+            <Route path="/" element={
+              userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
+            } />
+            
+            <Route path="/dashboard" element={
+              userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
+            } />
+
+            {/* Shared Routes */}
+            <Route path="/society/:id" element={<SocietyProfilePage />} />
+
+            {/* Leader Specific Routes */}
+            {userRole === 'society_leader' && (
+              <>
+                <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
+                <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
+              </>
+            )}
+
+            {/* Dynamic Event Route based on Role */}
+            <Route 
+              path="/event/:eventId" 
+              element={
+                userRole === 'society_leader' ? (
+                  <LeaderEventEditor />
+                ) : (
+                  <EventDetailsPage
+                    onAddEvent={handleAddEvent}
+                    onRemoveEvent={handleRemoveEvent}
+                    myEventsList={myEventsList as never}
+                  />
+                )
+              } 
+            />
+
+            {/* Catch-all for logged-in users */}
+            <Route path="*" element={userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={
+              <div className="app-container">
+                <Navbar onSignUpSuccess={() => handleLogin('student')} />
+                <Hero />
+                <Features />
+                <HowItWorks />
+                <Pricing />
+                <Team />
+                <Footer />
+              </div>
+            } />
+            {/* Catch-all for logged-out users (redirect to landing) */}
+            <Route path="*" element={<Home myEventsList={[]} />} />
+          </>
+        )}
       </Routes>
     </BrowserRouter>
   );

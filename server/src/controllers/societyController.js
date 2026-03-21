@@ -7,8 +7,8 @@ API: GET /api/societies/leader/all
 */
 exports.getLeaderSocieties = async (req, res) => {
   try {
-    // For now, return all societies as we're in development
-    // In production, you'd filter by req.user.id
+    // For now, return all societies as placeholder or filter by leader if we have that info
+    // In a real app, this would be: await Society.find({ leader: req.user.id })
     const societies = await Society.find();
 
     res.status(200).json({
@@ -18,19 +18,15 @@ exports.getLeaderSocieties = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error fetching leader's societies"
+      message: "Error fetching leader societies"
     });
   }
 };
 
 
 /*
------------------------------------------
 GET ALL SOCIETIES
 API: GET /api/societies
------------------------------------------
-Used for:
-- "Your Societies" sidebar
 */
 exports.getAllSocieties = async (req, res) => {
   try {
@@ -51,13 +47,8 @@ exports.getAllSocieties = async (req, res) => {
 
 
 /*
------------------------------------------
 GET SOCIETY PROFILE
 API: GET /api/societies/:id
------------------------------------------
-Returns:
-- society details
-- events under that society
 */
 exports.getSocietyProfile = async (req, res) => {
   try {
@@ -86,29 +77,6 @@ exports.getSocietyProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching society profile"
-    });
-  }
-};
-
-
-/*
-GET LEADER SOCIETIES
-API: GET /api/societies/leader/all
-*/
-exports.getLeaderSocieties = async (req, res) => {
-  try {
-    // For now, return all societies as placeholder or filter by leader if we have that info
-    // In a real app, this would be: await Society.find({ leader: req.user.id })
-    const societies = await Society.find();
-
-    res.status(200).json({
-      success: true,
-      data: societies
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching leader societies"
     });
   }
 };

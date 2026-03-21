@@ -106,7 +106,8 @@ export const LeaderEventEditor = () => {
   const [time, setTime] = useState({ hh: '09', min: '00', period: 'AM' });
   const [venue, setVenue] = useState('');
   const [adminLink, setAdminLink] = useState('');
-  const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
+  const [instagramLink, setInstagramLink] = useState('');
+  const [tickets, setTickets] = useState([{ name: 'Standard', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
   const [societies, setSocieties] = useState([]);
@@ -139,9 +140,33 @@ export const LeaderEventEditor = () => {
             setTitle(ev.title || '');
             setDescription(ev.description || '');
             setVenue(ev.venue || ev.location || '');
-            setTime(ev.time || '');
-            setAdminLink(ev.adminLink || '');
-            setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
+            
+            // Handle Time string parsing (Expected: "HH:MM AM/PM")
+            if (ev.time) {
+              const timeParts = ev.time.split(/[:\s]/); // Split by colon or space
+              if (timeParts.length >= 3) {
+                setTime({
+                  hh: timeParts[0],
+                  min: timeParts[1],
+                  period: (timeParts[2] || 'AM').toUpperCase()
+                });
+              } else if (timeParts.length === 2) {
+                // Handle "HH:MM" 24h fallback if needed
+                let h = parseInt(timeParts[0]);
+                let p = h >= 12 ? 'PM' : 'AM';
+                if (h > 12) h -= 12;
+                if (h === 0) h = 12;
+                setTime({
+                  hh: String(h).padStart(2, '0'),
+                  min: timeParts[1],
+                  period: p
+                });
+              }
+            }
+
+            setAdminLink(ev.adminLink || ev.participationLink || ev.registerLink || '');
+            setInstagramLink(ev.instagramLink || '');
+            setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
             setSelectedSociety(ev.society?._id || ev.society || '');
@@ -149,9 +174,9 @@ export const LeaderEventEditor = () => {
             if (ev.date) {
               const d = new Date(ev.date);
               setDate({
-                dd: String(d.getDate()).padStart(2, '0'),
-                mm: String(d.getMonth() + 1).padStart(2, '0'),
-                yyyy: String(d.getFullYear())
+                dd: String(d.getUTCDate()).padStart(2, '0'),
+                mm: String(d.getUTCMonth() + 1).padStart(2, '0'),
+                yyyy: String(d.getUTCFullYear())
               });
             }
           }
@@ -185,6 +210,9 @@ export const LeaderEventEditor = () => {
       time: `${time.hh}:${time.min} ${time.period}`,
       venue,
       adminLink,
+      participationLink: adminLink, // For backward compatibility
+      registerLink: adminLink,      // For backend model consistency
+      instagramLink,
       tickets,
       status: 'Active',
       bannerImage,
@@ -293,7 +321,7 @@ export const LeaderEventEditor = () => {
             fontWeight: '800',
             letterSpacing: '1px'
           }}>
-            {isNewEvent ? 'CREATE NEW EVENT' : title.toUpperCase()}
+            {title ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT EDITOR')}
           </h2>
           <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
@@ -458,12 +486,22 @@ export const LeaderEventEditor = () => {
 
           <div className="editor-sidebar">
             <div className="input-group">
-              <label>Administration Link</label>
+              <label>Participation Link</label>
               <input 
                 type="url" 
                 placeholder="https://docs.google.com/..." 
                 value={adminLink}
                 onChange={(e) => setAdminLink(e.target.value)}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Instagram Link</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/..." 
+                value={instagramLink}
+                onChange={(e) => setInstagramLink(e.target.value)}
               />
             </div>
           </div>
@@ -544,7 +582,7 @@ export const LeaderSocietyManager = () => {
               <span style={{ color: '#64748b', fontWeight: 'bold' }}>Logo</span>
             )}
           </div>
-          <h1 style={{ marginTop: '15px' }}>{society.name.toUpperCase()} Admin Space</h1>
+          <h1 style={{ marginTop: '15px' }}>{(society?.name || 'Society').toUpperCase()} Admin Space</h1>
           <button className="edit-profile-btn" style={{ marginTop: '10px' }}>Edit Society Profile</button>
         </div>
       </header>

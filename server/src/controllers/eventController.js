@@ -289,3 +289,136 @@ exports.getNotifications = async (req, res) => {
     });
   }
 };
+
+
+/*
+CREATE EVENT
+*/
+exports.createEvent = async (req, res) => {
+  try {
+    const { 
+      title, description, date, time, venue, 
+      adminLink, tickets, status, bannerImage, society 
+    } = req.body;
+
+    // Check if society exists
+    let societyId = society;
+    const foundSociety = await Society.findOne({ 
+      $or: [{ _id: mongoose.isValidObjectId(society) ? society : null }, { shortName: society }] 
+    });
+    
+    if (!foundSociety) {
+      return res.status(404).json({ success: false, message: "Society not found" });
+    }
+    societyId = foundSociety._id;
+
+    const newEvent = new Event({
+      title,
+      description,
+      date,
+      time,
+      venue,
+      adminLink,
+      tickets,
+      status,
+      bannerImage,
+      society: societyId
+    });
+
+    await newEvent.save();
+
+    // Notify followers
+    await exports.notifyFollowersOfNewEvent(societyId, foundSociety.name);
+
+    res.status(201).json({
+      success: true,
+      data: newEvent
+    });
+  } catch (error) {
+    console.error("Create Event Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error creating event"
+    });
+  }
+};
+
+
+/*
+UPDATE EVENT
+*/
+exports.updateEvent = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const updates = req.body;
+
+    const event = await Event.findByIdAndUpdate(eventId, updates, { new: true, runValidators: true });
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: event
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating event"
+    });
+  }
+};
+
+
+/*
+DELETE EVENT
+*/
+exports.deleteEvent = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const event = await Event.findByIdAndDelete(eventId);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found"
+      });
+    }
+
+    // Also remove from SavedEvents
+    await SavedEvent.deleteMany({ event: eventId });
+
+    res.json({
+      success: true,
+      message: "Event deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error deleting event"
+    });
+  }
+};
+
+
+/*
+GET ALL EVENTS (for Admin/Leader)
+*/
+exports.getAllEvents = async (req, res) => {
+  try {
+    const events = await Event.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching events"
+    });
+  }
+};

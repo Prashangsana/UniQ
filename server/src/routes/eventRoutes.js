@@ -25,7 +25,6 @@ const {
 router.get("/main", getMainEvent);
 router.get("/latest", getLatestEvents);
 router.get("/top-week", getTopEvents);
-router.get("/", getAllEvents); // Admin/Leader view of all events
 
 
 /* ================= NOTIFICATIONS ================= */
@@ -43,8 +42,9 @@ router.get('/society/:societyId', getSocietyEvents);
 router.get('/my', protect, getMyEvents);
 
 
-/* ================= ADD/CREATE EVENT ================= */
+/* ================= EVENT MANAGEMENT ================= */
 
+router.get("/", getAllEvents); // Admin/Leader view of all events
 router.post('/', protect, createEvent); // Create new event
 router.post('/:id/add', protect, addEventToMyEvents);
 
@@ -54,14 +54,6 @@ router.post('/:id/add', protect, addEventToMyEvents);
 router.put('/:id', protect, updateEvent);
 router.delete('/:id', protect, deleteEvent);
 router.delete('/:id/remove', protect, removeEventFromMyEvents);
-
-
-/* ================= EVENT MANAGEMENT ================= */
-
-router.get("/", getAllEvents);
-router.post("/", protect, createEvent);
-router.put("/:id", protect, updateEvent);
-router.delete("/:id", protect, deleteEvent);
 
 
 /* ================= EVENT DETAILS ================= */
