@@ -63,7 +63,6 @@ export const LeaderDashboard = () => {
             </button>
           </header>
           
-          <LeaderEventRow title="Drafted/Past Events" events={draftEvents} />
         </div>
 
         <div className="admin-right">
