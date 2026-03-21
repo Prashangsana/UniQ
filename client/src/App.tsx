@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 
@@ -15,7 +15,31 @@ import Footer from './components/Landing/Footer';
 import Home from './dashboard/Home';
 
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
-import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
+import { LeaderDashboard, LeaderEventEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
+
+interface Event {
+  _id: string;
+  title: string;
+  date: string;
+  society: string;
+  bannerImage?: string;
+  description: string;
+  instagramLink?: string;
+  registerLink?: string;
+  time: string;
+  place: string;
+  price: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SavedEvent {
+  _id: string;
+  user: string;
+  event: Event;
+  createdAt: string;
+  updatedAt: string;
+}
 
 function App() {
   // State Management
@@ -26,28 +50,10 @@ function App() {
     return localStorage.getItem('user_role');
   });
   
-  const [myEventsList, setMyEventsList] = useState<any[]>([]);
+  const [myEventsList, setMyEventsList] = useState<SavedEvent[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
-  // Auth Handlers
-  const handleLogin = (role: string = 'student'): void => {
-    localStorage.setItem('is_logged_in', 'true');
-    localStorage.setItem('user_role', role);
-    setIsLoggedIn(true);
-    setUserRole(role);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    fetchMyEvents(); // Fetch saved events after login
-  };
-
-  const handleLogout = (): void => {
-    localStorage.removeItem('is_logged_in');
-    localStorage.removeItem('user_role');
-    setIsLoggedIn(false);
-    setUserRole(null);
-    setMyEventsList([]); // Clear list on logout
-  };
-
-  const fetchMyEvents = async () => {
+  const fetchMyEvents = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/events/my`, { credentials: 'include' });
       const data = await response.json();
@@ -57,12 +63,28 @@ function App() {
     } catch (error) {
       console.error('Error fetching saved events:', error);
     }
-  };
+  }, [API_URL]);
 
-  const handleAddEvent = (_event: any): void => {
-    // If it's an object from the backend, it will have { event: { ... } }
-    // If it's just the ID, we'll need to fetch the event details to show it in the list
-    // For now, let's just refresh the whole list from the server to keep it in sync
+  // Auth Handlers
+  const handleLogin = useCallback((role: string = 'student'): void => {
+    localStorage.setItem('is_logged_in', 'true');
+    localStorage.setItem('user_role', role);
+    setIsLoggedIn(true);
+    setUserRole(role);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchMyEvents(); // Fetch saved events after login
+  }, [fetchMyEvents]);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('is_logged_in');
+    localStorage.removeItem('user_role');
+    setIsLoggedIn(false);
+    setUserRole(null);
+    setMyEventsList([]); // Clear list on logout
+  }, []);
+
+  const handleAddEvent = (): void => {
+    // Refresh the whole list from the server to keep it in sync
     fetchMyEvents();
   };
 
@@ -86,7 +108,7 @@ function App() {
       }
     };
     checkAuth();
-  }, [API_URL]);
+  }, [API_URL, handleLogin, handleLogout]);
 
   // Landing Page Intersection Observer
   useEffect(() => {
@@ -119,31 +141,25 @@ function App() {
           } />
 
           {/* Shared Routes */}
-          <Route path="/society/:id" element={<SocietyProfilePage />} />
+          <Route path="/society/:id" element={<SocietyProfilePage userRole={userRole} />} />
+          <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
+          <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
 
-          {/* Leader Specific Routes */}
-          {userRole === 'society_leader' && (
-            <>
-              <Route path="/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
-
-          {/* Student Specific Routes */}
-          {userRole !== 'society_leader' && (
-            <>
-              <Route
-                path="/event/:eventId"
-                element={
-                  <EventDetailsPage
-                    onAddEvent={handleAddEvent}
-                    onRemoveEvent={handleRemoveEvent}
-                    myEventsList={myEventsList as never}
-                  />
-                }
-              />
-              <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
+          {/* Dynamic Event Route based on Role */}
+          <Route 
+            path="/event/:eventId" 
+            element={
+              userRole === 'society_leader' ? (
+                <LeaderEventEditor />
+              ) : (
+                <EventDetailsPage
+                  onAddEvent={handleAddEvent}
+                  onRemoveEvent={handleRemoveEvent}
+                  myEventsList={myEventsList as never}
+                />
+              )
+            } 
+          />
         </Routes>
       </BrowserRouter>
     );

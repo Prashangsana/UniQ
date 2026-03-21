@@ -199,7 +199,10 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   );
 
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || eventId === 'new') {
+      setLoading(false);
+      return;
+    }
 
     fetch(`${API_URL}/api/events/${eventId}`)
       .then(res => res.json())
@@ -360,13 +363,24 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <div className="meta-item">
               <span>📍 Place:</span>
-              <p>{eventData.place}</p>
+              <p>{eventData.venue || eventData.place}</p>
             </div>
 
-            <div className="meta-item">
-              <span>💰 Price:</span>
-              <p>{eventData.price}</p>
-            </div>
+            {eventData.tickets && eventData.tickets.length > 0 ? (
+              <div className="meta-item">
+                <span>💰 Tickets:</span>
+                {eventData.tickets.map((t, i) => (
+                  <p key={i} style={{ fontSize: '14px', marginBottom: '4px' }}>
+                    {t.name}: {t.price}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <div className="meta-item">
+                <span>💰 Price:</span>
+                <p>{eventData.price || "Free"}</p>
+              </div>
+            )}
 
           </div>
 
@@ -403,7 +417,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 };
 
 /* ================= SOCIETY PROFILE PAGE ================= */
-export const SocietyProfilePage = () => {
+export const SocietyProfilePage = ({ userRole }) => {
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -517,8 +531,17 @@ export const SocietyProfilePage = () => {
 
       <section className="society-events-section">
 
-        <div className="section-header">
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Our Events</h2>
+          {userRole === 'society_leader' && (
+            <button 
+              className="publish-btn" 
+              onClick={() => navigate(`/admin/event/new?societyId=${id}`)}
+              style={{ padding: '8px 20px', fontSize: '13px' }}
+            >
+              + Add Event
+            </button>
+          )}
         </div>
 
         <div className="events-grid-profile">

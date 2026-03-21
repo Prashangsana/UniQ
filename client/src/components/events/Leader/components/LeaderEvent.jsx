@@ -3,16 +3,18 @@ import { useNavigate, Link } from "react-router-dom";
 import "./LeaderEvent.css";
 
 // 1. Admin Event Banner
-export const LeaderEventBanner = ({ large, id = "sample-event" }) => {
+export const LeaderEventBanner = ({ large, id = "sample-event", title }) => {
   const navigate = useNavigate();
+  const displayTitle = title || id.replace(/-/g, ' ').toUpperCase();
+  
   return (
     <div 
       className={`leader-banner ${large ? "large" : ""}`} 
-      onClick={() => navigate(`/event/${id}`)}
+      onClick={() => navigate(`/admin/event/${id}`)}
       style={{ cursor: 'pointer', position: 'relative' }}
     >
       <div className="leader-banner-text">
-        {id.replace(/-/g, ' ').toUpperCase()}
+        {displayTitle}
       </div>
       <div className="leader-edit-badge">✏️ Edit</div>
     </div>
@@ -30,7 +32,7 @@ export const LeaderEventRow = ({ title, events = [] }) => {
         <h2>{title}</h2>
         {events.length > 3 && (
           <button className="leader-more-btn" onClick={() => setShowAll(!showAll)}>
-            {showAll ? "Show less" : "View All Stats >"}
+            {showAll ? "Show less" : "Student Dashboard >"}
           </button>
         )}
       </div>
@@ -38,7 +40,11 @@ export const LeaderEventRow = ({ title, events = [] }) => {
         {events.length === 0 ? (
           <div className="leader-empty">No active events found in this category.</div>
         ) : (
-          displayItems.map((id, index) => <LeaderEventBanner key={index} id={id} />)
+          displayItems.map((event, index) => {
+            const eventId = typeof event === 'string' ? event : event._id;
+            const eventTitle = typeof event === 'string' ? null : event.title;
+            return <LeaderEventBanner key={index} id={eventId} title={eventTitle} />;
+          })
         )}
       </div>
     </section>
@@ -48,14 +54,6 @@ export const LeaderEventRow = ({ title, events = [] }) => {
 // 3. Admin Sidebar (Analytics focus)
 export const LeaderSidebar = ({ title }) => {
   const navigate = useNavigate();
-
-  // Temporary function for the Student Dashboard button
-  const handleGoToStudentDashboard = () => {
-    // When your friend finishes the student dashboard, 
-    // you can change this to navigate to her route (e.g., navigate('/student'))
-    // or use window.location.href = "HER_LINK" if it's hosted elsewhere.
-    alert("This will navigate to the Student Dashboard once it is linked!");
-  };
 
   return (
     <div className="leader-sidebar">
@@ -70,8 +68,7 @@ export const LeaderSidebar = ({ title }) => {
         ))}
       </div>
       
-      {/* Updated Button: Now points to the Student Dashboard placeholder */}
-      <button className="leader-sidebar-btn" onClick={handleGoToStudentDashboard}>
+      <button className="leader-sidebar-btn" onClick={() => navigate('/dashboard')}>
         Student Dashboard &gt;
       </button>
     </div>
@@ -79,21 +76,16 @@ export const LeaderSidebar = ({ title }) => {
 };
 
 // 4. Admin Society Card
-<<<<<<< HEAD
-export const LeaderSocietyCard = ({ name }) => {
-  const urlName = name.replace(/\s+/g, '-');
-  return (
-    <Link to={`/society/${urlName}`} className="leader-card-link">
-      <div className="leader-card">
-        <div className="leader-card-logo">Logo</div>
-        <span className="leader-card-name">{name}</span>
-        <div className="leader-manage-tag">Manage</div>
-=======
 export const LeaderSocietyCard = ({ name, id }) => {
   return (
-    <Link to={`/society/${id}`} className="leader-card-link">
+    <Link to={`/admin/society/${id}`} className="leader-card-link">
       <div className="leader-card">
-        <div className="leader-card-logo">Logo</div>
+        <img
+          src={logo || `/images-e/societies/${id}.png`}
+          alt={name}
+          className="leader-card-logo"
+          onError={(e) => { e.target.src = "/images-e/default.jpg"; }}
+        />
         <span className="leader-card-name">{name}</span>
         <div className="leader-manage-tag">✏️ Manage</div>
 >>>>>>> yahani

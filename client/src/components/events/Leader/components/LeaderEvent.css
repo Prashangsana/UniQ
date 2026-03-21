@@ -223,6 +223,7 @@
   color: #64748b;
   font-weight: 600;
   flex-shrink: 0;
+  object-fit: cover; /* Ensures image fits nicely in circle */
 }
 
 .leader-card-name {

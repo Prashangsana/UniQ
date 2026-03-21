@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './Leader.css';
 import { LeaderEventBanner, LeaderEventRow, LeaderSidebar, LeaderSocietyCard } from '../components/LeaderEvent';
 
@@ -19,7 +19,7 @@ export const LeaderDashboard = () => {
 
   useEffect(() => {
     // Load User Info
-    fetch(`${API_URL}/api/auth/me`, { credentials: 'include' })
+    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {
@@ -28,8 +28,8 @@ export const LeaderDashboard = () => {
       })
       .catch(err => console.error("Error loading user info:", err));
 
-    // Load Leader's Societies
-    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
+    // Load all Societies
+    fetch(`${API_URL}/api/societies`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data.length > 0) setSocieties(data.data);
@@ -58,7 +58,7 @@ export const LeaderDashboard = () => {
               <h1>Society Leader Portal</h1>
               <p>Welcome back, {userName}</p>
             </div>
-            <button className="publish-btn" onClick={() => navigate('/event/new')}>
+            <button className="publish-btn" onClick={() => navigate('/admin/event/new')}>
               + Create New Event
             </button>
           </header>
@@ -78,7 +78,7 @@ export const LeaderDashboard = () => {
             <h3>Your societies</h3>
             <div className="societies-list-container">
               {societies.map(s => (
-                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} />
+                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
               ))}
             </div>
           </div>
@@ -95,7 +95,12 @@ export const LeaderDashboard = () => {
 export const LeaderEventEditor = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const isNewEvent = eventId === 'new';
+
+  // Get societyId from query params if available
+  const queryParams = new URLSearchParams(location.search);
+  const preselectedSocietyId = queryParams.get('societyId');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -103,9 +108,11 @@ export const LeaderEventEditor = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState({ dd: '', mm: '', yyyy: '' });
-  const [time, setTime] = useState('');
+  const [time, setTime] = useState({ hh: '09', min: '00', period: 'AM' });
   const [venue, setVenue] = useState('');
   const [adminLink, setAdminLink] = useState('');
+  const [registerLink, setRegisterLink] = useState('');
+  const [instagramLink, setInstagramLink] = useState('');
   const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
@@ -121,7 +128,8 @@ export const LeaderEventEditor = () => {
         if (data.success) {
           setSocieties(data.data);
           if (data.data.length > 0 && !selectedSociety) {
-            setSelectedSociety(data.data[0]._id);
+            // Priority: Query Param > First Society in list
+            setSelectedSociety(preselectedSocietyId || data.data[0]._id);
           }
         }
       })
@@ -139,12 +147,19 @@ export const LeaderEventEditor = () => {
             setTitle(ev.title || '');
             setDescription(ev.description || '');
             setVenue(ev.venue || ev.location || '');
-            setTime(ev.time || '');
             setAdminLink(ev.adminLink || '');
+            setRegisterLink(ev.registerLink || '');
+            setInstagramLink(ev.instagramLink || '');
             setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
             setSelectedSociety(ev.society?._id || ev.society || '');
+            
+            if (ev.time) {
+              const [t, p] = ev.time.split(' ');
+              const [h, m] = t.split(':');
+              setTime({ hh: h, min: m, period: p || 'AM' });
+            }
             
             if (ev.date) {
               const d = new Date(ev.date);
@@ -157,6 +172,19 @@ export const LeaderEventEditor = () => {
           }
         })
         .catch(err => console.error("Error loading event:", err));
+    } else {
+      // Reset form when switching to 'Create New Event' mode
+      setTitle('');
+      setDescription('');
+      setVenue('');
+      setTime({ hh: '09', min: '00', period: 'AM' });
+      setAdminLink('');
+      setRegisterLink('');
+      setInstagramLink('');
+      setTickets([{ name: 'Standard Ticket', price: '' }]);
+      setStatus('Draft');
+      setBannerImage('');
+      setDate({ dd: '', mm: '', yyyy: '' });
     }
   }, [eventId, isNewEvent, API_URL]);
 
@@ -170,9 +198,11 @@ export const LeaderEventEditor = () => {
       title,
       description,
       date: `${date.yyyy}-${date.mm}-${date.dd}`,
-      time,
+      time: `${time.hh}:${time.min} ${time.period}`,
       venue,
       adminLink,
+      registerLink,
+      instagramLink,
       tickets,
       status: 'Active',
       bannerImage,
@@ -277,9 +307,11 @@ export const LeaderEventEditor = () => {
             textShadow: bannerImage ? '0 2px 8px rgba(0,0,0,0.8)' : 'none', 
             color: bannerImage ? 'white' : 'inherit',
             zIndex: 2,
-            position: 'relative'
+            position: 'relative',
+            fontWeight: '800',
+            letterSpacing: '1px'
           }}>
-            {title ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT EDITOR')}
+            {title.trim() ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT NAME')}
           </h2>
           <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
@@ -312,26 +344,50 @@ export const LeaderEventEditor = () => {
                 <label>Date (Day / Month / Year)</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input 
-                    type="text" placeholder="DD" maxLength="2" style={{ textAlign: 'center' }} 
-                    value={date.dd} onChange={(e) => setDate({...date, dd: e.target.value})}
+                    type="text" placeholder="DD" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.dd} 
+                    onChange={(e) => setDate({...date, dd: e.target.value})}
                   />
                   <input 
-                    type="text" placeholder="MM" maxLength="2" style={{ textAlign: 'center' }} 
-                    value={date.mm} onChange={(e) => setDate({...date, mm: e.target.value})}
+                    type="text" placeholder="MM" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.mm} 
+                    onChange={(e) => setDate({...date, mm: e.target.value})}
                   />
                   <input 
-                    type="text" placeholder="YYYY" maxLength="4" style={{ textAlign: 'center' }} 
-                    value={date.yyyy} onChange={(e) => setDate({...date, yyyy: e.target.value})}
+                    type="text" placeholder="YYYY" maxLength="4" 
+                    style={{ textAlign: 'center', width: '80px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.yyyy} 
+                    onChange={(e) => setDate({...date, yyyy: e.target.value})}
                   />
                 </div>
               </div>
-              <div className="input-group" style={{ flex: 1 }}>
+              <div className="input-group" style={{ flex: 1.5 }}>
                 <label>Time</label>
-                <input 
-                  type="time" 
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <input 
+                    type="text" placeholder="HH" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={time.hh} 
+                    onChange={(e) => setTime({...time, hh: e.target.value})}
+                  />
+                  <span>:</span>
+                  <input 
+                    type="text" placeholder="MM" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={time.min} 
+                    onChange={(e) => setTime({...time, min: e.target.value})}
+                  />
+                  <select 
+                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }} 
+                    value={time.period} 
+                    onChange={(e) => setTime({...time, period: e.target.value})}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -345,19 +401,6 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
-            <div className="input-group">
-              <label>Host Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
-              >
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
             {/* DYNAMIC TICKET TIERS SECTION */}
             <div className="input-group">
               <label>Ticket Pricing & Tiers (Max 5)</label>
@@ -366,44 +409,37 @@ export const LeaderEventEditor = () => {
                 <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                   <input 
                     type="text" 
-                    placeholder="Tier Name (e.g., VIP, Balcony)" 
+                    placeholder="Standard" 
                     value={ticket.name}
                     onChange={(e) => updateTicket(index, 'name', e.target.value)}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
                   />
                   <input 
                     type="text" 
                     placeholder="Price (e.g., Rs. 2500, Free)" 
                     value={ticket.price}
                     onChange={(e) => updateTicket(index, 'price', e.target.value)}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1.5, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
                   />
                   
-                  {/* Only show the Remove button if there is more than 1 row */}
                   {tickets.length > 1 && (
                     <button 
                       onClick={() => removeTicketTier(index)}
                       style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '12px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}
-                      title="Remove Tier"
                     >
-                      X
+                      ✕
                     </button>
                   )}
                 </div>
               ))}
               
-              {/* Only show the Add button if there are less than 5 tiers */}
-              {tickets.length < 5 ? (
+              {tickets.length < 5 && (
                 <button 
                   onClick={addTicketTier}
-                  style={{ background: '#e2e8f0', color: '#0f172a', border: 'none', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', marginTop: '5px' }}
+                  style={{ width: '100%', background: '#d1d5db', color: '#0f172a', border: 'none', padding: '12px', borderRadius: '15px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}
                 >
                   + Add Another Ticket Tier
                 </button>
-              ) : (
-                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: '600', marginTop: '5px', display: 'inline-block' }}>
-                  Maximum of 5 ticket tiers reached.
-                </span>
               )}
             </div>
 
@@ -412,13 +448,13 @@ export const LeaderEventEditor = () => {
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows="5" 
+                rows="6" 
                 placeholder="Write all the exciting details about your event here..."
               />
             </div>
             
             <div className="admin-actions">
-              <button className="save-btn" onClick={handleSave}>
+              <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
                 {isNewEvent ? 'Publish Event' : 'Save Changes'}
               </button>
               {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
@@ -426,19 +462,23 @@ export const LeaderEventEditor = () => {
           </div>
 
           <div className="editor-sidebar">
-            <div className="admin-stat-box">
-              <span>Total Registrations</span>
-              <strong>{isNewEvent ? '0' : '428'}</strong>
-              <button className="export-btn">Export List (CSV)</button>
-            </div>
-            
             <div className="input-group">
-              <label>Administration Link</label>
+              <label>Participation Link</label>
               <input 
                 type="url" 
-                placeholder="https://docs.google.com/..." 
-                value={adminLink}
-                onChange={(e) => setAdminLink(e.target.value)}
+                placeholder="https://forms.gle/..." 
+                value={registerLink}
+                onChange={(e) => setRegisterLink(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Instagram Link</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/..." 
+                value={instagramLink}
+                onChange={(e) => setInstagramLink(e.target.value)}
               />
             </div>
           </div>
@@ -512,7 +552,7 @@ export const LeaderSocietyManager = () => {
       <section className="manager-events">
         <div className="manager-events-header">
           <h3>Managed Events</h3>
-          <button className="small-add-btn" onClick={() => navigate('/event/new')}>+ Add Event</button>
+          <button className="small-add-btn" onClick={() => navigate('/admin/event/new')}>+ Add Event</button>
         </div>
         <div className="manager-grid">
           {events.map((ev, i) => (
@@ -526,7 +566,7 @@ export const LeaderSocietyManager = () => {
 
 
 /* ==========================================
-   4. LEADER REPORT VIEW
+   4. STUDENT DASHBOARD VIEW (Previously Weekly Report)
 ========================================== */
 export const LeaderReport = () => {
   const navigate = useNavigate();
@@ -543,11 +583,11 @@ export const LeaderReport = () => {
         {/* Report Header */}
         <div className="admin-header" style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '25px', marginBottom: '35px', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontSize: '26px', color: '#0f172a', margin: '0 0 8px 0' }}>Weekly Engagement Report</h1>
-            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Period: Feb 16, 2026 - Feb 23, 2026</p>
+            <h1 style={{ fontSize: '26px', color: '#0f172a', margin: '0 0 8px 0' }}>Student Dashboard View</h1>
+            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Previewing as a Student Member</p>
           </div>
-          <button className="publish-btn" onClick={() => alert("Downloading PDF...")}>
-            ⬇ Download PDF
+          <button className="publish-btn" onClick={() => navigate('/dashboard')}>
+            Student Dashboard {'>'}
           </button>
         </div>
 
