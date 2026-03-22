@@ -180,18 +180,19 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
 
 /* ================= EVENT DETAILS PAGE ================= */
-export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] }) => {
+export const EventDetailsPage = () => {
 
   const params = useParams();
   const eventId = params.eventId || params.id;
   const navigate = useNavigate();
+  const location = useLocation();
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const [eventData, setEventData] = useState(null);
   const [fetchDone, setFetchDone] = useState(false);
 
-  const isAdded = (myEventsList || []).some(
+  const isAdded = (location.state?.myEventsList || []).some(
     e => {
       const savedEventId = e.event?._id || e.event || e;
       return savedEventId.toString() === eventId?.toString();
@@ -292,7 +293,15 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
       <div className="navigation-header">
         <button
           className="back-btn"
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            // Check if we came from Society & Events page (tab: 'societies')
+            const tab = location.state?.tab;
+            if (tab === 'societies') {
+              navigate('/', { state: { tab: 'societies' } });
+            } else {
+              navigate(-1);
+            }
+          }}
         >
           ← Back
         </button>

@@ -1,5 +1,6 @@
 const Society = require("../models/Society");
 const Event = require("../models/Event");
+const SavedEvent = require("../models/SavedEvent");
 
 /*
 GET LEADER'S SOCIETIES
@@ -219,11 +220,32 @@ exports.deleteSociety = async (req, res) => {
       });
     }
 
+    // Find and delete all events associated with this society
+    const eventsToDelete = await Event.find({ society: societyId });
+    console.log(`Found ${eventsToDelete.length} events to delete for society ${society.name}`);
+
+    // Get all event IDs for cleanup
+    const eventIds = eventsToDelete.map(event => event._id);
+
+    // Delete all events for this society
+    const deleteEventsResult = await Event.deleteMany({ society: societyId });
+    console.log(`Deleted ${deleteEventsResult.deletedCount} events for society ${society.name}`);
+
+    // Remove all saved events references for the deleted events
+    if (eventIds.length > 0) {
+      const deleteSavedEventsResult = await SavedEvent.deleteMany({ 
+        event: { $in: eventIds } 
+      });
+      console.log(`Removed ${deleteSavedEventsResult.deletedCount} saved event entries for society ${society.name}`);
+    }
+
+    // Delete the society
     await Society.findByIdAndDelete(societyId);
+    console.log(`Deleted society: ${society.name}`);
 
     res.status(200).json({
       success: true,
-      message: 'Society deleted successfully'
+      message: `Society deleted successfully. Removed ${deleteEventsResult.deletedCount} events and cleaned up all related data.`
     });
   } catch (error) {
     console.error('deleteSociety:', error);
