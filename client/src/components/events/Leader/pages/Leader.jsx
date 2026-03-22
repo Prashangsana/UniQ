@@ -28,8 +28,9 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
       .then(data => {
         if (data.success) {
           setSocieties(data.data);
-          if (data.data.length > 0 && !selectedSociety) {
-            setSelectedSociety(preselectedSocietyId || data.data[0]._id);
+          if (isNewEvent && preselectedSocietyId) {
+            const match = data.data.find((s) => s._id === preselectedSocietyId);
+            if (match) setSelectedSociety(preselectedSocietyId);
           }
         }
       })
@@ -84,8 +85,9 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
       setStatus('Draft');
       setBannerImage('');
       setDate({ dd: '', mm: '', yyyy: '' });
+      setSelectedSociety('');
     }
-  }, [eventId, isNewEvent, API_URL]);
+  }, [eventId, isNewEvent, API_URL, preselectedSocietyId]);
 
   const handleSave = async () => {
     if (!title || !date.dd || !date.mm || !date.yyyy) {
@@ -334,7 +336,7 @@ function LeaderEventFormBody({
                     onChange={(e) => setTime({...time, min: e.target.value})}
                   />
                   <select 
-                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }} 
+                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', cursor: 'pointer' }} 
                     value={time.period} 
                     onChange={(e) => setTime({...time, period: e.target.value})}
                   >
@@ -360,9 +362,9 @@ function LeaderEventFormBody({
               <select 
                 value={selectedSociety}
                 onChange={(e) => setSelectedSociety(e.target.value)}
-                style={{ padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', width: '100%' }}
+                style={{ padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', cursor: 'pointer', width: '100%' }}
               >
-                <option value="">Select a society...</option>
+                <option value="">Select a society</option>
                 {societies.map(society => (
                   <option key={society._id} value={society._id}>
                     {society.name}
@@ -513,9 +515,9 @@ export const LeaderDashboard = () => {
         </div>
 
         <div className="admin-right">
-          <div className="manage-societies">
+          <div className="societies-section">
             <h3>Your societies</h3>
-            <div className="societies-list-container">
+            <div className="societies-list">
               {societies.map(s => (
                 <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
               ))}

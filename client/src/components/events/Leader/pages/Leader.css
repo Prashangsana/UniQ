@@ -80,14 +80,12 @@
   align-items: start;
 }
 
+/* Same as events page sidebar: sticky, no max-height — list grows naturally (no inner scrollbar) */
 .admin-layout:has(.leader-dashboard-create) .admin-right {
   margin-top: 0;
   position: sticky;
-  top: 0;
+  top: 20px;
   align-self: start;
-  max-height: min(560px, calc(100vh - 10rem));
-  overflow-y: auto;
-  padding-right: 4px;
   min-width: 0;
 }
 
@@ -177,13 +175,22 @@
   margin-top: 50px; /* Align with content below header */
 }
 
-/* Manage Societies Section (Bottom Right) */
-.manage-societies h3 {
+/* Your societies — matches Society & Events page (.societies-section / .societies-list in Event.css) */
+.admin-right .societies-section h3 {
   font-size: 16px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 15px;
-  margin-left: 5px;
+  margin-bottom: 20px;
+}
+
+.admin-right .societies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-right .societies-list .leader-card-link {
+  margin-bottom: 0;
 }
 
 .editor-page {
