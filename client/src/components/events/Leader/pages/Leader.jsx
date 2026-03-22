@@ -598,9 +598,6 @@ export const LeaderSocietyManager = () => {
     }
   }, [id, API_URL]);
 
-  const societyName = society?.name ?? '';
-  const societyLogo = society?.logo ?? '';
-
   return (
     <div className="manager-page">
       <div className="navigation-header">
@@ -618,10 +615,10 @@ export const LeaderSocietyManager = () => {
 
       <header className="manager-header">
         <div className="manager-profile">
-          <div className="manager-logo" style={{ backgroundImage: societyLogo ? `url(${societyLogo})` : 'none', backgroundSize: 'cover' }}>
-            {!societyLogo && 'Logo'}
+          <div className="manager-logo" style={{ backgroundImage: society ? `url(${society.logo})` : undefined, backgroundSize: 'cover' }}>
+            {society && !society.logo && 'Logo'}
           </div>
-          <h1>{societyName || 'Society'} Admin Space</h1>
+          <h1>{society ? `${society.name} Admin Space` : 'Admin Space'}</h1>
           <button className="edit-profile-btn">Edit Society Profile</button>
         </div>
       </header>

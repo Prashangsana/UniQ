@@ -497,8 +497,30 @@ export const SocietyProfilePage = ({ userRole }) => {
 
   if (fetchDone && !profileData) return <div className="error">Society not found</div>;
 
-  const society = profileData?.society;
-  const events = profileData?.events ?? [];
+  if (!profileData) {
+    return (
+      <div className="society-profile-page">
+        <div className="navigation-header">
+          <button
+            className="back-btn"
+            type="button"
+            onClick={() => {
+              const tab = location.state?.tab;
+              if (tab) {
+                navigate('/', { state: { tab } });
+              } else {
+                navigate(-1);
+              }
+            }}
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { society, events } = profileData;
 
   return (
     <div className="society-profile-page">
@@ -524,13 +546,13 @@ export const SocietyProfilePage = ({ userRole }) => {
       <header className="society-header">
 
         <img
-          src={society?.logo || ''}
-          alt={society?.name || 'Society'}
+          src={society.logo}
+          alt={society.name}
           className="society-logo-large"
         />
 
         <h1 className="society-full-name">
-          {society?.name ? `${society.name} OF IIT` : 'Society OF IIT'}
+          {society.name} OF IIT
         </h1>
 
         {/* FOLLOW BUTTON */}
