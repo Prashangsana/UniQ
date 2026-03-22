@@ -131,7 +131,13 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
       const data = await res.json();
       if (data.success) {
         alert(isNewEvent ? "Event Published Successfully!" : "Changes Saved Successfully!");
-        navigate('/dashboard');
+        // Navigate back to society profile if we came from one or if event belongs to a society
+        const targetSocietyId = selectedSociety;
+        if (targetSocietyId) {
+          navigate(`/admin/society/${targetSocietyId}`, { state: { tab: 'leader' } });
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         alert(`Failed to save: ${data.message || "Unknown error"}`);
       }
@@ -152,7 +158,13 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
       const data = await res.json();
       if (data.success) {
         alert("Event Deleted");
-        navigate('/dashboard');
+        // Navigate back to society profile if we came from one or if event belongs to a society
+        const targetSocietyId = preselectedSocietyId || selectedSociety;
+        if (targetSocietyId) {
+          navigate(`/admin/society/${targetSocietyId}`, { state: { tab: 'leader' } });
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       console.error("Delete error:", err);

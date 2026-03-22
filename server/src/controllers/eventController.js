@@ -8,12 +8,15 @@ const mongoose = require("mongoose");
 /* ================= NOTIFICATIONS HELPERS ================= */
 
 // Helper function to notify all followers of a society
-exports.notifyFollowersOfNewEvent = async (societyId, societyName) => {
+exports.notifyFollowersOfNewEvent = async (societyId, societyName, eventId) => {
   try {
     const followers = await Follow.find({ society: societyId });
     const notifications = followers.map(f => ({
       user: f.user,
-      message: `${societyName} has added a new event.`
+      message: `${societyName} has added a new event.`,
+      type: 'new_event',
+      eventId: eventId,
+      societyId: societyId
     }));
     
     if (notifications.length > 0) {
@@ -21,6 +24,82 @@ exports.notifyFollowersOfNewEvent = async (societyId, societyName) => {
     }
   } catch (error) {
     console.error("Error creating notifications:", error);
+  }
+};
+
+// Helper function to remove notifications for a specific event
+exports.removeEventNotifications = async (eventId) => {
+  try {
+    const result = await Notification.deleteMany({ 
+      eventId: eventId
+    });
+    console.log(`Removed ${result.deletedCount} notifications for event ${eventId}`);
+  } catch (error) {
+    console.error("Error removing event notifications:", error);
+  }
+};
+
+// Helper function to clean up expired event notifications
+exports.cleanupExpiredEventNotifications = async () => {
+  try {
+    const expiredEvents = await Event.find({
+      date: { $lt: new Date() },
+      status: { $in: ['Active', 'Featured'] }
+    });
+    
+    for (const event of expiredEvents) {
+      await Notification.deleteMany({
+        message: { $regex: event._id }
+      });
+    }
+  } catch (error) {
+    console.error("Error cleaning up expired notifications:", error);
+  }
+};
+
+// Helper function to clean up orphaned notifications (notifications for deleted events)
+exports.cleanupOrphanedNotifications = async () => {
+  try {
+    // Get all notifications
+    const allNotifications = await Notification.find({ type: 'new_event' });
+    
+    for (const notification of allNotifications) {
+      // Check if the event still exists
+      if (notification.eventId) {
+        const eventExists = await Event.findById(notification.eventId);
+        if (!eventExists) {
+          // Event was deleted, remove the notification
+          await Notification.findByIdAndDelete(notification._id);
+          console.log(`Removed orphaned notification for deleted event ${notification.eventId}`);
+        }
+      } else {
+        // Old notification without eventId, check by society name
+        const societyName = notification.message.split(' has added a new event.')[0];
+        if (societyName) {
+          // Find the society
+          const society = await Society.findOne({ name: societyName });
+          if (society) {
+            // Check if this society has any active events
+            const activeEvents = await Event.find({ 
+              society: society._id,
+              status: { $in: ['Active', 'Featured'] }
+            });
+            
+            // If no active events, remove the notification
+            if (activeEvents.length === 0) {
+              await Notification.findByIdAndDelete(notification._id);
+              console.log(`Removed orphaned notification for society ${societyName} (no active events)`);
+            }
+          } else {
+            // Society doesn't exist, remove notification
+            await Notification.findByIdAndDelete(notification._id);
+            console.log(`Removed orphaned notification for non-existent society ${societyName}`);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error cleaning up orphaned notifications:", error);
   }
 };
 
@@ -355,7 +434,7 @@ exports.createEvent = async (req, res) => {
 
     // Notify followers
     try {
-      exports.notifyFollowersOfNewEvent(society, societyExists.name);
+      exports.notifyFollowersOfNewEvent(society, societyExists.name, savedEvent._id);
       console.log("✓ Followers notified");
     } catch (notifyErr) {
       console.log("! Notification error:", notifyErr.message);
@@ -418,10 +497,19 @@ DELETE EVENT (Admin only)
 exports.deleteEvent = async (req, res) => {
   try {
     const eventId = req.params.id;
+    
+    // Get event details before deletion for notification cleanup
+    const event = await Event.findById(eventId);
+    
     await Event.findByIdAndDelete(eventId);
 
     // Also remove from SavedEvents
     await SavedEvent.deleteMany({ event: eventId });
+
+    // Remove notifications related to this event
+    if (event) {
+      await exports.removeEventNotifications(eventId);
+    }
 
     res.json({
       success: true,
@@ -442,6 +530,13 @@ GET NOTIFICATIONS
 exports.getNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
+    
+    // Run cleanup before returning notifications
+    await exports.cleanupOrphanedNotifications();
+    
+    // Also do immediate cleanup for specific societies if they have no active events
+    await exports.immediateCleanupForSpecificSocieties();
+    
     const userNotifications = await Notification
       .find({ user: userId })
       .sort({ createdAt: -1 });
@@ -454,6 +549,72 @@ exports.getNotifications = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching notifications"
+    });
+  }
+};
+
+// Immediate cleanup for BIZLINK and ROTARACT notifications
+exports.immediateCleanupForSpecificSocieties = async () => {
+  try {
+    // Check BIZLINK SOCIETY
+    const bizlinkSociety = await Society.findOne({ name: 'BIZLINK SOCIETY' });
+    if (bizlinkSociety) {
+      const bizlinkEvents = await Event.find({ 
+        society: bizlinkSociety._id,
+        status: { $in: ['Active', 'Featured'] }
+      });
+      
+      if (bizlinkEvents.length === 0) {
+        // Remove all BIZLINK notifications
+        const result = await Notification.deleteMany({ 
+          message: { $regex: 'BIZLINK SOCIETY has added a new event' }
+        });
+        if (result.deletedCount > 0) {
+          console.log(`✓ Removed ${result.deletedCount} BIZLINK notifications (no active events)`);
+        }
+      }
+    }
+    
+    // Check ROTARACT CLUB
+    const rotaractSociety = await Society.findOne({ name: 'ROTARACT CLUB' });
+    if (rotaractSociety) {
+      const rotaractEvents = await Event.find({ 
+        society: rotaractSociety._id,
+        status: { $in: ['Active', 'Featured'] }
+      });
+      
+      if (rotaractEvents.length === 0) {
+        // Remove all ROTARACT notifications
+        const result = await Notification.deleteMany({ 
+          message: { $regex: 'ROTARACT CLUB has added a new event' }
+        });
+        if (result.deletedCount > 0) {
+          console.log(`✓ Removed ${result.deletedCount} ROTARACT notifications (no active events)`);
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error("Error in immediate cleanup:", error);
+  }
+};
+
+
+/*
+CLEANUP NOTIFICATIONS (Admin only)
+*/
+exports.cleanupNotifications = async (req, res) => {
+  try {
+    await exports.cleanupOrphanedNotifications();
+    
+    res.json({
+      success: true,
+      message: "Orphaned notifications cleaned up successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error cleaning up notifications"
     });
   }
 };

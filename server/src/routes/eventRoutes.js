@@ -13,6 +13,7 @@ const {
   removeEventFromMyEvents,
   getMyEvents,
   getNotifications,
+  cleanupNotifications,
   createEvent,
   updateEvent,
   deleteEvent,
@@ -31,6 +32,7 @@ router.get("/", getAllEvents); // Admin/Leader view of all events
 /* ================= NOTIFICATIONS ================= */
 
 router.get("/notifications", protect, getNotifications);
+router.post("/notifications/cleanup", protect, cleanupNotifications);
 
 
 /* ================= SOCIETY EVENTS ================= */
