@@ -1,13 +1,14 @@
 /* Leader.css */
 
-/* Page background — width matches dashboard society/events (.events-page inside .dashboard-content) */
+/* Same canvas as Society & Events (.events-page): full width of viewport, dashboard-style padding */
 .admin-page {
-  padding: 5px 5px;
   width: 100%;
-  max-width: min(98%, calc(100vw - 260px - 4rem));
-  margin: 0 auto;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
-  background-color: #f8fafc; /* Light gray background */
+  margin: 0;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background-color: var(--main-bg-off-white);
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
   color: #1e293b;
@@ -30,9 +31,10 @@
 }
 
 .admin-header h1 {
-  font-size: 24px;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
   font-weight: 700;
-  color: #0f172a;
+  color: var(--topic-heading-blue);
   margin: 0;
 }
 
@@ -103,9 +105,10 @@
 }
 
 .leader-dashboard-create .editor-hero h2 {
-  font-size: 1.05rem;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
+  letter-spacing: 0.04em;
+  color: var(--topic-heading-blue);
 }
 
 .leader-dashboard-create .change-img-btn {
@@ -161,10 +164,11 @@
 }
 
 .admin-main-event h3 {
-  font-size: 18px;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
   font-weight: 700;
   margin-bottom: 15px;
-  color: #1e293b;
+  color: var(--topic-heading-blue);
 }
 
 /* Right Column (Sidebar) */
@@ -177,9 +181,10 @@
 
 /* Your societies — matches Society & Events page (.societies-section / .societies-list in Event.css) */
 .admin-right .societies-section h3 {
-  font-size: 16px;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
   font-weight: 700;
-  color: #1e293b;
+  color: var(--topic-heading-blue);
   margin-bottom: 20px;
 }
 
@@ -194,18 +199,43 @@
 }
 
 .editor-page {
-  background: #f1f5f9;
+  background: var(--main-bg-off-white);
 }
 
-/* Society admin space — same content width as dashboard Events / Society tab */
+/* Society admin space — full main area like Society & Events (.events-page) */
 .manager-page {
-  background: #f1f5f9;
-  min-height: 100vh;
-  padding: 5px 5px;
   width: 100%;
-  max-width: min(98%, calc(100vw - 260px - 4rem));
-  margin: 0 auto;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
+  margin: 0;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background: var(--main-bg-off-white);
+  min-height: 100vh;
+}
+
+/* Back row — same pattern as society profile (.society-profile-page .navigation-header + .back-btn) */
+.manager-page .navigation-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 24px;
+}
+
+.manager-page .navigation-header .back-btn {
+  background: #11047a;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.manager-page .navigation-header .back-btn:hover {
+  background: #0a0254;
 }
 
 
@@ -265,9 +295,10 @@
 }
 
 .editor-hero h2 {
-  font-size: 36px;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
   margin: 0;
-  color: #1e293b;
+  color: var(--topic-heading-blue);
 }
 
 .change-img-btn {
@@ -296,12 +327,13 @@
   min-width: 0;
 }
 
-.input-group label { 
-  display: block; 
-  margin-bottom: 12px; 
-  font-weight: 700; 
-  color: #1e293b; 
-  font-size: 15px;
+.input-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--topic-heading-blue);
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
 }
 
 .input-group input, .input-group textarea, .input-group select { 
@@ -420,10 +452,11 @@
   position: relative;
 }
 
-.manager-header .back-link {
-  position: absolute;
-  top: 30px;
-  left: 30px;
+.manager-header h1,
+.manager-profile h1 {
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
+  color: var(--topic-heading-blue);
 }
 
 .manager-logo { 
@@ -456,6 +489,15 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.manager-events-header h2,
+.manager-events-header h3 {
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
+  color: var(--topic-heading-blue);
+  font-weight: 700;
+  margin: 0;
 }
 
 .small-add-btn {

@@ -78,9 +78,10 @@
 }
 
 .leader-row-header h2 {
-  font-size: 18px;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
   font-weight: 700;
-  color: #1e293b;
+  color: var(--topic-heading-blue);
   margin: 0;
 }
 
@@ -123,9 +124,10 @@
 }
 
 .leader-sidebar-title {
-  font-size: 18px;
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
   font-weight: 700;
-  color: #11047A; /* Deep navy blue to match your image */
+  color: var(--topic-heading-blue);
   margin-bottom: 15px;
   margin-left: 5px;
 }

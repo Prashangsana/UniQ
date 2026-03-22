@@ -78,7 +78,7 @@ export const LeaderSidebar = ({ title }) => {
 // 4. Admin Society Card
 export const LeaderSocietyCard = ({ name, id, logo }) => {
   return (
-    <Link to={`/admin/society/${id}`} className="leader-card-link">
+    <Link to={`/admin/society/${id}`} state={{ tab: 'leader' }} className="leader-card-link">
       <div className="leader-card">
         <img
           src={logo || `/images-e/societies/${id}.png`}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { EventBanner, EventRow, SidebarSection, SocietyCard } from "../components/EventsComponents";
 import "./Event.css";
 
@@ -421,6 +421,7 @@ export const SocietyProfilePage = ({ userRole }) => {
 
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -500,7 +501,15 @@ export const SocietyProfilePage = ({ userRole }) => {
       <div className="navigation-header">
         <button
           className="back-btn"
-          onClick={() => navigate(-1)}
+          type="button"
+          onClick={() => {
+            const tab = location.state?.tab;
+            if (tab) {
+              navigate('/', { state: { tab } });
+            } else {
+              navigate(-1);
+            }
+          }}
         >
           ← Back
         </button>

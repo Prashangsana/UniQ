@@ -557,6 +557,7 @@ export const LeaderEventEditor = () => {
 export const LeaderSocietyManager = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -601,8 +602,20 @@ export const LeaderSocietyManager = () => {
 
   return (
     <div className="manager-page">
+      <div className="navigation-header">
+        <button
+          type="button"
+          className="back-btn"
+          onClick={() => {
+            const tab = location.state?.tab ?? 'leader';
+            navigate('/', { state: { tab } });
+          }}
+        >
+          ← Back
+        </button>
+      </div>
+
       <header className="manager-header">
-        <button className="back-link" onClick={() => navigate('/')}>← Dashboard</button>
         <div className="manager-profile">
           <div className="manager-logo" style={{ backgroundImage: `url(${society.logo})`, backgroundSize: 'cover' }}>
             {!society.logo && "Logo"}

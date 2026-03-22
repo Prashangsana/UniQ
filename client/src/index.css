@@ -18,6 +18,11 @@
   --text-color: var(--body-text-gray);
   --bg-color: var(--main-bg-off-white);
 
+  /* Society & Events + Society Leader: section / topic titles (dark blue emphasis) */
+  --topic-heading-blue: #0a1f55;
+  --topic-heading-font-size: 1.125rem; /* 18px — one size for all topic/section titles */
+  --topic-heading-line-height: 1.35;
+
   --button-bg: var(--medium-ui-blue-purple);
   --button-text: var(--white);
 

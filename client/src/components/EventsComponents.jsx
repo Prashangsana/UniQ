@@ -21,7 +21,7 @@ export const EventBanner = ({ large, id = "sample-event", image }) => {
 // --- SOCIETY CARD ---
 export const SocietyCard = ({ name, id, logo }) => {
   return (
-    <Link to={`/society/${id}`} className="society-card-link">
+    <Link to={`/society/${id}`} state={{ tab: 'society' }} className="society-card-link">
       <div className="society-card">
         <img
           src={logo || `/images-e/societies/${id}.png`}
