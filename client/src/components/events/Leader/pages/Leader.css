@@ -1,10 +1,12 @@
 /* Leader.css */
 
-/* Page Background & Container */
+/* Page background — width matches dashboard society/events (.events-page inside .dashboard-content) */
 .admin-page {
-  padding: 40px;
-  max-width: 1600px;
+  padding: 5px 5px;
+  width: 100%;
+  max-width: min(98%, calc(100vw - 260px - 4rem));
   margin: 0 auto;
+  box-sizing: border-box;
   background-color: #f8fafc; /* Light gray background */
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
@@ -90,9 +92,19 @@
   margin-left: 5px;
 }
 
-/* Hiding Editor/Manager specific styles if not used on dashboard */
-.editor-page, .manager-page {
+.editor-page {
   background: #f1f5f9;
+}
+
+/* Society admin space — same content width as dashboard Events / Society tab */
+.manager-page {
+  background: #f1f5f9;
+  min-height: 100vh;
+  padding: 5px 5px;
+  width: 100%;
+  max-width: min(98%, calc(100vw - 260px - 4rem));
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 
