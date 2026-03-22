@@ -180,12 +180,40 @@
 }
 
 /* Your societies — matches Society & Events page (.societies-section / .societies-list in Event.css) */
-.admin-right .societies-section h3 {
+.admin-right .societies-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.admin-right .societies-section-head h3 {
   font-size: var(--topic-heading-font-size);
   line-height: var(--topic-heading-line-height);
   font-weight: 700;
   color: var(--topic-heading-blue);
-  margin-bottom: 20px;
+  margin: 0;
+}
+
+.add-society-btn {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #d1d5db 0%, #717f96 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.add-society-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .admin-right .societies-list {
@@ -312,6 +340,14 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .change-img-btn:hover { background: #f8fafc; }
+
+.society-editor-page .society-editor-hero {
+  min-height: 160px;
+}
+
+.society-editor-form.editor-grid {
+  padding-top: 32px;
+}
 
 .editor-grid { 
   display: grid; 

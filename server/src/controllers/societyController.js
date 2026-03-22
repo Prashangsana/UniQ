@@ -89,3 +89,96 @@ exports.getSocietyProfile = async (req, res) => {
     });
   }
 };
+
+function requireSocietyLeader(req, res) {
+  if (!req.user || req.user.role !== 'society_leader') {
+    res.status(403).json({
+      success: false,
+      message: 'Only society leaders can manage clubs and societies'
+    });
+    return false;
+  }
+  return true;
+}
+
+/*
+POST CREATE SOCIETY / CLUB
+API: POST /api/societies
+*/
+exports.createSociety = async (req, res) => {
+  try {
+    if (!requireSocietyLeader(req, res)) return;
+
+    const { name, shortName, description, logo } = req.body || {};
+    const n = typeof name === 'string' ? name.trim() : '';
+    const sn = typeof shortName === 'string' ? shortName.trim() : '';
+    const desc = typeof description === 'string' ? description.trim() : '';
+
+    if (!n || !sn || !desc) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, short name, and description are required'
+      });
+    }
+
+    const logoUrl = typeof logo === 'string' ? logo.trim() : '';
+
+    const society = await Society.create({
+      name: n,
+      shortName: sn,
+      description: desc,
+      logo: logoUrl || undefined,
+      leader: req.user.name || 'Society Leader'
+    });
+
+    res.status(201).json({
+      success: true,
+      data: society
+    });
+  } catch (error) {
+    console.error('createSociety:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Could not create society'
+    });
+  }
+};
+
+/*
+PUT UPDATE SOCIETY / CLUB
+API: PUT /api/societies/:id
+*/
+exports.updateSociety = async (req, res) => {
+  try {
+    if (!requireSocietyLeader(req, res)) return;
+
+    const societyId = req.params.id;
+    const { name, shortName, description, logo } = req.body || {};
+
+    const society = await Society.findById(societyId);
+    if (!society) {
+      return res.status(404).json({
+        success: false,
+        message: 'Society not found'
+      });
+    }
+
+    if (typeof name === 'string' && name.trim()) society.name = name.trim();
+    if (typeof shortName === 'string' && shortName.trim()) society.shortName = shortName.trim();
+    if (typeof description === 'string' && description.trim()) society.description = description.trim();
+    if (typeof logo === 'string') society.logo = logo.trim();
+
+    await society.save();
+
+    res.status(200).json({
+      success: true,
+      data: society
+    });
+  } catch (error) {
+    console.error('updateSociety:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Could not update society'
+    });
+  }
+};

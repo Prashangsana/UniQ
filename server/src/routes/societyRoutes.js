@@ -5,17 +5,23 @@ const { followSociety, unfollowSociety, checkFollowStatus } = require("../contro
 const {
   getAllSocieties,
   getSocietyProfile,
-  getLeaderSocieties
+  getLeaderSocieties,
+  createSociety,
+  updateSociety
 } = require('../controllers/societyController');
 
 
 // GET LEADER'S SOCIETIES
 router.get('/leader/all', protect, getLeaderSocieties);
 
+// CREATE SOCIETY / CLUB (society leaders only)
+router.post('/', protect, createSociety);
 
 // GET ALL SOCIETIES
 router.get('/', getAllSocieties);
 
+// UPDATE SOCIETY / CLUB (society leaders only) — before GET /:id
+router.put('/:id', protect, updateSociety);
 
 // GET SOCIETY PROFILE
 router.get('/:id', getSocietyProfile);

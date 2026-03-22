@@ -15,7 +15,7 @@ import Footer from './components/Landing/Footer';
 import Home from './dashboard/Home';
 
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
-import { LeaderDashboard, LeaderEventEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
+import { LeaderDashboard, LeaderEventEditor, LeaderSocietyEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
 
 interface Event {
   _id: string;
@@ -142,6 +142,8 @@ function App() {
 
           {/* Shared Routes */}
           <Route path="/society/:id" element={<SocietyProfilePage userRole={userRole} />} />
+          <Route path="/admin/society/new" element={<LeaderSocietyEditor />} />
+          <Route path="/admin/society/:id/edit" element={<LeaderSocietyEditor />} />
           <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
           <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
 

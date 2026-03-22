@@ -461,6 +461,7 @@ function LeaderEventFormBody({
    1. LEADER DASHBOARD
 ========================================== */
 export const LeaderDashboard = () => {
+  const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const createForm = useLeaderEventForm({ eventId: 'new', preselectedSocietyId: null });
 
@@ -516,7 +517,16 @@ export const LeaderDashboard = () => {
 
         <div className="admin-right">
           <div className="societies-section">
-            <h3>Your societies</h3>
+            <div className="societies-section-head">
+              <h3>Your societies</h3>
+              <button
+                type="button"
+                className="add-society-btn"
+                onClick={() => navigate('/admin/society/new')}
+              >
+                + Add society
+              </button>
+            </div>
             <div className="societies-list">
               {societies.map(s => (
                 <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
@@ -552,7 +562,171 @@ export const LeaderEventEditor = () => {
 };
 
 /* ==========================================
-   3. LEADER SOCIETY MANAGER (Profile View)
+   3. LEADER SOCIETY — CREATE / EDIT (saved to DB)
+========================================== */
+export const LeaderSocietyEditor = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const isNew = location.pathname.endsWith('/new');
+
+  const [name, setName] = useState('');
+  const [shortName, setShortName] = useState('');
+  const [description, setDescription] = useState('');
+  const [logo, setLogo] = useState('');
+
+  useEffect(() => {
+    if (isNew || !id) return;
+    fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.society) {
+          const s = data.data.society;
+          setName(s.name || '');
+          setShortName(s.shortName || '');
+          setDescription(s.description || '');
+          setLogo(s.logo || '');
+        }
+      })
+      .catch(err => console.error('Error loading society:', err));
+  }, [id, API_URL, isNew]);
+
+  const handleLogoPrompt = () => {
+    const url = prompt('Paste image URL for the club logo:', logo || 'https://');
+    if (url !== null) setLogo(url.trim());
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !shortName.trim() || !description.trim()) {
+      alert('Please fill in full name, short name, and description.');
+      return;
+    }
+    const body = {
+      name: name.trim(),
+      shortName: shortName.trim(),
+      description: description.trim(),
+      logo: logo.trim()
+    };
+    try {
+      const url = isNew ? `${API_URL}/api/societies` : `${API_URL}/api/societies/${id}`;
+      const method = isNew ? 'POST' : 'PUT';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (data.success) {
+        const savedId = data.data?._id || id;
+        alert(isNew ? 'Society created and saved.' : 'Society updated.');
+        navigate(`/admin/society/${savedId}`, { state: { tab: 'leader' } });
+      } else {
+        alert(data.message || 'Could not save society.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error — could not save.');
+    }
+  };
+
+  return (
+    <div className="editor-page society-editor-page">
+      <div className="admin-nav">
+        <button type="button" className="back-link" onClick={() => navigate(-1)}>← Back</button>
+        <div className="status-pill">{isNew ? 'New club / society' : 'Edit society'}</div>
+      </div>
+
+      <div className="editor-container">
+        <div
+          className="editor-hero society-editor-hero"
+          style={{
+            backgroundImage: logo ? `url("${logo}")` : 'none',
+            backgroundColor: logo ? 'transparent' : '#d8e4f0',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <h2 style={{
+            textShadow: logo ? '0 2px 8px rgba(0,0,0,0.85)' : 'none',
+            color: logo ? '#fff' : '#0f172a',
+            zIndex: 2,
+            position: 'relative',
+            fontWeight: 800,
+            letterSpacing: '0.06em',
+            fontSize: '1.35rem',
+            textAlign: 'center',
+            margin: 0
+          }}>
+            {isNew ? 'ADD NEW SOCIETY OR CLUB' : 'EDIT SOCIETY'}
+          </h2>
+          <button type="button" className="change-img-btn" onClick={handleLogoPrompt} style={{ zIndex: 2, position: 'relative' }}>
+            {logo ? 'Change logo URL' : 'Set logo (image URL)'}
+          </button>
+          {logo && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.25)',
+              zIndex: 1
+            }} />
+          )}
+        </div>
+
+        <form className="editor-grid society-editor-form" onSubmit={handleSubmit}>
+          <div className="editor-main">
+            <div className="input-group">
+              <label>Full name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Rotaract Club of IIT"
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Short name</label>
+              <input
+                type="text"
+                value={shortName}
+                onChange={(e) => setShortName(e.target.value)}
+                placeholder="e.g., ROTARACT"
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                placeholder="What does your club do? Who can join?"
+                required
+              />
+            </div>
+
+            <div className="admin-actions">
+              <button type="submit" className="save-btn" style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
+                {isNew ? 'Create & save society' : 'Save changes'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ==========================================
+   4. LEADER SOCIETY MANAGER (Profile View)
 ========================================== */
 export const LeaderSocietyManager = () => {
   const { id } = useParams();
@@ -619,7 +793,13 @@ export const LeaderSocietyManager = () => {
             {society && !society.logo && 'Logo'}
           </div>
           <h1>{society ? `${society.name} Admin Space` : 'Admin Space'}</h1>
-          <button className="edit-profile-btn">Edit Society Profile</button>
+          <button
+            type="button"
+            className="edit-profile-btn"
+            onClick={() => society && navigate(`/admin/society/${id}/edit`, { state: { tab: 'leader' } })}
+          >
+            Edit Society Profile
+          </button>
         </div>
       </header>
 
