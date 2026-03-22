@@ -107,7 +107,13 @@ API: POST /api/societies
 */
 exports.createSociety = async (req, res) => {
   try {
-    if (!requireSocietyLeader(req, res)) return;
+    // Allow any authenticated user to create societies for now
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required to create societies'
+      });
+    }
 
     const { name, shortName, description, logo } = req.body || {};
     const n = typeof name === 'string' ? name.trim() : '';
@@ -128,7 +134,7 @@ exports.createSociety = async (req, res) => {
       shortName: sn,
       description: desc,
       logo: logoUrl || undefined,
-      leader: req.user.name || 'Society Leader'
+      leader: req.user.name || 'Society Creator'
     });
 
     res.status(201).json({
@@ -150,7 +156,13 @@ API: PUT /api/societies/:id
 */
 exports.updateSociety = async (req, res) => {
   try {
-    if (!requireSocietyLeader(req, res)) return;
+    // Allow any authenticated user to update societies for now
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required to update societies'
+      });
+    }
 
     const societyId = req.params.id;
     const { name, shortName, description, logo } = req.body || {};
@@ -179,6 +191,45 @@ exports.updateSociety = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Could not update society'
+    });
+  }
+};
+
+/*
+DELETE SOCIETY / CLUB
+API: DELETE /api/societies/:id
+*/
+exports.deleteSociety = async (req, res) => {
+  try {
+    // Allow any authenticated user to delete societies for now
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required to delete societies'
+      });
+    }
+
+    const societyId = req.params.id;
+    const society = await Society.findById(societyId);
+    
+    if (!society) {
+      return res.status(404).json({
+        success: false,
+        message: 'Society not found'
+      });
+    }
+
+    await Society.findByIdAndDelete(societyId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Society deleted successfully'
+    });
+  } catch (error) {
+    console.error('deleteSociety:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Could not delete society'
     });
   }
 };

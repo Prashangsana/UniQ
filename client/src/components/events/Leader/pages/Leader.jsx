@@ -598,6 +598,27 @@ export const LeaderSocietyEditor = () => {
     if (url !== null) setLogo(url.trim());
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this society? This action cannot be undone.")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/societies/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Society deleted successfully");
+        navigate('/', { state: { tab: 'leader' } });
+      } else {
+        alert(data.message || "Failed to delete society");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete society");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !shortName.trim() || !description.trim()) {
@@ -622,7 +643,7 @@ export const LeaderSocietyEditor = () => {
       const data = await res.json();
       if (data.success) {
         const savedId = data.data?._id || id;
-        alert(isNew ? 'Society created and saved.' : 'Society updated.');
+        alert(isNew ? 'Society published successfully!' : 'Society updated.');
         navigate(`/admin/society/${savedId}`, { state: { tab: 'leader' } });
       } else {
         alert(data.message || 'Could not save society.');
@@ -636,7 +657,7 @@ export const LeaderSocietyEditor = () => {
   return (
     <div className="editor-page society-editor-page">
       <div className="admin-nav">
-        <button type="button" className="back-link" onClick={() => navigate(-1)}>← Back</button>
+        <button type="button" className="back-link" onClick={() => navigate('/', { state: { tab: 'leader' } })}>← Back</button>
         <div className="status-pill">{isNew ? 'New club / society' : 'Edit society'}</div>
       </div>
 
@@ -715,8 +736,18 @@ export const LeaderSocietyEditor = () => {
 
             <div className="admin-actions">
               <button type="submit" className="save-btn" style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
-                {isNew ? 'Create & save society' : 'Save changes'}
+                {isNew ? 'Publish society' : 'Save changes'}
               </button>
+              {!isNew && (
+                <button 
+                  type="button" 
+                  className="cancel-btn" 
+                  onClick={handleDelete}
+                  style={{ background: '#dc2626', padding: '16px 40px', borderRadius: '12px' }}
+                >
+                  Delete society
+                </button>
+              )}
             </div>
           </div>
         </form>

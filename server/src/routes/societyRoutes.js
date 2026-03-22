@@ -7,24 +7,28 @@ const {
   getSocietyProfile,
   getLeaderSocieties,
   createSociety,
-  updateSociety
+  updateSociety,
+  deleteSociety
 } = require('../controllers/societyController');
 
 
 // GET LEADER'S SOCIETIES
 router.get('/leader/all', protect, getLeaderSocieties);
 
-// CREATE SOCIETY / CLUB (society leaders only)
+// CREATE SOCIETY / CLUB (any authenticated user)
 router.post('/', protect, createSociety);
 
 // GET ALL SOCIETIES
 router.get('/', getAllSocieties);
 
-// UPDATE SOCIETY / CLUB (society leaders only) — before GET /:id
+// UPDATE SOCIETY / CLUB (any authenticated user)
 router.put('/:id', protect, updateSociety);
 
 // GET SOCIETY PROFILE
 router.get('/:id', getSocietyProfile);
+
+// DELETE SOCIETY / CLUB (any authenticated user)
+router.delete('/:id', protect, deleteSociety);
 
 router.post("/:id/follow", protect, followSociety);
 
