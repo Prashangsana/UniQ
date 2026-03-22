@@ -53,8 +53,8 @@ export const LeaderDashboard = () => {
     <div className="admin-page">
       <div className="admin-layout">
         <div className="admin-left">
-          <header className="admin-header">
-            <div>
+          <header className="admin-header admin-header--leader-portal">
+            <div className="admin-header__intro">
               <h1>Society Leader Portal</h1>
               <p>Welcome back, {userName}</p>
             </div>
