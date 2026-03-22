@@ -23,20 +23,25 @@ const SkillsView = () => (
     </div>
 );
 
-// const ArticlesView = () => (
-//     <div className="content-section fade-in">
-//         <h2>Articles & Resources</h2>
-//         <p>Read the latest academic articles and shared resources.</p>
-//     </div>
-// );
+// Commented out the ArticlesView component
+/* const ArticlesView = () => (
+    <div className="content-section fade-in">
+        <h2>Articles & Resources</h2>
+        <p>Read the latest academic articles and shared resources.</p>
+    </div>
+);
+*/
 
 const Home = ({ myEventsList }) => {
     const location = useLocation();
 
+    // Active tab state
+    const [activeTab, setActiveTab] = useState('dashboard');
+
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
+    // Placeholder data for the sidebar
     const sidebarUser = {
         name: 'Alex',
         img: 'https://i.pravatar.cc/300?img=47' 
@@ -53,9 +58,9 @@ const Home = ({ myEventsList }) => {
         switch(activeTab) {
             case 'dashboard': 
                 return <DashboardView 
-                onSeeAll={() => setActiveTab('groups')} 
-                onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
-            />;
+                    onSeeAll={() => setActiveTab('groups')} 
+                    onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
+                />;
             case 'profile':   
                 return <Profile />;
             case 'society':   
@@ -66,8 +71,9 @@ const Home = ({ myEventsList }) => {
                 return <GroupsPage />;
             case 'skills':    
                 return <SkillsView />;
-            case 'articles':  
-                return <ArticlesView />;
+            // Commented out the articles case
+            /* case 'articles':  
+                return <ArticlesView />; */
             case 'settings':  
                 return <SettingsView />;
             
