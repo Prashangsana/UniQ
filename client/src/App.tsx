@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
 // Landing Page Components
@@ -13,10 +13,10 @@ import Footer from './components/Landing/Footer';
 
 // Dashboard Components
 import Home from './dashboard/Home';
-
 import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
+import AdminDashboard from './dashboard/AdminDashboard';
 
 function App() {
   // State Management
@@ -27,6 +27,8 @@ function App() {
     return localStorage.getItem('user_role');
   });
   
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
+  
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
@@ -36,7 +38,6 @@ function App() {
     localStorage.setItem('user_role', role);
     setIsLoggedIn(true);
     setUserRole(role);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleLogout = (): void => {
@@ -56,7 +57,7 @@ function App() {
     setMyEventsList(prev => prev.filter(id => id !== eventId));
   };
 
-  // Authentication Check
+  // Authentication Check on Load
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -69,6 +70,8 @@ function App() {
         }
       } catch {
         handleLogout();
+      } finally {
+        setIsLoading(false);
       }
     };
     checkAuth();
@@ -76,7 +79,7 @@ function App() {
 
   // Landing Page Intersection Observer
   useEffect(() => {
-    if (isLoggedIn) return;
+    if (isLoggedIn || isLoading) return;
     const observerOptions = { root: null, threshold: 0.1 };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -88,70 +91,77 @@ function App() {
 
     document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
     return () => observer.disconnect();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isLoading]);
 
-  // Logged-in View
-  if (isLoggedIn) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          {/* Default Routes */}
-          <Route path="/" element={
-            userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
-          } />
-          
-          <Route path="/dashboard" element={
-            userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
-          } />
-
-          <Route path="/groups" element={<GroupsPage />} />
-
-          {/* Shared Routes */}
-          <Route path="/society/:id" element={<SocietyProfilePage />} />
-
-          {/* Leader Specific Routes */}
-          {userRole === 'society_leader' && (
-            <>
-              <Route path="/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
-
-          {/* Student Specific Routes */}
-          {userRole !== 'society_leader' && (
-            <>
-              <Route
-                path="/event/:eventId"
-                element={
-                  <EventDetailsPage
-                    onAddEvent={handleAddEvent}
-                    onRemoveEvent={handleRemoveEvent}
-                    myEventsList={myEventsList as never}
-                  />
-                }
-              />
-              <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-          )}
-        </Routes>
-      </BrowserRouter>
-    );
+  if (isLoading) {
+    return <div className="loading-screen">Loading...</div>; 
   }
 
-  // Logged-out View (Landing Page)
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={
-          <div className="app-container">
-            <Navbar onSignUpSuccess={() => handleLogin('student')} />
-            <Hero />
-            <Features />
-            <HowItWorks />
-            <Pricing />
-            <Team />
-            <Footer />
-          </div>
-        } />
+        {isLoggedIn ? (
+          <>
+            <Route path="/" element={
+              userRole === 'admin' ? <AdminDashboard /> :
+              userRole === 'society_leader' ? <LeaderDashboard /> : 
+              <Home myEventsList={myEventsList} />
+            } />
+            
+            <Route path="/dashboard" element={
+              userRole === 'admin' ? <AdminDashboard /> :
+              userRole === 'society_leader' ? <LeaderDashboard /> : 
+              <Home myEventsList={myEventsList} />
+            } />
+
+            {userRole === 'admin' && (
+              <Route path="/admin" element={<AdminDashboard />} />
+            )}
+
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/society/:id" element={<SocietyProfilePage />} />
+
+            {userRole === 'society_leader' && (
+              <Route path="/event/:eventId" element={<LeaderEventEditor />} />
+            )}
+
+            {userRole !== 'society_leader' && (
+              <>
+                <Route
+                  path="/event/:eventId"
+                  element={
+                    <EventDetailsPage
+                      onAddEvent={handleAddEvent}
+                      onRemoveEvent={handleRemoveEvent}
+                      myEventsList={myEventsList as never}
+                    />
+                  }
+                />
+                <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
+              </>
+            )}
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={
+              <div className="app-container">
+                <Navbar onSignUpSuccess={() => handleLogin('student')} />
+                <Hero />
+                <Features />
+                <HowItWorks />
+                <Pricing />
+                <Team />
+                <Footer />
+              </div>
+            } />
+            
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        )}
       </Routes>
     </BrowserRouter>
   );

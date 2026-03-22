@@ -6,7 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./src/config/db');
 
-// 1. Connect to MongoDB
+// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -16,9 +16,9 @@ const PORT = process.env.PORT || 5000;
 
 app.set('trust proxy', 1);
 
-// 2. Middleware
+// Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Good practice for form-encoded data
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(cors({
@@ -27,28 +27,32 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// 3. Initialize Passport 
+// Initialize Passport 
 app.use(passport.initialize());
 require('./src/config/passport')(passport);
 
-// 4. Import Routes
+// Import Routes
 const authRoutes = require('./src/routes/authRoutes'); 
 const societyRoutes = require('./src/routes/societyRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
-const groupRoutes = require('./src/routes/groupRoutes'); 
+const groupRoutes = require('./src/routes/groupRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
+const moduleRoutes = require('./src/routes/moduleRoutes');
 
-// 5. Mount Core Routes
+// Mount Core Routes
 app.use('/auth', authRoutes); 
 app.use('/api/societies', societyRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/modules', moduleRoutes);
 
-// 6. Mount Grouping & Lecturer APIs
+// Mount Grouping & Lecturer APIs
 app.use('/api', groupRoutes);
 app.use('/api', require('./src/routes/requestRoutes'));
 app.use('/api', require('./src/routes/inviteRoutes'));
 app.use('/api/lecturer', require('./src/routes/lecturerRoutes'));
 
-// 7. Global Error Handler (Must be placed after all routes)
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
