@@ -189,7 +189,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const [eventData, setEventData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchDone, setFetchDone] = useState(false);
 
   const isAdded = (myEventsList || []).some(
     e => {
@@ -200,7 +200,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
   useEffect(() => {
     if (!eventId || eventId === 'new') {
-      setLoading(false);
+      setFetchDone(true);
       return;
     }
 
@@ -212,7 +212,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
         }
       })
       .catch(err => console.error("Error loading event details:", err))
-      .finally(() => setLoading(false));
+      .finally(() => setFetchDone(true));
   }, [eventId, API_URL]);
 
   const handleAddEvent = async () => {
@@ -279,11 +279,12 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
   };
 
-  if (loading) return <div className="loading">Loading Event Details...</div>;
-  if (!eventData) return <div className="error">Event not found</div>;
+  if (fetchDone && !eventData && eventId && eventId !== 'new') {
+    return <div className="error">Event not found</div>;
+  }
 
-  const displayTitle = eventData.title || "";
-  const heroImagePath = eventData.bannerImage || "/images-e/default.jpg";
+  const displayTitle = eventData?.title || "";
+  const heroImagePath = eventData?.bannerImage || "/images-e/default.jpg";
 
   return (
     <div className="event-details-page">
@@ -318,14 +319,14 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <p className="event-description-text">
               <strong>Description:</strong>
-              {" "}{eventData.description}
+              {" "}{eventData?.description ?? ""}
             </p>
 
             <div className="event-links">
 
-              {eventData.instagramLink && (
+              {eventData?.instagramLink && (
                 <a
-                  href={eventData.instagramLink}
+                  href={eventData?.instagramLink}
                   target="_blank"
                   rel="noreferrer"
                   className="link-btn insta"
@@ -334,9 +335,9 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
                 </a>
               )}
 
-              {eventData.registerLink && (
+              {eventData?.registerLink && (
                 <a
-                  href={eventData.registerLink}
+                  href={eventData?.registerLink}
                   target="_blank"
                   rel="noreferrer"
                   className="link-btn register"
@@ -353,20 +354,24 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <div className="meta-item">
               <span>📅 Date:</span>
-              <p>{new Date(eventData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              <p>
+                {eventData?.date
+                  ? new Date(eventData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : '—'}
+              </p>
             </div>
 
             <div className="meta-item">
               <span>⏰ Time:</span>
-              <p>{eventData.time}</p>
+              <p>{eventData?.time ?? '—'}</p>
             </div>
 
             <div className="meta-item">
               <span>📍 Place:</span>
-              <p>{eventData.venue || eventData.place}</p>
+              <p>{eventData?.venue || eventData?.place || '—'}</p>
             </div>
 
-            {eventData.tickets && eventData.tickets.length > 0 ? (
+            {eventData?.tickets && eventData.tickets.length > 0 ? (
               <div className="meta-item">
                 <span>💰 Tickets:</span>
                 {eventData.tickets.map((t, i) => (
@@ -378,7 +383,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
             ) : (
               <div className="meta-item">
                 <span>💰 Price:</span>
-                <p>{eventData.price || "Free"}</p>
+                <p>{eventData?.price || "Free"}</p>
               </div>
             )}
 
@@ -426,7 +431,7 @@ export const SocietyProfilePage = ({ userRole }) => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchDone, setFetchDone] = useState(false);
 
   /* 🧩 STEP 6 — FOLLOW STATE */
   const [following, setFollowing] = useState(false);
@@ -470,7 +475,7 @@ export const SocietyProfilePage = ({ userRole }) => {
 
     })
     .catch(err => console.error("Error loading profile:", err))
-    .finally(() => setLoading(false));
+    .finally(() => setFetchDone(true));
 
 
   /* LOAD FOLLOW STATUS */
@@ -490,10 +495,10 @@ export const SocietyProfilePage = ({ userRole }) => {
 }, [id, API_URL]);
 
 
-  if (loading) return <div className="loading">Loading Profile...</div>;
-  if (!profileData) return <div className="error">Society not found</div>;
+  if (fetchDone && !profileData) return <div className="error">Society not found</div>;
 
-  const { society, events } = profileData;
+  const society = profileData?.society;
+  const events = profileData?.events ?? [];
 
   return (
     <div className="society-profile-page">
@@ -519,13 +524,13 @@ export const SocietyProfilePage = ({ userRole }) => {
       <header className="society-header">
 
         <img
-          src={society.logo}
-          alt={society.name}
+          src={society?.logo || ''}
+          alt={society?.name || 'Society'}
           className="society-logo-large"
         />
 
         <h1 className="society-full-name">
-          {society.name} OF IIT
+          {society?.name ? `${society.name} OF IIT` : 'Society OF IIT'}
         </h1>
 
         {/* FOLLOW BUTTON */}

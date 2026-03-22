@@ -598,7 +598,8 @@ export const LeaderSocietyManager = () => {
     }
   }, [id, API_URL]);
 
-  if (!society) return <div className="loading">Loading Admin Space...</div>;
+  const societyName = society?.name ?? '';
+  const societyLogo = society?.logo ?? '';
 
   return (
     <div className="manager-page">
@@ -617,10 +618,10 @@ export const LeaderSocietyManager = () => {
 
       <header className="manager-header">
         <div className="manager-profile">
-          <div className="manager-logo" style={{ backgroundImage: `url(${society.logo})`, backgroundSize: 'cover' }}>
-            {!society.logo && "Logo"}
+          <div className="manager-logo" style={{ backgroundImage: societyLogo ? `url(${societyLogo})` : 'none', backgroundSize: 'cover' }}>
+            {!societyLogo && 'Logo'}
           </div>
-          <h1>{society.name} Admin Space</h1>
+          <h1>{societyName || 'Society'} Admin Space</h1>
           <button className="edit-profile-btn">Edit Society Profile</button>
         </div>
       </header>
