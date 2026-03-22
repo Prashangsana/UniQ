@@ -58,9 +58,34 @@ const Home = ({ myEventsList }) => {
         return () => window.removeEventListener('storage', syncUserData);
     }, [location.state]);
 
-    // Avatar Logic
-    const avatarSrc = userPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${userName}`;
+    useEffect(() => {
+    const fetchUserForSidebar = async () => {
+        try {
+            // Fetch the actual profile from the backend
+            const response = await fetch(`${API_URL}/api/users/profile`, { 
+                credentials: 'include' 
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                const fetchedName = result.data.name || result.data.firstName || 'User';
+                setUserName(fetchedName);
+                setUserPhoto(result.data.profileImage || result.data.photo || '');
+                setUserRole(result.data.role || 'student');
+                
+                // Sync localStorage so it stays fixed
+                localStorage.setItem('user_name', fetchedName);
+            }
+        } catch (err) {
+            console.error("SideBar Sync Error:", err);
+        }
+    };
 
+    fetchUserForSidebar();
+}, []);
+
+    // Avatar Logic
+    const avatarSrc = userPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${userName !== 'User' ? userName : 'Guest'}`;
     // Consistently render content based on activeTab
     const renderContent = () => {
         switch(activeTab) {
@@ -102,7 +127,9 @@ const Home = ({ myEventsList }) => {
                         <div className="status-indicator"></div>
                     </div>
                     <div className="profile-info">
-                        <h3>Hi, {userName.split(' ')[0]}</h3>
+                        <h3>Hi, { (userName && userName !== 'undefined' && userName !== 'User') 
+                            ? userName.split(' ')[0] 
+                            : 'User' }</h3>
                        <p className="sidebar-role-tag">
                             {userRole === 'lecturer' ? 'University Lecturer' : 'Student Member'}
                         </p>

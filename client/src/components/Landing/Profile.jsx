@@ -115,7 +115,7 @@ const Profile = () => {
       if (result.success) {
         setUser(result.data);
         localStorage.setItem('user_name', result.data.name);
-        localStorage.setItem('user_photo', result.data.profileImage || "");
+        localStorage.setItem('user_photo', result.data.profileImage || result.data.photo ||"");
         window.dispatchEvent(new Event("storage"));
         
         setIsEditing(false);
