@@ -62,6 +62,80 @@
   text-align: center;
 }
 
+/* Create-event card on leader dashboard (replaces former CTA button) */
+.leader-dashboard-create {
+  width: 100%;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+.leader-event-form-card {
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+}
+
+/* Compact layout so “Your societies” stays visible beside the form */
+.admin-layout:has(.leader-dashboard-create) {
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-layout:has(.leader-dashboard-create) .admin-right {
+  margin-top: 0;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: min(560px, calc(100vh - 10rem));
+  overflow-y: auto;
+  padding-right: 4px;
+  min-width: 0;
+}
+
+.admin-layout:has(.leader-dashboard-create) .admin-left {
+  gap: 16px;
+}
+
+/* Shorter banner strip + tighter form body so the card fits the viewport */
+.leader-dashboard-create .editor-hero {
+  height: 120px;
+  min-height: 0;
+  gap: 8px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+}
+
+.leader-dashboard-create .editor-hero h2 {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+}
+
+.leader-dashboard-create .change-img-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.leader-dashboard-create .editor-grid {
+  padding: 22px 24px 28px;
+  gap: 0;
+}
+
+@media (max-width: 1100px) {
+  .leader-dashboard-create .editor-grid {
+    padding: 20px 18px 24px;
+  }
+
+  .admin-layout:has(.leader-dashboard-create) {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-layout:has(.leader-dashboard-create) .admin-right {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
 /* Header Button */
 .publish-btn {
   background: linear-gradient(180deg, #d1d5db 0%, #717f96 100%);
@@ -203,9 +277,16 @@
 
 .editor-grid { 
   display: grid; 
-  grid-template-columns: 1fr 320px; 
+  grid-template-columns: 1fr; 
   padding: 50px; 
-  gap: 60px; 
+  gap: 0; 
+}
+
+.editor-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
 }
 
 .input-group label { 

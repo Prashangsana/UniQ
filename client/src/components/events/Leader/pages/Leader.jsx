@@ -3,100 +3,11 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './Leader.css';
 import { LeaderEventBanner, LeaderEventRow, LeaderSidebar, LeaderSocietyCard } from '../components/LeaderEvent';
 
-
-/* ==========================================
-   1. LEADER DASHBOARD
-========================================== */
-export const LeaderDashboard = () => {
+function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   const navigate = useNavigate();
-  
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  const [societies, setSocieties] = useState([]);
-  const [activeEvents, setActiveEvents] = useState([]);
-  const [draftEvents, setDraftEvents] = useState([]);
-  const [userName, setUserName] = useState('Leader');
-
-  useEffect(() => {
-    // Load User Info
-    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.authenticated) {
-          setUserName(data.user.name);
-        }
-      })
-      .catch(err => console.error("Error loading user info:", err));
-
-    // Load all Societies
-    fetch(`${API_URL}/api/societies`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data.length > 0) setSocieties(data.data);
-      })
-      .catch(err => console.error("Error loading societies:", err));
-
-    // Load Leader's Events
-    fetch(`${API_URL}/api/events`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data.length > 0) {
-          const allEvents = data.data;
-          setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
-          setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
-        }
-      })
-      .catch(err => console.error("Error loading events:", err));
-  }, [API_URL]);
-
-  return (
-    <div className="admin-page">
-      <div className="admin-layout">
-        <div className="admin-left">
-          <header className="admin-header admin-header--leader-portal">
-            <div className="admin-header__intro">
-              <h1>Society Leader Portal</h1>
-              <p>Welcome back, {userName}</p>
-            </div>
-            <button className="publish-btn" onClick={() => navigate('/admin/event/new')}>
-              + Create New Event
-            </button>
-          </header>
-          
-        </div>
-
-        <div className="admin-right">
-          <div className="manage-societies">
-            <h3>Your societies</h3>
-            <div className="societies-list-container">
-              {societies.map(s => (
-                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-/* ==========================================
-   2. LEADER EVENT EDITOR (Handles both Edit & Create)
-========================================== */
-export const LeaderEventEditor = () => {
-  const { eventId } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
   const isNewEvent = eventId === 'new';
 
-  // Get societyId from query params if available
-  const queryParams = new URLSearchParams(location.search);
-  const preselectedSocietyId = queryParams.get('societyId');
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState({ dd: '', mm: '', yyyy: '' });
@@ -111,16 +22,13 @@ export const LeaderEventEditor = () => {
   const [societies, setSocieties] = useState([]);
   const [selectedSociety, setSelectedSociety] = useState('');
 
-  // Load existing data if editing
   useEffect(() => {
-    // Load Leader's Societies
     fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
           setSocieties(data.data);
           if (data.data.length > 0 && !selectedSociety) {
-            // Priority: Query Param > First Society in list
             setSelectedSociety(preselectedSocietyId || data.data[0]._id);
           }
         }
@@ -128,7 +36,7 @@ export const LeaderEventEditor = () => {
       .catch(err => console.error("Error loading societies:", err));
 
     if (!isNewEvent) {
-      fetch(`${API_URL}/api/events/${eventId}`, { 
+      fetch(`${API_URL}/api/events/${eventId}`, {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       })
@@ -146,13 +54,13 @@ export const LeaderEventEditor = () => {
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
             setSelectedSociety(ev.society?._id || ev.society || '');
-            
+
             if (ev.time) {
               const [t, p] = ev.time.split(' ');
               const [h, m] = t.split(':');
               setTime({ hh: h, min: m, period: p || 'AM' });
             }
-            
+
             if (ev.date) {
               const d = new Date(ev.date);
               setDate({
@@ -165,7 +73,6 @@ export const LeaderEventEditor = () => {
         })
         .catch(err => console.error("Error loading event:", err));
     } else {
-      // Reset form when switching to 'Create New Event' mode
       setTitle('');
       setDescription('');
       setVenue('');
@@ -206,10 +113,10 @@ export const LeaderEventEditor = () => {
       society: selectedSociety
     };
 
-    const url = isNewEvent 
-      ? `${API_URL}/api/events` 
+    const url = isNewEvent
+      ? `${API_URL}/api/events`
       : `${API_URL}/api/events/${eventId}`;
-    
+
     const method = isNewEvent ? 'POST' : 'PUT';
 
     try {
@@ -251,11 +158,9 @@ export const LeaderEventEditor = () => {
     }
   };
 
-  // Simulated image upload
   const handleImageUpload = () => {
     const url = prompt("Please paste the image URL for your banner:", bannerImage || "https://via.placeholder.com/1200x400");
     if (url !== null) {
-      // Simple validation: check if it looks like a URL
       if (url.trim() === "" || url.startsWith("http")) {
         setBannerImage(url.trim());
       } else {
@@ -264,7 +169,6 @@ export const LeaderEventEditor = () => {
     }
   };
 
-  // Function to add a ticket tier (now capped at 5)
   const addTicketTier = () => {
     if (tickets.length < 5) {
       setTickets([...tickets, { name: '', price: '' }]);
@@ -281,19 +185,72 @@ export const LeaderEventEditor = () => {
     setTickets(newTickets);
   };
 
-  return (
-    <div className="editor-page">
-      <div className="admin-nav">
-        <button className="back-link" onClick={() => navigate(-1)}>← Exit Editor</button>
-        <div className="status-pill">Status: {isNewEvent ? 'Draft' : status}</div>
-      </div>
+  return {
+    isNewEvent,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    date,
+    setDate,
+    time,
+    setTime,
+    venue,
+    setVenue,
+    registerLink,
+    setRegisterLink,
+    instagramLink,
+    setInstagramLink,
+    tickets,
+    status,
+    bannerImage,
+    societies,
+    selectedSociety,
+    setSelectedSociety,
+    handleSave,
+    handleDelete,
+    handleImageUpload,
+    addTicketTier,
+    removeTicketTier,
+    updateTicket
+  };
+}
 
-      <div className="editor-container">
+function LeaderEventFormBody({
+  isNewEvent,
+  title,
+  setTitle,
+  description,
+  setDescription,
+  date,
+  setDate,
+  time,
+  setTime,
+  venue,
+  setVenue,
+  registerLink,
+  setRegisterLink,
+  instagramLink,
+  setInstagramLink,
+  tickets,
+  bannerImage,
+  societies,
+  selectedSociety,
+  setSelectedSociety,
+  handleSave,
+  handleDelete,
+  handleImageUpload,
+  addTicketTier,
+  removeTicketTier,
+  updateTicket
+}) {
+  return (
+    <div className="editor-container leader-event-form-card">
         <div 
           className="editor-hero" 
           style={{ 
             backgroundImage: bannerImage ? `url("${bannerImage}")` : 'none',
-            backgroundColor: bannerImage ? 'transparent' : '#cbd5e1',
+            backgroundColor: bannerImage ? 'transparent' : '#d8e4f0',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             position: 'relative',
@@ -457,25 +414,6 @@ export const LeaderEventEditor = () => {
             </div>
 
             <div className="input-group">
-              <label>Description</label>
-              <textarea 
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows="6" 
-                placeholder="Write all the exciting details about your event here..."
-              />
-            </div>
-            
-            <div className="admin-actions">
-              <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
-                {isNewEvent ? 'Publish Event' : 'Save Changes'}
-              </button>
-              {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
-            </div>
-          </div>
-
-          <div className="editor-sidebar">
-            <div className="input-group">
               <label>Participation Link</label>
               <input 
                 type="url" 
@@ -494,9 +432,119 @@ export const LeaderEventEditor = () => {
                 onChange={(e) => setInstagramLink(e.target.value)}
               />
             </div>
+
+            <div className="input-group">
+              <label>Description</label>
+              <textarea 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows="6" 
+                placeholder="Write all the exciting details about your event here..."
+              />
+            </div>
+            
+            <div className="admin-actions">
+              <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
+                {isNewEvent ? 'Publish Event' : 'Save Changes'}
+              </button>
+              {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
+            </div>
           </div>
         </div>
       </div>
+  );
+};
+
+/* ==========================================
+   1. LEADER DASHBOARD
+========================================== */
+export const LeaderDashboard = () => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const createForm = useLeaderEventForm({ eventId: 'new', preselectedSocietyId: null });
+
+  const [societies, setSocieties] = useState([]);
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [draftEvents, setDraftEvents] = useState([]);
+  const [userName, setUserName] = useState('Leader');
+
+  useEffect(() => {
+    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated) {
+          setUserName(data.user.name);
+        }
+      })
+      .catch(err => console.error("Error loading user info:", err));
+
+    fetch(`${API_URL}/api/societies`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data.length > 0) setSocieties(data.data);
+      })
+      .catch(err => console.error("Error loading societies:", err));
+
+    fetch(`${API_URL}/api/events`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data.length > 0) {
+          const allEvents = data.data;
+          setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
+          setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
+        }
+      })
+      .catch(err => console.error("Error loading events:", err));
+  }, [API_URL]);
+
+  return (
+    <div className="admin-page">
+      <div className="admin-layout">
+        <div className="admin-left">
+          <header className="admin-header admin-header--leader-portal">
+            <div className="admin-header__intro">
+              <h1>Society Leader Portal</h1>
+              <p>Welcome back, {userName}</p>
+            </div>
+          </header>
+
+          <div className="leader-dashboard-create">
+            <LeaderEventFormBody {...createForm} />
+          </div>
+        </div>
+
+        <div className="admin-right">
+          <div className="manage-societies">
+            <h3>Your societies</h3>
+            <div className="societies-list-container">
+              {societies.map(s => (
+                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ==========================================
+   2. LEADER EVENT EDITOR (Handles both Edit & Create)
+========================================== */
+export const LeaderEventEditor = () => {
+  const { eventId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const preselectedSocietyId = queryParams.get('societyId');
+  const form = useLeaderEventForm({ eventId, preselectedSocietyId });
+
+  return (
+    <div className="editor-page">
+      <div className="admin-nav">
+        <button className="back-link" onClick={() => navigate(-1)}>← Exit Editor</button>
+        <div className="status-pill">Status: {form.isNewEvent ? 'Draft' : form.status}</div>
+      </div>
+      <LeaderEventFormBody {...form} />
     </div>
   );
 };
