@@ -1,4 +1,3 @@
-// src/config/db.js
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
@@ -12,7 +11,7 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
-    // Continue without failing for local mock usage
+    process.exit(1); 
   }
 };
 

@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Home.css';
-
-// Component Imports
 import DashboardView from './DashboardView';
 import SettingsView from './SettingsView';
 import GroupsPage from '../pages/GroupsPage';
 import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
+import { LeaderDashboard } from '../components/events/Leader/pages/Leader';
 
 // Mentoring Imports
 import PeerMentoring from '../pages/PeerMentoring';
@@ -33,18 +32,11 @@ const SkillsView = () => (
 
 const Home = ({ myEventsList }) => {
     const location = useLocation();
+
+    // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    const [activeTab, setActiveTab] = useState(() => {
-        const path = window.location.pathname;
-        if (path.includes('/society') || path.includes('/events')) return 'society';
-        if (path.includes('/groups')) return 'groups';
-        if (path.includes('/skills')) return 'skills';
-        // if (path.includes('/articles')) return 'articles';
-        if (path.includes('/settings')) return 'settings';
-        return 'dashboard';
-    });
-
+    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
     const sidebarUser = {
         name: 'Alex',
         img: 'https://i.pravatar.cc/300?img=47' 
@@ -61,15 +53,23 @@ const Home = ({ myEventsList }) => {
         switch(activeTab) {
             case 'dashboard': 
                 return <DashboardView 
-                    onSeeAll={() => setActiveTab('groups')} 
-                    onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
-                />;
-            case 'profile':   return <Profile />;
-            case 'society':   return <EventsPage myEventsList={myEventsList} />;
-            case 'groups':    return <GroupsPage />;
-            case 'skills':    return <SkillsView />;
-            // case 'articles':  return <ArticlesView />;
-            case 'settings':  return <SettingsView />;
+                onSeeAll={() => setActiveTab('groups')} 
+                onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
+            />;
+            case 'profile':   
+                return <Profile />;
+            case 'society':   
+                return <EventsPage myEventsList={myEventsList} />;
+            case 'leader':    
+                return <LeaderDashboard />;
+            case 'groups':    
+                return <GroupsPage />;
+            case 'skills':    
+                return <SkillsView />;
+            case 'articles':  
+                return <ArticlesView />;
+            case 'settings':  
+                return <SettingsView />;
             
             // Mentoring Views
             case 'mentoring-hub': 
@@ -83,7 +83,8 @@ const Home = ({ myEventsList }) => {
             case 'lecturer-dashboard-view': 
                 return <MentorDashboardLecturer />;
                 
-            default: return <DashboardView />;
+            default: 
+                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
         }
     };
 
@@ -111,6 +112,12 @@ const Home = ({ myEventsList }) => {
                             <a href="#dashboard" onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}>
                                 <Icon icon="lucide:layout-dashboard" width="20" />
                                 <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li className={activeTab === 'leader' ? 'active' : ''}>
+                            <a href="#leader" onClick={(e) => { e.preventDefault(); setActiveTab('leader'); }}>
+                                <Icon icon="lucide:shield-check" width="20" />
+                                <span>Society Leader</span>
                             </a>
                         </li>
                         <li className={activeTab === 'society' ? 'active' : ''}>

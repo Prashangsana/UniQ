@@ -1,8 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './groups.css';
 
 const UserProfileView = ({ user, type, onBack }) => {
   // 'type' can be 'member' or 'requester' to determine buttons
+  const [processing, setProcessing] = useState(false);
+
+  const handleRequestAction = async (action) => {
+    try {
+      // action will be either 'approve' or 'reject'
+      const response = await fetch(`http://localhost:5000/api/requests/${user.requestId}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert(data.message);
+        onBack(); // Send them back to the group view so the sidebar reloads
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      alert("Server error. Make sure your backend is running.");
+    }
+  };
+
+  // Handler for sending an outbound invite to a student
+  const handleSendInvite = async () => {
+    setProcessing(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/groups/${user.targetGroupId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id }) 
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert("Invite sent successfully!");
+        onBack(); // Return to the roster
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      alert("Server error. Make sure your backend is running.");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '2rem' }}>
@@ -34,10 +79,51 @@ const UserProfileView = ({ user, type, onBack }) => {
         </div>
 
         {/* Logic for Join Request Actions */}
-        {user.student && (
+        {user.isJoinRequest && (
            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-             <button className="gf-btn-outline" style={{flex:1}} onClick={onBack}>Deny Request</button>
-             <button className="gf-btn-primary" style={{flex:1}} onClick={() => alert('Accepted student!')}>Accept to Group</button>
+             <button 
+               className="gf-btn-outline" 
+               style={{flex:1}} 
+               onClick={() => handleRequestAction('reject')}
+             >
+               Deny Request
+             </button>
+             <button 
+               className="gf-btn-primary" 
+               style={{flex:1}} 
+               onClick={() => handleRequestAction('approve')}
+             >
+               Accept to Group
+             </button>
+           </div>
+        )}
+
+        {/* Logic for Outbound Invites from Roster */}
+        {user.isRosterView && (
+           // --- Changed to flex-direction: 'column' to stack the buttons ---
+           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+             <button 
+               className="gf-btn-primary" 
+               style={{width: '100%'}} 
+               onClick={handleSendInvite}
+               disabled={processing}
+             >
+               {processing ? 'Sending Invite...' : 'Send Invite'}
+             </button>
+
+             <button 
+               className="gf-btn-outline" 
+               style={{width: '100%'}} 
+               onClick={() => {
+                 // TODO: Teammate Integration
+                 // Replace this alert with your routing logic when profile is done.
+                 // Example: window.location.href = `/profile/${user._id}`;
+                 // Or if using React Router: navigate(`/profile/${user._id}`);
+                 alert(`Navigating to Full Public Profile for ${user.name}... (Teammate's component goes here!)`);
+               }}
+             >
+               View Full Profile
+             </button>
            </div>
         )}
       </div>

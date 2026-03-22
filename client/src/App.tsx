@@ -14,7 +14,10 @@ import Footer from './components/Landing/Footer';
 // Dashboard & Core Pages
 import Home from './dashboard/Home';
 import DashboardView from './dashboard/DashboardView';
+
+import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
+import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
 
 // Mentoring Components
 import LecturerMentoring from './pages/LecturerMentoring';
@@ -28,22 +31,31 @@ const MentoringWrapper = ({ Component }: { Component: any }) => {
 };
 
 function App() {
+  // State Management
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('is_logged_in') === 'true';
+  });
+  const [userRole, setUserRole] = useState<string | null>(() => {
+    return localStorage.getItem('user_role');
   });
   
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
-  const handleLogin = (): void => {
+  // Auth Handlers
+  const handleLogin = (role: string = 'student'): void => {
     localStorage.setItem('is_logged_in', 'true');
+    localStorage.setItem('user_role', role);
     setIsLoggedIn(true);
+    setUserRole(role);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleLogout = (): void => {
     localStorage.removeItem('is_logged_in');
+    localStorage.removeItem('user_role');
     setIsLoggedIn(false);
+    setUserRole(null);
   };
 
   const handleAddEvent = (eventId: string): void => {
@@ -56,14 +68,14 @@ function App() {
     setMyEventsList(prev => prev.filter(id => id !== eventId));
   };
 
-  // Background Auth Check (Main branch logic)
+  // Authentication Check
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const data = await response.json();
         if (data.authenticated) {
-          handleLogin();
+          handleLogin(data.user?.role || 'student');
         } else {
           handleLogout();
         }
@@ -90,57 +102,80 @@ function App() {
     return () => observer.disconnect();
   }, [isLoggedIn]);
 
-  return (
-    <BrowserRouter>
-      <Routes>
-        {isLoggedIn ? (
-          /* Authenticated View: Includes both Main and Mentoring routes */
-          <>
-            {/* Core Routes */}
-            <Route path="/" element={<Home myEventsList={myEventsList} />} />
-            <Route path="/dashboard" element={<DashboardView onSeeAll={() => { }} />} />
-            <Route path="/society/:id" element={<SocietyProfilePage />} />
-            <Route 
-              path="/event/:eventId" 
-              element={
-                <EventDetailsPage 
-                  onAddEvent={handleAddEvent} 
-                  onRemoveEvent={handleRemoveEvent} 
-                  myEventsList={myEventsList as any} 
+    return (
+        <BrowserRouter>
+          <Routes>
+            {isLoggedIn ? (
+              /* Authenticated View: Includes Role-based Main and Mentoring routes */
+              <>
+                {/* Default / Dashboard Routes based on role */}
+                <Route 
+                  path="/" 
+                  element={userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />} 
                 />
-              } 
-            />
+                <Route 
+                  path="/dashboard" 
+                  element={userRole === 'society_leader' ? <LeaderDashboard /> : <DashboardView onSeeAll={() => { }} />} 
+                />
 
-            <Route 
-              path="/mentoring/lecturers" 
-              element={<MentoringWrapper Component={LecturerMentoring} />} 
-            />
-            <Route 
-              path="/mentoring/peers" 
-              element={<MentoringWrapper Component={PeerMentoring} />} 
-            />
-            <Route path="/mentor-auth/:role" element={<MentorLogin />} />
-          </>
-        ) : (
-          /* Landing Page View */
-          <Route path="/" element={
-            <div className="app-container">
-              <Navbar onSignUpSuccess={handleLogin} />
-              <Hero />
-              <div className="reveal-on-scroll"><Features /></div>
-              <div className="reveal-on-scroll"><HowItWorks /></div>
-              <div className="reveal-on-scroll"><Pricing /></div>
-              <div className="reveal-on-scroll"><Team /></div>
-              <Footer />
-            </div>
-          } />
-        )}
-        
-        {/* Redirect unknown routes back to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
+                {/* Shared Core Routes */}
+                <Route path="/society/:id" element={<SocietyProfilePage />} />
+                <Route path="/groups" element={<GroupsPage />} />
+
+                {/* Leader Specific Routes */}
+                {userRole === 'society_leader' && (
+                  <Route path="/event/:eventId" element={<LeaderEventEditor />} />
+                )}
+
+                {/* Student Specific Routes */}
+                {userRole !== 'society_leader' && (
+                  <>
+                    <Route
+                      path="/event/:eventId"
+                      element={
+                        <EventDetailsPage
+                          onAddEvent={handleAddEvent}
+                          onRemoveEvent={handleRemoveEvent}
+                          myEventsList={myEventsList as any}
+                        />
+                      }
+                    />
+                    {/* Admin fallback for students from incoming branch */}
+                    <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
+                  </>
+                )}
+
+                {/* Mentoring Routes (Preserved from your current branch) */}
+                <Route
+                  path="/mentoring/lecturers"
+                  element={<MentoringWrapper Component={LecturerMentoring} />}
+                />
+                <Route
+                  path="/mentoring/peers"
+                  element={<MentoringWrapper Component={PeerMentoring} />}
+                />
+                <Route path="/mentor-auth/:role" element={<MentorLogin />} />
+              </>
+            ) : (
+              /* Landing Page View (Animations + updated Navbar prop preserved) */
+              <Route path="/" element={
+                <div className="app-container">
+                  <Navbar onSignUpSuccess={() => handleLogin('student')} />
+                  <Hero />
+                  <div className="reveal-on-scroll"><Features /></div>
+                  <div className="reveal-on-scroll"><HowItWorks /></div>
+                  <div className="reveal-on-scroll"><Pricing /></div>
+                  <div className="reveal-on-scroll"><Team /></div>
+                  <Footer />
+                </div>
+              } />
+            )}
+
+            {/* Redirect unknown routes back to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      );
 }
 
 export default App;
