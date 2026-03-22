@@ -52,6 +52,36 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.role-tag-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #f0f4ff; /* Light blueish background */
+  color: #4f46e5;           /* Indigo text color */
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0;
+  border: 1px solid #e0e7ff;
+}
+.sidebar-role-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6366f1;           /* Indigo text */
+  background: #f5f3ff;      /* Very light purple background */
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+/* Optional: Different color for Lecturers */
+.role-tag-badge:contains('Lecturer') {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fee2e2;
+}
+
 .sidebar-names h1 {
   font-size: 1.6rem;
   margin: 0;

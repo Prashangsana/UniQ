@@ -43,6 +43,10 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        localStorage.setItem('is_logged_in', 'true');
+        localStorage.setItem('user_role', data.user.role);
+        localStorage.setItem('user_name', data.user.name); // Store full name
+        localStorage.setItem('user_photo', data.user.photo || ""); // Store photo if exists
 
         if (onSignUpSuccess) {
           onSignUpSuccess(data.user.role); 

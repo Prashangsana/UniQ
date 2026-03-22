@@ -151,7 +151,7 @@ function App() {
         
         <Route path="/" element={
           <div className="app-container">
-            <Navbar onSignUpSuccess={() => handleLogin('student')} />
+            <Navbar onSignUpSuccess={(role) => handleLogin(role)} />
             <Hero />
             <Features />
             <HowItWorks />

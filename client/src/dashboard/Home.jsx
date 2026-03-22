@@ -27,6 +27,10 @@ const Home = ({ myEventsList }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const location = useLocation();
 
+    const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
+    const [userPhoto, setUserPhoto] = useState(localStorage.getItem('user_photo') || '');
+    const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'student');
+
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -36,12 +40,26 @@ const Home = ({ myEventsList }) => {
         img: 'https://i.pravatar.cc/300?img=47' 
     };
 
-    // Sync tab with location state
     useEffect(() => {
+        // Function to update state from localStorage
+        const syncUserData = () => {
+            setUserName(localStorage.getItem('user_name') || 'User');
+            setUserPhoto(localStorage.getItem('user_photo') || '');
+            setUserRole(localStorage.getItem('user_role') || 'student');
+        };
+
+        // Sync tab from location
         if (location.state && location.state.tab) {
             setActiveTab(location.state.tab);
         }
+
+        // Listen for changes from Profile.jsx or Navbar.tsx
+        window.addEventListener('storage', syncUserData);
+        return () => window.removeEventListener('storage', syncUserData);
     }, [location.state]);
+
+    // Avatar Logic
+    const avatarSrc = userPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${userName}`;
 
     // Consistently render content based on activeTab
     const renderContent = () => {
@@ -77,15 +95,17 @@ const Home = ({ myEventsList }) => {
                 <div className="sidebar-profile">
                     <div className="profile-img-container" onClick={() => setActiveTab('profile')} style={{cursor:'pointer'}}>
                         <img 
-                            src={sidebarUser.img} 
+                            src={avatarSrc}
                             alt="User Profile" 
                             className="profile-img"
                         />
                         <div className="status-indicator"></div>
                     </div>
                     <div className="profile-info">
-                        <h3>Hi, {sidebarUser.name}</h3>
-                        <p>Student Member</p>
+                        <h3>Hi, {userName.split(' ')[0]}</h3>
+                       <p className="sidebar-role-tag">
+                            {userRole === 'lecturer' ? 'University Lecturer' : 'Student Member'}
+                        </p>
                     </div>
                 </div>
 
@@ -139,7 +159,7 @@ const Home = ({ myEventsList }) => {
                             </a>
                         </li>
                         <li className="logout-item">
-                            <a href={`${API_URL}/auth/logout`}>
+                            <a href={`${API_URL}/auth/logout`} onClick={() => localStorage.clear()}>
                                 <Icon icon="lucide:log-out" width="20" />
                                 <span>Logout</span>
                             </a>

@@ -81,9 +81,14 @@ const Profile = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUser({ ...user, profileImage: URL.createObjectURL(file) });
-    }
-  };
+      const reader = new FileReader();
+    reader.onloadend = () => {
+      // This converts the image to a long string (Base64)
+      setUser({ ...user, profileImage: reader.result });
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -108,9 +113,13 @@ const Profile = () => {
 
       const result = await response.json();
       if (result.success) {
-        setUser(result.data); // Update UI with the data returned from mockUser update
+        setUser(result.data);
+        localStorage.setItem('user_name', result.data.name);
+        localStorage.setItem('user_photo', result.data.profileImage || "");
+        window.dispatchEvent(new Event("storage"));
+        
         setIsEditing(false);
-        alert("Profile Updated Successfully (Mock Data)!");
+        alert("Profile Updated Successfully ");
       }
     } catch (err) {
       console.error("Update error:", err);
@@ -118,21 +127,37 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div className="loading-screen">Loading Profile...</div>;
-  if (error) return <div className="error-screen">{error}</div>;
+  
 
+/* --- CHANGE: ADD FALLBACK IMAGE LOGIC --- */
+
+if (loading) return <div className="loading-screen">Loading Profile...</div>;
+if (error) return <div className="error-screen">{error}</div>;
+if (!user) return null;
+
+const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
+ 
   return (
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
         <div className="avatar-wrapper-lg" onClick={() => fileInputRef.current.click()}>
-          <img src={user.profileImage} alt="Profile" className="large-avatar" />
-          <div className="status-emoji"><Icon icon="lucide:camera" /></div>
+          
+          <img src={userAvatar} alt="Profile" className="large-avatar" />
+          <div className="status-emoji">
+            <Icon icon="lucide:camera" />
+          </div>
           <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*" />
         </div>
 
         <div className="sidebar-names">
           <h1>{user.name}</h1>
-          <p className="username">@{user.username}</p>
+          
+          {/* --- CHANGE: ADD DYNAMIC ROLE TAG --- */}
+          <p className="role-tag-badge">
+            {user.role === 'lecturer' ? 'University Lecturer' : 'Student Member'}
+          </p>
+
+          <p className="username">@{user.username || 'username'}</p>
           <p className="user-email">{user.email}</p>
         </div>
 
