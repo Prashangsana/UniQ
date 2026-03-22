@@ -142,6 +142,7 @@
   display: flex;
   flex-direction: column;
   width: calc(100% - 260px);
+  min-width: 0; /* lets flex child shrink so inner grids don’t force horizontal scroll */
 }
 
 .dashboard-header {
@@ -247,9 +248,11 @@
 
 .dashboard-content {
   flex: 1;
-  padding: 2rem;
+  padding: clamp(1rem, 2.5vw, 2rem);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .content-section {

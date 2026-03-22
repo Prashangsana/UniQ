@@ -25,8 +25,22 @@
 .row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .row-header h2 { font-size: 25px; }
 .row-header button { background: none; border: none; color: #2431e4; cursor: pointer; font-size: 14px; }
-.row-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.empty-state { grid-column: span 3; padding: 40px; background: #ffffff; border: 2px dashed #cbd5e0; border-radius: 20px; text-align: center; color: #718096; }
+/* One full-width row; inner .row-grid handles responsive card columns */
+.row-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+  min-width: 0;
+}
+.empty-state {
+  padding: 40px;
+  background: #ffffff;
+  border: 2px dashed #cbd5e0;
+  border-radius: 20px;
+  text-align: center;
+  color: #718096;
+}
 
 /* --- SIDEBAR SECTION STYLES --- */
 .sidebar-section { margin-bottom: 30px; }
