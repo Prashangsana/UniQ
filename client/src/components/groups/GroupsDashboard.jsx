@@ -17,7 +17,9 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
   useEffect(() => {
     const fetchInvites = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/invites/my');
+        const response = await fetch('http://localhost:5000/api/invites/my', {
+          credentials: 'include'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -31,7 +33,9 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     const fetchMyGroups = async () => {
       try {
         setLoadingGroups(true);
-        const response = await fetch('http://localhost:5000/api/groups/my');
+        const response = await fetch('http://localhost:5000/api/groups/my', {
+          credentials: 'include'
+        });
         const data = await response.json();
         if (data.success) setMyGroups(data.data);
       } catch (error) {
@@ -44,7 +48,9 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     // Fetch only modules that have an Open Group Project
     const fetchOpenModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/modules/open');
+        const response = await fetch('http://localhost:5000/api/modules/open', {
+          credentials: 'include'
+        });
         const data = await response.json();
         if (data.success) {
           setModules(data.data);

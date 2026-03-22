@@ -1,16 +1,17 @@
 const mongoose = require('mongoose');
 
-const groupProjectSchema = new mongoose.Schema({
-  moduleId: { type: String, required: true, unique: true },
-  minMembers: { type: Number, required: true, default: 3 },
-  maxMembers: { type: Number, required: true, default: 5 },
+const GroupProjectSchema = new mongoose.Schema({
+  moduleId: { 
+    type: String, // Or mongoose.Schema.Types.ObjectId if you prefer
+    required: true,
+    unique: true 
+  },
+  minMembers: { type: Number, default: 3 },
+  maxMembers: { type: Number, default: 5 },
   deadline: { type: Date, required: true },
+  allowedPrefixes: { type: [String], default: ["SE", "CS", "AI"] },
   isOpen: { type: Boolean, default: true },
-  
-  // Accepts an array of prefixes (e.g., ["SE", "CS", "DS"])
-  allowedPrefixes: [{ type: String, required: true }], 
-  
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-module.exports = mongoose.model('GroupProject', groupProjectSchema);
+module.exports = mongoose.model('GroupProject', GroupProjectSchema);

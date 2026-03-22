@@ -1,4 +1,6 @@
 const Group = require('../models/Group');
+const GroupProject = require('../models/GroupProject');
+const Module = require('../models/Module');
 
 /**
  * @desc    Create a new group for a module
@@ -39,8 +41,8 @@ exports.createGroup = async (req, res) => {
       moduleId,
       domain,
       maxMembers,
-      leader: userId,
-      members: [userId] // Add creator to members array
+      leader: req.user._id,
+      members: [req.user._id] // Add creator to members array
     });
 
     res.status(201).json({ success: true, data: newGroup });
@@ -105,5 +107,72 @@ exports.getGroupDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+// GET /api/modules/open
+exports.getOpenModules = async (req, res) => {
+  try {
+    // This finds all modules that have a GroupProject created by a lecturer
+    const projects = await GroupProject.find({ isOpen: true }).select('moduleId');
+    const moduleIds = projects.map(p => p.moduleId);
+    
+    const modules = await Module.find({ _id: { $in: moduleIds } });
+    res.status(200).json({ success: true, data: modules });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET /api/groups/my
+exports.getMyAllGroups = async (req, res) => {
+  try {
+    const myGroups = await Group.find({ members: req.user.id });
+    res.status(200).json({ success: true, data: myGroups });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET /api/modules/:moduleId/my-group
+exports.getMyGroup = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+    const userId = req.user.id;
+
+    // Find the group in this module where the current student is a member
+    const myGroup = await Group.findOne({ 
+      moduleId: moduleId, 
+      members: userId 
+    }).populate('members', 'name email skills bio');
+
+    // If no group found, returning success:true with null data is expected by the frontend
+    res.status(200).json({ success: true, data: myGroup || null });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error fetching your group' });
+  }
+};
+
+// GET /api/modules/:moduleId/available-students
+exports.getAvailableStudents = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+
+    // 1. Get IDs of all students already in a group for this module
+    const groups = await Group.find({ moduleId }).select('members');
+    const studentIdsInGroups = groups.flatMap(g => g.members);
+
+    // 2. Find students who are NOT in that list
+    const availableStudents = await User.find({
+      role: 'student',
+      _id: { 
+        $nin: studentIdsInGroups, 
+        $ne: req.user._id
+      }
+    }).select('name email skills bio');
+
+    res.status(200).json({ success: true, count: availableStudents.length, data: availableStudents });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error fetching students' });
   }
 };

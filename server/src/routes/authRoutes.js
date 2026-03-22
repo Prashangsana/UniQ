@@ -1,9 +1,11 @@
 const express = require('express');
 const passport = require('passport');
-const { googleCallback, getMe, logout } = require('../controllers/authController');
+const { googleCallback, getMe, logout, localEmailLogin } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+router.post('/local', localEmailLogin);
 
 router.get('/google',
   passport.authenticate('google', { 

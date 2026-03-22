@@ -5,18 +5,52 @@ const Module = require('../models/Module'); // Need to import the Admin's model
 // GET /api/lecturer/my-modules
 exports.getMyModules = async (req, res) => {
   try {
-    // Find modules where this user is EITHER a leader OR in the team
+    const lecturerId = req.user._id || req.user.id;
+
+    console.log("Searching modules for Lecturer ID:", lecturerId);
+
     const authorizedModules = await Module.find({
       $or: [
-        { moduleLeaders: req.user.id },
-        { moduleTeam: req.user.id }
+        { moduleLeaders: lecturerId },
+        { moduleTeam: lecturerId }
       ]
-    }).select('_id name'); // We only need the ID and Name for the dropdown
+    }).select('_id name');
 
-    res.status(200).json({ success: true, data: authorizedModules });
+    console.log("Modules found in DB:", authorizedModules);
+
+    res.status(200).json({ 
+      success: true, 
+      count: authorizedModules.length, 
+      data: authorizedModules 
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error fetching modules' });
+  }
+};
+
+exports.getLecturerGroups = async (req, res) => {
+  try {
+    const lecturerId = req.user.id;
+
+    const myModules = await Module.find({
+      $or: [{ moduleLeaders: lecturerId }, { moduleTeam: lecturerId }]
+    }).select('_id');
+
+    const myModuleIds = myModules.map(m => m._id);
+    
+    const relevantGroups = await Group.find({ moduleId: { $in: myModuleIds } })
+      .populate('members', 'name email');
+
+    res.status(200).json({ 
+      success: true, 
+      data: {
+        pending: relevantGroups.filter(g => g.status === 'pending_review'),
+        finalised: relevantGroups.filter(g => g.status === 'finalised')
+      } 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -32,17 +66,20 @@ exports.createGroupProject = async (req, res) => {
       return res.status(400).json({ success: false, message: 'A group project is already open for this module.' });
     }
 
-    const newProject = await GroupProject.create({
-      moduleId,
-      minMembers,
-      maxMembers,
-      deadline,
-      allowedPrefixes: allowedPrefixes || ["SE", "CS"], // Save the array of prefixes
-      isOpen: true,
-      createdBy: req.user.id
-    });
+    const project = await GroupProject.findOneAndUpdate(
+      { moduleId },
+      { 
+        minMembers, 
+        maxMembers, 
+        deadline, 
+        allowedPrefixes, 
+        isOpen: true, 
+        createdBy: req.user.id 
+      },
+      { upsert: true, new: true }
+    );
 
-    res.status(201).json({ success: true, data: newProject });
+    res.status(201).json({ success: true, data: project });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error creating group project' });
@@ -89,7 +126,7 @@ exports.reviewGroup = async (req, res) => {
       // COUNTING LOGIC: Count only finalised groups in THIS module with THIS SPECIFIC prefix
       const count = await Group.countDocuments({ 
         moduleId: group.moduleId, 
-        isFinalised: true,
+        status: 'finalised',
         prefix: group.prefix // Important: Only count SEs if this is an SE, etc.
       });
       
@@ -110,4 +147,8 @@ exports.reviewGroup = async (req, res) => {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error reviewing group' });
   }
+};
+
+exports.getGroupProjects = async (req, res) => {
+  res.status(200).json({ success: true, data: groupProjectsDb });
 };

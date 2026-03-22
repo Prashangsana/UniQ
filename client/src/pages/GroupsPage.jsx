@@ -12,7 +12,9 @@ import FinalisationFormView from '../components/groups/FinalisationFormView';
 const GroupsPage = () => {
   // --- ROLE STATE ---
   // Defaulting to 'student'. In the future, you will fetch this from your auth context/backend!
-  const [userRole, setUserRole] = useState('student'); 
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem('user_role') || 'student';
+  });
 
   // State: 'dashboard', 'module', 'group', 'invite', 'profile'
   const [view, setView] = useState('dashboard');
@@ -60,6 +62,7 @@ const GroupsPage = () => {
       // Data here is { selectedPrefix, tutorialGroup, memberExtraInfo }
       const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/submit-finalisation`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data) // Sends the structured object
       });

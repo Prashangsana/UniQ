@@ -22,8 +22,15 @@ const LecturerDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem('token');
+
         // Fetch Lecturer's Modules
-        const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules');
+        const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules', {
+          credentials: 'include',
+          headers:{
+            'Content-Type': 'application/json'
+          }
+        });
         const modData = await modRes.json();
         if (modData.success) {
           setMyModules(modData.data);
@@ -31,7 +38,12 @@ const LecturerDashboard = () => {
         }
 
         // Fetch Groups (Pending & Finalised)
-        const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups');
+        const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups', {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
         const grpData = await grpRes.json();
         if (grpData.success) {
           setPendingGroups(grpData.data.pending);
@@ -54,12 +66,17 @@ const LecturerDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/lecturer/modules/${moduleId}/group-project`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ minMembers, maxMembers, deadline, allowedPrefixes: prefixArray, moduleName: selectedModule?.name })
       });
       const data = await response.json();
       if (data.success) {
-        alert(`Success! Project for ${moduleId} opened for students!`);
+        alert(`Success! Project for ${selectedModule?.name || moduleId} opened for students!`);
+      } else {
+        alert(`Error: ${data.message}`);
       }
     } catch (error) {
       console.error("Frontend Fetch Error:", error);
@@ -72,7 +89,10 @@ const LecturerDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/review`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ action, feedback: action === 'reject' ? "Please adjust members" : "Approved" })
       });
       const data = await response.json();

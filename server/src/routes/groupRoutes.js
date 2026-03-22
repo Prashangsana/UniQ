@@ -5,13 +5,9 @@ const router = express.Router();
 // const { createGroup, getModuleGroups, getGroupDetails } = require('../controllers/groupController');
 
 // USING THE MOCK CONTROLLER INSTEAD
-const { getOpenModules, createGroup, getModuleGroups, getGroupDetails, getAvailableStudents, getMyGroup, getMyAllGroups } = require('../controllers/mockGroupController');
+const { getOpenModules, createGroup, getModuleGroups, getGroupDetails, getAvailableStudents, getMyGroup, getMyAllGroups } = require('../controllers/groupController');
 
-// COMMENTING OUT THE REAL ONE FOR NOW:
-// const { protect } = require('../middleware/authMiddleware');
-
-// USING THE MOCK ONE INSTEAD:
-const { protect } = require('../middleware/mockAuthMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 // Apply the mock authentication to all routes below
 router.use(protect);

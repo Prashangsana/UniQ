@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { createGroupProject, submitFinalisation, reviewGroup, getMyModules, getLecturerGroups } = require('../controllers/mockLecturerController');
-const { protect } = require('../middleware/mockAuthMiddleware');
-const { isLecturer } = require('../middleware/mockLecturerMiddleware');
+const { createGroupProject, submitFinalisation, reviewGroup, getMyModules, getLecturerGroups } = require('../controllers/lecturerController');
+const { protect } = require('../middleware/authMiddleware');
+const { isLecturer } = require('../middleware/lecturerMiddleware');
 
 router.use(protect); // All routes require login
 
