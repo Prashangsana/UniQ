@@ -50,12 +50,12 @@ exports.getPublicProfile = async (req, res) => {
 };
 
 exports.updateUserProfile = async (req, res) => {
-  try {
+  try  {
     const dbUser = await User.findByIdAndUpdate(
       req.user._id, 
-      req.body, 
+      { $set: req.body }, // Explicitly set the fields
       { new: true, runValidators: true }
-    );
+    ).lean();
   res.status(200).json({
       success: true,
       message: "Saved to Atlas!",

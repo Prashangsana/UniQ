@@ -114,8 +114,9 @@ const Profile = () => {
       const result = await response.json();
       if (result.success) {
         setUser(result.data);
+        const finalPhoto = result.data.profileImage || result.data.photo || "";
         localStorage.setItem('user_name', result.data.name);
-        localStorage.setItem('user_photo', result.data.profileImage || result.data.photo ||"");
+        localStorage.setItem('user_photo', finalPhoto);
         window.dispatchEvent(new Event("storage"));
         
         setIsEditing(false);
