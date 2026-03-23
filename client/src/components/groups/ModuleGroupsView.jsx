@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './groups.css';
 
-const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
+const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, currentUser }) => {
   const [moduleGroups, setModuleGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // MATCH THIS TO IMASHA'S ID
-  const CURRENT_USER_ID = "user_id_student_1";
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/modules/${module._id}/groups`);
+        const response = await fetch(`http://localhost:5000/api/modules/${module._id}/groups`, {
+          credentials: 'include' 
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -38,7 +37,7 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
 
   // Smart check to see if you are already in a group here
   const isAlreadyInGroup = moduleGroups.some(g => 
-    g.members && g.members.some(m => (m._id || m) === CURRENT_USER_ID)
+    g.members && g.members.some(m => (m._id || m) === currentUser?._id)
   );
 
   return (
@@ -71,7 +70,7 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
             if (!group) return null; // Failsafe
             
             // Checks if Imasha is in this specific card
-            const isMyGroup = group.members && group.members.some(m => (m._id || m) === CURRENT_USER_ID);
+            const isMyGroup = group.members && group.members.some(m => (m._id || m) === currentUser?._id);
 
             return (
               <div 

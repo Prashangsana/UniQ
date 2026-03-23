@@ -2,20 +2,18 @@ import React, { useState, useEffect } from 'react';
 import './groups.css';
 import GroupsSidebar from './GroupsSidebar';
 
-const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFindMembers, onFinalise }) => {
+const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFindMembers, onFinalise, currentUser }) => {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
-
-  // MATCH THIS TO IMASHA'S ID
-  const CURRENT_USER_ID = "user_id_student_1"; 
 
   const handleLeaveGroup = async () => {
     if(window.confirm(`Are you sure you want to leave ${group.name}?`)) {
       try {
         const response = await fetch(`http://localhost:5000/api/groups/${group._id}/leave`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         });
         const data = await response.json();
         
@@ -36,7 +34,8 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
     try {
       const response = await fetch(`http://localhost:5000/api/groups/${group._id}/request`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
       const data = await response.json();
       alert(data.message);
@@ -50,10 +49,14 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   useEffect(() => {
     const fetchGroupDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/${initialGroupData._id}`);
+        const response = await fetch(`http://localhost:5000/api/groups/${initialGroupData._id}`, {
+          credentials: 'include' 
+        });
         const data = await response.json();
         if (data.success) {
           setGroup(data.data);
+        } else {
+          console.error("Server returned error:", data.message);
         }
       } catch (error) {
         console.error(error);
@@ -61,19 +64,36 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
         setLoading(false);
       }
     };
-    if(initialGroupData && initialGroupData._id) fetchGroupDetails();
+    if(initialGroupData && initialGroupData._id) {
+      fetchGroupDetails();
+    } else {
+      setLoading(false);
+    }
   }, [initialGroupData]);
 
-  if (loading || !group) return <div className="gf-main" style={{padding: '3rem', textAlign: 'center'}}>Loading group details...</div>;
+  if (loading) return <div className="gf-main">Loading group details...</div>;
+  if (!group) return <div className="gf-main">Group not found.</div>;
 
-  // SMART MEMBERSHIP CHECK
-  const isMember = group.members.some(m => (m._id || m) === CURRENT_USER_ID);
-  const isLeader = group.leader && (group.leader._id === CURRENT_USER_ID || group.leader === CURRENT_USER_ID);
+  const myId = (currentUser?._id || currentUser?.id)?.toString();
+
+  // Check if current user is in the group.members array
+  const isMember = group?.members?.some(m => {
+    // The member 'm' could be an ID string OR a populated object with _id
+    const memberId = (m._id || m).toString(); 
+    return memberId === myId;
+  });
+
+  // Check if current user is the leader
+  const groupLeaderId = (group?.leader?._id || group?.leader)?.toString();
+  const isLeader = groupLeaderId === myId;
+
+  const vacantSlots = Math.max(0, group.maxMembers - group.members.length);
 
   return (
     <div className="gf-layout">
       <div className="gf-main">
         <button className="gf-btn-back" onClick={onBack}>&larr; Back</button>
+        
         <div className="gf-header" style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
           <div>
             <h2>{group.name}</h2>
@@ -106,8 +126,12 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
                 )}
               </div>
             ) : (
-              <button className="gf-btn-primary" onClick={handleRequestJoin} disabled={requesting}>
-                {requesting ? 'Sending...' : 'Request to Join'}
+              <button 
+                className="gf-btn-primary" 
+                onClick={handleRequestJoin} 
+                disabled={requesting}
+              >
+                {requesting ? 'Sending Request...' : 'Request to Join'}
               </button>
             )}
           </div>
@@ -137,8 +161,22 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
             <div 
               key={`vac-${i}`} 
               className="gf-card-simple" 
-              style={{borderStyle:'dashed', display:'flex', alignItems:'center', justifyContent:'center', color:'#94a3b8', cursor: isMember ? 'pointer' : 'default'}} 
-              onClick={() => isMember && onFindMembers(group.moduleId, group._id)}
+              style={{
+                borderStyle:'dashed', 
+                display:'flex', 
+                alignItems:'center', 
+                justifyContent:'center', 
+                color:'#94a3b8', 
+                cursor: isMember ? 'pointer' : 'default'
+              }} 
+              onClick={() => {
+                console.log("Is Member?", isMember); // Debugging line
+                if (isMember) {
+                  onFindMembers(group.moduleId, group._id);
+                } else {
+                  alert("Only group members can invite others.");
+                }
+              }}
             >
               {isMember ? '+ Find Member' : 'Empty Spot'}
             </div>

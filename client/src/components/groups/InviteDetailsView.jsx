@@ -11,7 +11,8 @@ const InviteDetailsView = ({ invite, onBack }) => {
       // Action will be either 'accept' or 'reject'
       const response = await fetch(`http://localhost:5000/api/invites/${invite._id}/${action}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
       
       const data = await response.json();

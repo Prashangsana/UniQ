@@ -3,7 +3,7 @@ import './groups.css';
 
 const domains = ['Machine Learning', 'Web Development', 'Mobile App', 'Cyber Security', 'UI/UX Design', 'Data Science'];
 
-const CreateGroupView = ({ module, onBack }) => {
+const CreateGroupView = ({ module, onBack, onSuccess }) => {
   const [groupName, setGroupName] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('');
   const [maxMembers, setMaxMembers] = useState(5); // Added maxMembers state
@@ -16,17 +16,16 @@ const CreateGroupView = ({ module, onBack }) => {
     setLoading(true);
 
     try {
-      // API Call to Stage 1 Backend
       const response = await fetch('http://localhost:5000/api/groups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           name: groupName,
           moduleId: module._id,
-          domain: selectedDomain,
-          maxMembers: maxMembers
+          domain: selectedDomain
         })
       });
 
@@ -34,7 +33,8 @@ const CreateGroupView = ({ module, onBack }) => {
 
       if (data.success) {
         alert(`Success! Group "${groupName}" created!`);
-        onBack(); // Go back to the module view to see the new group
+        if (onSuccess) onSuccess();
+        else onBack(); // Go back to the module view to see the new group
       } else {
         alert(`Error: ${data.message}`);
       }

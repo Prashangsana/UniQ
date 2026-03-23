@@ -5,7 +5,7 @@ const router = express.Router();
 // const { createGroup, getModuleGroups, getGroupDetails } = require('../controllers/groupController');
 
 // USING THE MOCK CONTROLLER INSTEAD
-const { getOpenModules, createGroup, getModuleGroups, getGroupDetails, getAvailableStudents, getMyGroup, getMyAllGroups } = require('../controllers/groupController');
+const { getOpenModules, createGroup, getModuleGroups, getGroupDetails, getAvailableStudents, getMyGroup, getMyAllGroups, leaveGroup } = require('../controllers/groupController');
 
 const { protect } = require('../middleware/authMiddleware');
 
@@ -24,5 +24,6 @@ router.get('/modules/:moduleId/my-group', getMyGroup);
 
 // 3. Dynamic Routes (Must go last!)
 router.get('/groups/:groupId', getGroupDetails);
+router.post('/groups/:groupId/leave', leaveGroup);
 
 module.exports = router;

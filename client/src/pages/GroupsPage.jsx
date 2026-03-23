@@ -10,8 +10,35 @@ import LecturerDashboard from '../components/groups/LecturerDashboard';
 import FinalisationFormView from '../components/groups/FinalisationFormView';
 
 const GroupsPage = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/auth/me', {
+          credentials: 'include'
+        });
+
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+        const data = await res.json();
+
+        if (data.authenticated && data.user) {
+          const user = data.user;
+          const normalizedUser = {
+            ...user,
+            _id: user._id || user.id // Your backend sends 'id', so this maps it to '_id'
+          };
+          setCurrentUser(normalizedUser);
+        }
+      } catch (err) {
+        console.error("Auth error", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   // --- ROLE STATE ---
-  // Defaulting to 'student'. In the future, you will fetch this from your auth context/backend!
   const [userRole, setUserRole] = useState(() => {
     return localStorage.getItem('user_role') || 'student';
   });
@@ -112,6 +139,7 @@ const GroupsPage = () => {
       {view === 'module' && (
         <ModuleGroupsView
           module={selectedModule}
+          currentUser={currentUser}
           onBack={() => setView('dashboard')}
           onSelectGroup={(group) => handleGroupClick(group, 'module')}
           onCreateGroup={() => handleCreateGroupClick(selectedModule)}
@@ -121,6 +149,7 @@ const GroupsPage = () => {
       {view === 'group' && (
         <GroupDetailsView
           group={selectedGroup}
+          currentUser={currentUser}
           onBack={() => setView(originView)}
           onViewProfile={handleProfileClick}
           onFindMembers={handleFindMembers}
@@ -139,7 +168,11 @@ const GroupsPage = () => {
 
       {view === 'create-group' && (
         <CreateGroupView 
-          module={selectedModule} 
+          module={selectedModule}
+          onSuccess={() => {
+            setView('module');
+            setSelectedModule({...selectedModule}); 
+          }} 
           onBack={() => setView('module')} 
         />
       )}

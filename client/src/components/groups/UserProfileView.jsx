@@ -10,7 +10,8 @@ const UserProfileView = ({ user, type, onBack }) => {
       // action will be either 'approve' or 'reject'
       const response = await fetch(`http://localhost:5000/api/requests/${user.requestId}/${action}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
       
       const data = await response.json();
@@ -32,7 +33,8 @@ const UserProfileView = ({ user, type, onBack }) => {
       const response = await fetch(`http://localhost:5000/api/groups/${user.targetGroupId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user._id }) 
+        credentials: 'include',
+        body: JSON.stringify({ invitedUserId: user._id }) // Match your controller's req.body.invitedUserId
       });
       
       const data = await response.json();

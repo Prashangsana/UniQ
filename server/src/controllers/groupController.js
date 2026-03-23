@@ -1,6 +1,7 @@
 const Group = require('../models/Group');
 const GroupProject = require('../models/GroupProject');
 const Module = require('../models/Module');
+const User = require('../models/User');
 
 /**
  * @desc    Create a new group for a module
@@ -9,8 +10,19 @@ const Module = require('../models/Module');
  */
 exports.createGroup = async (req, res) => {
   try {
-    const { name, moduleId, domain, maxMembers } = req.body;
-    const userId = req.user.id; // Extracted from JWT auth middleware
+    const { name, moduleId, domain } = req.body;
+    const userId = req.user._id || req.user.id; // Extracted from JWT auth middleware
+
+    const project = await GroupProject.findOne({ moduleId: moduleId });
+    if (!project) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No active group project found for this module.' 
+      });
+    }
+
+    // Use the maxMembers defined by the lecturer in the GroupProject
+    const allowedMaxMembers = project.maxMembers;
 
     // Constraint Check: Prevent a user from being in more than one group per module.
     // We check if a group exists for this module where the members array includes this userId.
@@ -40,9 +52,9 @@ exports.createGroup = async (req, res) => {
       name,
       moduleId,
       domain,
-      maxMembers,
-      leader: req.user._id,
-      members: [req.user._id] // Add creator to members array
+      maxMembers: allowedMaxMembers,
+      leader: userId,
+      members: [userId] // Add creator to members array
     });
 
     res.status(201).json({ success: true, data: newGroup });
@@ -174,5 +186,39 @@ exports.getAvailableStudents = async (req, res) => {
     res.status(200).json({ success: true, count: availableStudents.length, data: availableStudents });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error fetching students' });
+  }
+};
+
+exports.leaveGroup = async (req, res) => {
+  try {
+    // /api/groups/:groupId/leave, use req.params.groupId
+    const group = await Group.findById(req.params.groupId);
+    
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+
+    // Identify the user leaving (using normalized ID from auth middleware)
+    const userId = (req.user._id || req.user.id).toString();
+
+    group.members = group.members.filter(m => m.toString() !== userId);
+
+    if (group.members.length === 0) {
+      await Group.findByIdAndDelete(req.params.groupId);
+      return res.status(200).json({ 
+        success: true, 
+        message: 'You were the last member. The group has been disbanded.' 
+      });
+    }
+
+    if (group.leader.toString() === userId) {
+      group.leader = group.members[0];
+    }
+
+    await group.save();
+    res.status(200).json({ success: true, message: 'You left the group successfully.' });
+  } catch (error) {
+    console.error("Leave Group Error:", error);
+    res.status(500).json({ success: false, message: 'Server Error: Could not leave group.' });
   }
 };

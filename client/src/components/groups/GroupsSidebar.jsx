@@ -10,7 +10,9 @@ const GroupsSidebar = ({ type, invites, groupId, onSelectInvite, onViewProfile }
   useEffect(() => {
     if (type === 'group' && groupId) {
       setLoading(true);
-      fetch(`http://localhost:5000/api/groups/${groupId}/requests`)
+      fetch(`http://localhost:5000/api/groups/${groupId}/requests`, {
+        credentials: 'include'
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success) setRequests(data.data);
