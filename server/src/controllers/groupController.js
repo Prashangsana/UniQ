@@ -139,7 +139,8 @@ exports.getOpenModules = async (req, res) => {
 // GET /api/groups/my
 exports.getMyAllGroups = async (req, res) => {
   try {
-    const myGroups = await Group.find({ members: req.user.id });
+    const userId = req.user._id || req.user.id;
+    const myGroups = await Group.find({ members: userId });
     res.status(200).json({ success: true, data: myGroups });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

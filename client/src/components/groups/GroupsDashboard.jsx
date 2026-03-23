@@ -22,8 +22,10 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
         });
         const data = await response.json();
         
-        if (data.success) {
+        if (data.success && Array.isArray(data.data)) {
           setInvites(data.data);
+        } else {
+          setInvites([]); // Fallback to empty array to prevent .map() errors
         }
       } catch (error) {
         console.error("Failed to fetch invites:", error);
@@ -48,7 +50,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     // Fetch only modules that have an Open Group Project
     const fetchOpenModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/modules/open', {
+        const response = await fetch('http://localhost:5000/api/groups/modules/open', {
           credentials: 'include'
         });
         const data = await response.json();

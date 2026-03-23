@@ -43,9 +43,9 @@ app.use('/api/societies', societyRoutes);
 app.use('/api/events', eventRoutes);
 
 // 6. Mount Grouping & Lecturer APIs
-app.use('/api', groupRoutes);
-app.use('/api', require('./src/routes/requestRoutes'));
-app.use('/api', require('./src/routes/inviteRoutes'));
+app.use('/api/groups', groupRoutes);
+app.use('/api/requests', require('./src/routes/requestRoutes'));
+app.use('/api/invites', require('./src/routes/inviteRoutes'));
 app.use('/api/lecturer', require('./src/routes/lecturerRoutes'));
 
 // 7. Global Error Handler (Must be placed after all routes)

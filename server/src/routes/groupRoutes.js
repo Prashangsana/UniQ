@@ -15,7 +15,7 @@ router.use(protect);
 // 1. Static Routes (Must go first!)
 router.get('/modules/open', getOpenModules);
 router.post('/groups', createGroup);
-router.get('/groups/my', getMyAllGroups);
+router.get('/my', getMyAllGroups);
 
 // 2. Module Routes
 router.get('/modules/:moduleId/groups', getModuleGroups);

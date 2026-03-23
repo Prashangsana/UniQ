@@ -1,76 +1,56 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-// const Event = require('./src/models/Event');
-// const Society = require('./src/models/Society');
 const User = require('./src/models/User');
 const Module = require('./src/models/Module');
-
-// const eventsData = require('./src/mockData/events.json');
-// const societiesData = require('./src/mockData/societies.json');
+const Group = require('./src/models/Group'); 
+const GroupInvite = require('./src/models/GroupInvite'); 
 
 const seedDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB for seeding...');
 
-    // 1. Define the real IDs from database
-    const LECTURER_ID = "69be8cebbc176eb561e10766"; // Nilakshi
-    const STUDENT_ID = "69bf99106b7da0a63541b001"; // Prabhavi
+    const LECTURER_ID = "69be8cebbc176eb561e10766"; 
+    const STUDENT_ID = "69bf99106b7da0a63541b001"; 
 
-    // Clear existing data (optional, but good for fresh start)
-    // await Event.deleteMany({});
-    // await Society.deleteMany({});
-    // await User.deleteMany({});
+    // Clear existing to prevent duplicates
     await Module.deleteMany({});
+    await Group.deleteMany({});
+    await GroupInvite.deleteMany({});
 
-    // Create a Module linked to Lecturer
+    // 1. Create Module
     const seModule = await Module.create({
-      _id: '5COSC019C', // The module code
+      _id: '5COSC019C',
       name: 'Software Engineering Group Project',
-      moduleLeaders: [LECTURER_ID], // Now Nilakshi is authorized
-      moduleTeam: []
+      moduleLeaders: [LECTURER_ID]
     });
 
-    console.log(`Module ${seModule._id} seeded and assigned to Nilakshi!`);
+    // 2. Create a Group (Nilakshi as leader for testing)
+    const testGroup = await Group.create({
+      name: "Alpha Developers",
+      domain: "FinTech",
+      moduleId: seModule._id,
+      leader: LECTURER_ID,
+      members: [LECTURER_ID],
+      maxMembers: 4,
+      status: 'open'
+    });
 
+    // 3. Create a Manual Invite to Prabhavi
+    await GroupInvite.create({
+      group: testGroup._id,
+      invitedUser: STUDENT_ID,
+      message: "Hey Prabhavi! We saw your React skills and want you in Alpha Developers.",
+      status: 'pending'
+    });
+
+    // Update Prabhavi's skills
     await User.findByIdAndUpdate(STUDENT_ID, {
       skills: ["Node.js", "React", "MongoDB", "UI/UX Design"],
       bio: "Software Engineering student interested in Full-stack development."
-    })
+    });
 
-    // 1. Insert Societies
-    // const societyMap = {};
-
-    /*
-    for (const s of societiesData) {
-      const society = new Society({
-        name: s.name,
-        shortName: s.shortName,
-        description: s.description,
-        logo: s.logo,
-        leader: s.leader,
-        followersCount: s.followersCount
-      });
-      const savedSociety = await society.save();
-      societyMap[s._id] = savedSociety._id;
-    }
-    console.log('Societies seeded!');
-    
-
-    // 2. Insert Events
-    const eventsToInsert = eventsData.map(e => ({
-      title: e.title,
-      date: new Date(e.date),
-      society: societyMap[e.society] || e.society, // Use mapped ObjectId if available
-      bannerImage: e.bannerImage,
-      createdAt: e.createdAt ? new Date(e.createdAt) : new Date()
-    }));
-
-    await Event.insertMany(eventsToInsert);
-    console.log('Events seeded!');
-    */
-
-    console.log('Seeding completed successfully!');
+    console.log('Seeding complete: Module, Group, and Invite created!');
     process.exit();
   } catch (error) {
     console.error('Error seeding database:', error);

@@ -32,7 +32,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const handleRequestJoin = async () => {
     setRequesting(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/groups/${group._id}/request`, {
+      const response = await fetch(`http://localhost:5000/api/requests/groups/${group._id}/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -49,7 +49,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   useEffect(() => {
     const fetchGroupDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/${initialGroupData._id}`, {
+        const response = await fetch(`http://localhost:5000/api/groups/groups/${initialGroupData._id}`, {
           credentials: 'include' 
         });
         const data = await response.json();

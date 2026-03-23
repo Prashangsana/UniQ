@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './groups.css';
 import { deadlines } from '../../data/mockGroups';
 
-const GroupsSidebar = ({ type, invites, groupId, onSelectInvite, onViewProfile }) => {
+const GroupsSidebar = ({ type, invites, groupId, moduleId, onSelectInvite, onViewProfile }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -10,7 +10,7 @@ const GroupsSidebar = ({ type, invites, groupId, onSelectInvite, onViewProfile }
   useEffect(() => {
     if (type === 'group' && groupId) {
       setLoading(true);
-      fetch(`http://localhost:5000/api/groups/${groupId}/requests`, {
+      fetch(`http://localhost:5000/api/requests/groups/${groupId}/requests`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -23,7 +23,18 @@ const GroupsSidebar = ({ type, invites, groupId, onSelectInvite, onViewProfile }
           setLoading(false);
         });
     }
-  }, [type, groupId]);
+    if (type === 'module' && moduleId) {
+        setLoading(true);
+        // Fetch students who have posted "looking for group" requests for this module
+        fetch(`http://localhost:5000/api/groups/modules/${moduleId}/available-students`, { credentials: 'include' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) setRequests(data.data);
+            setLoading(false);
+          })
+          .catch(() => setLoading(false));
+    }
+  }, [type, groupId, moduleId]);
 
   return (
     <aside className="gf-sidebar">
@@ -40,11 +51,11 @@ const GroupsSidebar = ({ type, invites, groupId, onSelectInvite, onViewProfile }
                 onClick={() => onSelectInvite(invite)} /* Clickable Invite */
               >
                 <div style={{display:'flex', justifyContent:'space-between'}}>
-                  <strong>{invite.groupId}</strong>
+                  <strong>{invite.group?.name || "Unknown Group"}</strong>
                   <small style={{color:'#5b7cbd'}}>View Details &rarr;</small>
                 </div>
                 <div style={{fontSize:'0.85rem', color:'#64748b', marginTop:'4px'}}>
-                  {invite.domain} • {invite.members} members
+                  {invite.group?.domain} • {invite.group?.members?.length} members
                 </div>
               </div>
             ))

@@ -11,32 +11,7 @@ import FinalisationFormView from '../components/groups/FinalisationFormView';
 
 const GroupsPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/auth/me', {
-          credentials: 'include'
-        });
-
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-        const data = await res.json();
-
-        if (data.authenticated && data.user) {
-          const user = data.user;
-          const normalizedUser = {
-            ...user,
-            _id: user._id || user.id // Your backend sends 'id', so this maps it to '_id'
-          };
-          setCurrentUser(normalizedUser);
-        }
-      } catch (err) {
-        console.error("Auth error", err);
-      }
-    };
-    fetchProfile();
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   // --- ROLE STATE ---
   const [userRole, setUserRole] = useState(() => {
@@ -60,6 +35,36 @@ const GroupsPage = () => {
   const [rosterModuleId, setRosterModuleId] = useState(null);
   const [rosterGroupId, setRosterGroupId] = useState(null);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/auth/me', {
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user) {
+            setCurrentUser({
+              ...data.user,
+              _id: data.user._id || data.user.id
+            });
+          }
+        } else {
+          // If auth fails, we still want to stop loading so the page shows something
+          console.warn("User not authenticated");
+        }
+      } catch (err) {
+        console.error("Auth error", err);
+      } finally {
+        setLoading(false); 
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  if (loading) return <div className="loading-screen">Loading Profile...</div>;
+
   // --- Handlers ---
   const handleProfileClick = (user) => {
     setSelectedUser(user);
@@ -80,6 +85,7 @@ const GroupsPage = () => {
   };
 
   const handleCreateGroupClick = (module) => {
+    console.log("Selected Module:", module);
     setSelectedModule(module);
     setView('create-group');
   };
@@ -143,6 +149,11 @@ const GroupsPage = () => {
           onBack={() => setView('dashboard')}
           onSelectGroup={(group) => handleGroupClick(group, 'module')}
           onCreateGroup={() => handleCreateGroupClick(selectedModule)}
+          onViewProfile={handleProfileClick}
+          onSelectInvite={(invite) => {
+            setSelectedInvite(invite);
+            setView('invite');
+          }}
         />
       )}
 
@@ -203,6 +214,7 @@ const GroupsPage = () => {
       {view === 'dashboard' && (
         <GroupsDashboard
           onSelectModule={(m) => {
+            if (!m) return;
             setSelectedModule(m);
             setView('module');
           }}
