@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const User = require('./src/models/User');
 const Module = require('./src/models/Module');
 const Group = require('./src/models/Group'); 
-const GroupInvite = require('./src/models/GroupInvite'); 
+const GroupInvite = require('./src/models/GroupInvite');
+const JoinRequest = require('./src/models/JoinRequest'); 
 
 const seedDB = async () => {
   try {
@@ -12,11 +13,13 @@ const seedDB = async () => {
 
     const LECTURER_ID = "69be8cebbc176eb561e10766"; 
     const STUDENT_ID = "69bf99106b7da0a63541b001"; 
+    const REQUESTER_ID = "69bf6d8dc268dc124488ebf6";
 
     // Clear existing to prevent duplicates
     await Module.deleteMany({});
     await Group.deleteMany({});
     await GroupInvite.deleteMany({});
+    await JoinRequest.deleteMany({});
 
     // 1. Create Module
     const seModule = await Module.create({
@@ -44,13 +47,20 @@ const seedDB = async () => {
       status: 'pending'
     });
 
+    await JoinRequest.create({
+      group: testGroup._id,
+      requester: REQUESTER_ID,
+      status: 'pending',
+      approvals: [] // No one has voted yet
+    });
+
     // Update Prabhavi's skills
     await User.findByIdAndUpdate(STUDENT_ID, {
       skills: ["Node.js", "React", "MongoDB", "UI/UX Design"],
       bio: "Software Engineering student interested in Full-stack development."
     });
 
-    console.log('Seeding complete: Module, Group, and Invite created!');
+    console.log('Seeding complete: Module, Group, and Invite and Join Request created!');
     process.exit();
   } catch (error) {
     console.error('Error seeding database:', error);

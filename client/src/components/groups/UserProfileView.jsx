@@ -8,11 +8,16 @@ const UserProfileView = ({ user, type, onBack }) => {
   const handleRequestAction = async (action) => {
     try {
       // action will be either 'approve' or 'reject'
-      const response = await fetch(`http://localhost:5000/api/requests/${user.requestId}/${action}`, {
+      const response = await fetch(`http://localhost:5000/api/requests/requests/${user.requestId}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
       });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server did not return JSON. Check your backend console.");
+      }
       
       const data = await response.json();
       if (data.success) {
