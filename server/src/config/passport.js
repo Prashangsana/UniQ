@@ -36,4 +36,14 @@ module.exports = function(passport) {
 
     return done(null, oauthProfile);
   }));
+  
+  // Saves the user into the session
+  passport.serializeUser((user, done) => {
+    done(null, user);
+  });
+
+  // Retrieves the user from the session
+  passport.deserializeUser((user, done) => {
+    done(null, user);
+  });
 };
