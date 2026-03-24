@@ -531,13 +531,6 @@ export const LeaderDashboard = () => {
           <div className="societies-section">
             <div className="societies-section-head">
               <h3>Your societies</h3>
-              <button
-                type="button"
-                className="add-society-btn"
-                onClick={() => navigate('/admin/society/new')}
-              >
-                + Add society
-              </button>
             </div>
             <div className="societies-list">
               {societies.map(s => (
