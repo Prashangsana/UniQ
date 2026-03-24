@@ -1,9 +1,8 @@
 import React from 'react';
 import './groups.css';
-import { groups, modules, groupInvites } from '../../data/mockGroups';
 import GroupsSidebar from './GroupsSidebar';
 
-const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
+const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite, groups = [], modules = [], groupInvites = [] }) => {
   const joinedGroups = groups.filter(g => g.joined);
 
   return (

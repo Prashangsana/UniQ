@@ -1,8 +1,7 @@
 import React from 'react';
 import './groups.css';
-import { groupJoinRequests, deadlines } from '../../data/mockGroups';
 
-const GroupsSidebar = ({ type, invites, groupId, onSelectInvite, onViewProfile }) => {
+const GroupsSidebar = ({ type, invites = [], groupId, onSelectInvite, onViewProfile, deadlines = [] }) => {
   return (
     <aside className="gf-sidebar">
       

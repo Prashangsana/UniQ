@@ -1,10 +1,9 @@
 import React from 'react';
 import './groups.css';
-import { groups } from '../../data/mockGroups';
 
-const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
+const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, groups }) => {
   // Filter groups that belong to this specific module
-  const moduleGroups = groups.filter(g => g.moduleId === module.id);
+  const moduleGroups = groups ? groups.filter(g => g.moduleId === module.id) : [];
 
   // Check if the user is already in ANY group within this specific module
   const isAlreadyInGroup = moduleGroups.some(g => g.joined === true);
