@@ -285,11 +285,11 @@ const AdminDashboard = () => {
 
       {/* MODAL OVERLAY */}
       {editingModule && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="admin-modal-overlay">
+          <div className="admin-modal-content">
             <h3>Edit Module</h3>
             
-            <div className="modal-tabs">
+            <div className="admin-modal-tabs">
               <button 
                 className={editModalTab === 'basic' ? 'active-tab' : ''} 
                 onClick={() => setEditModalTab('basic')}
@@ -344,7 +344,7 @@ const AdminDashboard = () => {
                 </>
               )}
               
-              <div className="modal-actions">
+              <div className="admin-modal-actions">
                 <button type="button" className="cancel-btn" onClick={() => setEditingModule(null)}>Cancel</button>
                 <button type="submit" className="save-btn">Save Changes</button>
               </div>
