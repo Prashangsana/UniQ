@@ -61,7 +61,10 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setMainEvent(data.data);
+          // Only show published events in main event (no drafts)
+          if (data.data && data.data.status !== 'Draft') {
+            setMainEvent(data.data);
+          }
         }
       })
       .catch(err => console.log("Main event error:", err));
@@ -73,7 +76,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setLatestEvents(data.data);
+          // Filter out draft events from latest events
+          const filteredEvents = data.data.filter(event => event.status !== 'Draft');
+          setLatestEvents(filteredEvents);
         }
       })
       .catch(err => console.log("Latest events error:", err));
@@ -85,7 +90,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setTopEvents(data.data);
+          // Filter out draft events from top events
+          const filteredEvents = data.data.filter(event => event.status !== 'Draft');
+          setTopEvents(filteredEvents);
         }
       })
       .catch(err => console.log("Top events error:", err));
@@ -591,8 +598,7 @@ export const SocietyProfilePage = ({ userRole }) => {
 
         <div className="events-grid-profile">
 
-          {events.map((event) => (
-
+          {events.filter(event => event.status !== 'Draft').map((event) => (
             <EventBanner
               key={event._id}
               id={event._id}

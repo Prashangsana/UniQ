@@ -109,7 +109,10 @@ exports.getMainEvent = async (req, res) => {
   try {
     const today = new Date();
     const event = await Event
-      .findOne({ date: { $gte: today } })
+      .findOne({ 
+        date: { $gte: today },
+        status: { $in: ['Active', 'Featured'] }
+      })
       .sort({ date: 1 });
 
     if (!event) {

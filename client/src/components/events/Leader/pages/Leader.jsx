@@ -519,7 +519,7 @@ function LeaderEventFormBody({
             
             <div className="admin-actions">
               <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
-                {isNewEvent ? 'Publish Event' : 'Save Changes'}
+                {isNewEvent ? 'Publish Event' : 'Publish Event'}
               </button>
               <button className="save-btn" onClick={handleSaveAsDraft} style={{ background: '#64748b', padding: '16px 40px', borderRadius: '12px', marginLeft: '10px' }}>
                 {isNewEvent ? 'Draft Event' : 'Save as Draft'}
