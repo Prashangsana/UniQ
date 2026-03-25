@@ -172,19 +172,27 @@ exports.getMyGroup = async (req, res) => {
 exports.getAvailableStudents = async (req, res) => {
   try {
     const { moduleId } = req.params;
+    const currentUserId = req.user._id || req.user.id;
 
     // 1. Get IDs of all students already in a group for this module
-    const groups = await Group.find({ moduleId }).select('members');
-    const studentIdsInGroups = groups.flatMap(g => g.members);
+    const groups = await Group.find({ moduleId }).select('members').lean();
+    const studentIdsInGroups = groups.reduce((acc, group) => {
+      return acc.concat(group.members.map(m => m.toString()));
+    }, []);
+
+    console.log("Searching for module:", moduleId);
+    console.log("Students already in groups:", studentIdsInGroups);
 
     // 2. Find students who are NOT in that list
     const availableStudents = await User.find({
-      role: 'student',
+      role: { $regex: /^student$/i },
       _id: { 
         $nin: studentIdsInGroups, 
-        $ne: req.user._id
+        $ne: currentUserId
       }
-    }).select('name email skills bio');
+    }).select('name email skills bio photo');
+
+    console.log(`Found ${availableStudents.length} available students for module ${moduleId}`);
 
     res.status(200).json({ success: true, count: availableStudents.length, data: availableStudents });
   } catch (error) {

@@ -35,7 +35,7 @@ const UserProfileView = ({ user, type, onBack }) => {
   const handleSendInvite = async () => {
     setProcessing(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/groups/${user.targetGroupId}/invite`, {
+      const response = await fetch(`http://localhost:5000/api/invites/groups/${user.targetGroupId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

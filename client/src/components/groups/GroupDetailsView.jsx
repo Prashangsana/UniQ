@@ -10,7 +10,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const handleLeaveGroup = async () => {
     if (window.confirm(`Are you sure you want to leave ${group.name}?`)) {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/${group._id}/leave`, {
+        const response = await fetch(`http://localhost:5000/api/groups/groups/${group._id}/leave`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
@@ -38,7 +38,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
         credentials: 'include'
       });
       const data = await response.json();
-      alert(data.message);
+      alert("Request Sent");
     } catch (e) {
       alert("Server error");
     } finally {

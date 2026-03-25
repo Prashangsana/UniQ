@@ -16,7 +16,7 @@ const CreateGroupView = ({ module, onBack, onSuccess }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/groups', {
+      const response = await fetch('http://localhost:5000/api/groups/groups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -9,7 +9,7 @@ const ModuleStudentsView = ({ moduleId, groupId, onBack, onViewProfile }) => {
     const fetchStudents = async () => {
       try {
         // NOTE: Ensure your backend has this route to fetch available students
-        const response = await fetch(`http://localhost:5000/api/modules/${moduleId}/available-students`, {
+        const response = await fetch(`http://localhost:5000/api/groups/modules/${moduleId}/available-students`, {
           credentials: 'include'
         });
         const data = await response.json();
