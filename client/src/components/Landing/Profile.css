@@ -424,6 +424,44 @@
   background: #334155;
 }
 
+/* Social Media Input Section */
+.social-inputs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.social-input-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border: 2px solid #f1f5f9;
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.social-input-item:focus-within {
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.social-input-item svg {
+  font-size: 1.4rem;
+  color: #64748b;
+}
+
+.social-input-item input {
+  border: none !important;
+  background: transparent !important;
+  padding: 5px 0 !important;
+  font-size: 0.9rem !important;
+  box-shadow: none !important;
+}
+
 /*
    5. ANIMATIONS & RESPONSIVE
    */

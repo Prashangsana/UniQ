@@ -48,7 +48,8 @@ const Profile = () => {
           skills: data.skills || [],
           modules: data.modules || [],
           education: data.education || '',
-          department: data.department || ''
+          department: data.department || '',
+          socials: data.socials || { instagram: '', github: '', linkedin: '' }
           });
          
           setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
@@ -69,6 +70,14 @@ const Profile = () => {
   const { name, value } = e.target;
   setUser({ ...user, [name]: value });
 };
+
+const handleSocialChange = (e) => {
+    const { name, value } = e.target;
+    setUser({
+      ...user,
+      socials: { ...user.socials, [name]: value }
+    });
+  };
 
 // --- NEW SKILL METHODS ---
   const handleSkillSelectChange = (e) => {
@@ -164,10 +173,7 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
           <h1>{user.name}</h1>
           
           {/* --- CHANGE: ADD DYNAMIC ROLE TAG --- */}
-          <p className="role-tag-badge">
-            {user.role === 'lecturer' ? 'University Lecturer' : 'Student Member'}
-          </p>
-
+          
           <p className="username">@{user.username || 'username'}</p>
           <p className="user-email">{user.email}</p>
         </div>
@@ -231,6 +237,7 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                     </div>
                   </div>
 
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Email Address</label>
@@ -293,6 +300,24 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                       <button type="button" onClick={addSkill} className="btn-add-skill">Add</button>
                     </div>
                   </div>
+                  </div>
+                  {/* SOCIAL MEDIA SECTION */}
+                  <div className="form-group">
+                    <label>Social Media Profiles</label>
+                    <div className="social-inputs-grid">
+                      <div className="social-input-item">
+                        <Icon icon="lucide:instagram" />
+                        <input name="instagram" placeholder="Instagram URL" value={user.socials?.instagram || ''} onChange={handleSocialChange} />
+                      </div>
+                      <div className="social-input-item">
+                        <Icon icon="lucide:github" />
+                        <input name="github" placeholder="GitHub URL" value={user.socials?.github || ''} onChange={handleSocialChange} />
+                      </div>
+                      <div className="social-input-item">
+                        <Icon icon="lucide:linkedin" />
+                        <input name="linkedin" placeholder="LinkedIn URL" value={user.socials?.linkedin || ''} onChange={handleSocialChange} />
+                      </div>
+                    </div>
                   </div>
 
                   <button type="submit" className="btn-save-profile">Save All Changes</button>

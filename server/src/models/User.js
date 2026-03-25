@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
   education: { type: String, default: '' }, 
   department: { type: String, default: '' }, 
   expertise: { type: [String], default: [] },
+
+  socials: {
+  instagram: { type: String, default: '' },
+  github: { type: String, default: '' },
+  linkedin: { type: String, default: '' }
+},
   
   // Tracking
   lastLogin: { type: Date, default: Date.now } 
