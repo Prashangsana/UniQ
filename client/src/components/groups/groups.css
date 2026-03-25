@@ -239,3 +239,53 @@
   padding-top: 1.5rem;
   border-top: 1px solid #f1f5f9;
 }
+
+.gf-input:focus {
+  background-color: #e2e8f0 !important;
+  transition: background-color 0.2s ease;
+}
+
+.gf-input {
+  border-radius: 25px !important;
+  background-color: #f1f5f9 !important;
+  border: 1px solid transparent !important;
+  padding: 0 20px;
+  transition: all 0.2s ease;
+}
+
+.gf-input:focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+}
+
+.gf-btn-primary {
+  border-radius: 30px !important;
+  transition: transform 0.1s active;
+  padding: 5px;
+}
+
+.gf-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.gf-name {
+  border-radius: 5px !important; /* Changed from 3px to 25px for the pill shape */
+  background-color: #f1f5f9 !important;
+  border: 1px solid transparent !important;
+  
+  /* Vertical padding: 12px (top/bottom) | Horizontal padding: 20px (left/right) */
+  padding: 12px 20px !important; 
+  
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't break the width */
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.gf-name:focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
