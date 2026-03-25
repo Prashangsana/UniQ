@@ -6,8 +6,9 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: false }, 
-  role: { type: String, enum: ['student', 'lecturer'], default: 'student' },
+
+  password: { type: String, required: false },
+  role: { type: String, enum: ['student', 'lecturer', 'admin', 'society_leader'], default: 'student' },
   authProvider: { type: String, default: 'local' },
   providerId: { type: String },
   photo: { type: String }, 
@@ -21,6 +22,10 @@ const userSchema = new mongoose.Schema({
   modules: { type: [String], default: [] },
   skills: { type: [String], default: [] },
   profileImage: { type: String },
+
+  education: { type: String, default: '' }, 
+  department: { type: String, default: '' }, 
+  expertise: { type: [String], default: [] },
   
   // Tracking
   lastLogin: { type: Date, default: Date.now } 

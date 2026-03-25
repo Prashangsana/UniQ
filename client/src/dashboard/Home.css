@@ -6,9 +6,9 @@
   color: var(--text-color);
 }
 
-/* Sidebar Styles */
+/* --- SIDEBAR STYLES (Mini-Variant Drawer Logic) --- */
 .sidebar {
-  width: 260px;
+  width: 80px; /* Default collapsed width */
   background-color: var(--white);
   border-right: 1px solid #e5e7eb;
   display: flex;
@@ -19,7 +19,15 @@
   left: 0;
   top: 0;
   z-index: 100;
-  transition: transform 0.3s ease;
+  overflow-x: hidden; 
+  white-space: nowrap; 
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+
+/* Expand on Hover */
+.sidebar:hover {
+  width: 260px;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar-brand-mobile {
@@ -43,8 +51,10 @@
 
 .profile-img-container {
   position: relative;
+  min-width: 48px; /* Prevents image from shrinking */
   width: 48px;
   height: 48px;
+  flex-shrink: 0;
 }
 
 .profile-img {
@@ -64,6 +74,20 @@
   background-color: #10b981;
   border-radius: 50%;
   border: 2px solid var(--white);
+}
+
+/* Profile Text Fading Effect */
+.profile-info {
+  opacity: 0;
+  visibility: hidden; /* Completely hides it from flow when collapsed */
+  transform: translateX(-10px); /* Adds a slick slide-in effect */
+  transition: all 0.3s ease;
+}
+
+.sidebar:hover .profile-info {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
 }
 
 .profile-info h3 {
@@ -98,14 +122,23 @@
 .sidebar-nav a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem 1rem;
+  gap: 1rem;
+  padding: 0.8rem 0.85rem; 
   border-radius: 0.75rem;
   color: var(--body-text-gray);
   font-weight: 500;
   font-size: 0.95rem;
   transition: all 0.2s ease;
   text-decoration: none;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* THE FIX: Forcing the icon to NEVER shrink */
+.sidebar-nav a svg {
+  flex-shrink: 0;
+  min-width: 20px;
 }
 
 .sidebar-nav a:hover {
@@ -118,6 +151,21 @@
   color: var(--primary-color);
   font-weight: 600;
   border-left: 3px solid var(--primary-color);
+}
+
+/* Link Text Fading Effect */
+.sidebar-nav span {
+  opacity: 0;
+  visibility: hidden; /* Hides text perfectly */
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.sidebar:hover .sidebar-nav span {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
 }
 
 .nav-divider {
@@ -135,13 +183,13 @@
   color: #dc2626;
 }
 
-/* Main Wrapper */
+/* --- MAIN WRAPPER --- */
 .main-wrapper {
-  margin-left: 260px;
+  margin-left: 80px; 
   flex: 1;
   display: flex;
   flex-direction: column;
-  width: calc(100% - 260px);
+  width: calc(100% - 80px);
 }
 
 .dashboard-header {
@@ -282,9 +330,27 @@
 }
 
 .dashboard-footer {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  /* Sticky & Floating Positioning */
+  position: sticky;
+  bottom: 1.5rem; /* Lifts it slightly off the bottom edge */
+  z-index: 80; 
+  
+  /* Modern Frosted Glass Effect */
+  background-color: rgba(255, 255, 255, 0.6); /* Slightly brightened for a clean look */
+  backdrop-filter: blur(12px); 
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* The Chic Curves & Shadow */
+  border-radius: 30px; /* This gives it the beautifully curved ends */
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Soft border all around */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Soft floating drop-shadow */
+  
+  /* Spacing */
+  margin-top: 3rem; 
+  margin-bottom: 0; 
+  padding: 1rem 2rem; 
+  
+  /* Existing Layout Styles */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -308,16 +374,22 @@
   text-decoration: underline;
 }
 
+/* --- RESPONSIVE MEDIA QUERIES --- */
 @media (max-width: 900px) {
   .sidebar {
     width: 80px;
     padding: 1rem 0.5rem;
   }
 
+  .sidebar:hover {
+    width: 80px;
+    box-shadow: none;
+  }
+
   .sidebar-profile .profile-info,
   .sidebar-nav span,
   .sidebar-brand-mobile {
-    display: none;
+    display: none !important; 
   }
 
   .sidebar-profile {
@@ -326,6 +398,7 @@
 
   .sidebar-nav a {
     justify-content: center;
+    padding: 0.8rem; 
   }
 
   .main-wrapper {

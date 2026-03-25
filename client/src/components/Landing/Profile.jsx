@@ -20,14 +20,25 @@ const Profile = () => {
   const [otherSkill, setOtherSkill] = useState('');
   const [showOtherInput, setShowOtherInput] = useState(false);
 
+  const isLecturer = user?.role === 'lecturer'; 
+
+  const config = {
+    academicLabel: isLecturer ? "Education & Qualifications" : "Course Name",
+    academicField: isLecturer ? "education" : "course",
+    groupLabel: isLecturer ? "Department" : "Academic Group",
+    groupField: isLecturer ? "department" : "group",
+    skillsLabel: isLecturer ? "Expertise Areas" : "My Skills",
+    modulesLabel: isLecturer ? "Modules Taught" : "Modules",
+    predefinedList: isLecturer 
+      ? ["Artificial Intelligence", "Cyber Security", "Cloud Computing", "Software Architecture", "Data Science", "Machine Learning", "Other"]
+      : ["React", "Node.js", "Java", "Python", "UI/UX Design", "SQL", "Figma", "TypeScript", "Other"]
+  };
 
   // --- STAGE 1 & 3: FETCH DATA FROM BACKEND ---
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/users/profile',
-          //*
-          {credentials:'include'});
+        const response = await fetch('http://localhost:5000/api/users/profile',{credentials:'include'});
         const result = await response.json();
 
         if (result.success) {
@@ -35,7 +46,9 @@ const Profile = () => {
           setUser({
             ...data,
           skills: data.skills || [],
-          modules: data.modules || []
+          modules: data.modules || [],
+          education: data.education || '',
+          department: data.department || ''
           });
          
           setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
@@ -83,7 +96,6 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
     reader.onloadend = () => {
-      // This converts the image to a long string (Base64)
       setUser({ ...user, profileImage: reader.result });
     };
     reader.readAsDataURL(file);
@@ -116,9 +128,8 @@ const Profile = () => {
         setUser(result.data);
         const finalPhoto = result.data.profileImage || result.data.photo || "";
         localStorage.setItem('user_name', result.data.name);
-        localStorage.setItem('user_photo', finalPhoto);
+        localStorage.setItem('user_photo', finalPhoto); 
         window.dispatchEvent(new Event("storage"));
-        
         setIsEditing(false);
         alert("Profile Updated Successfully ");
       }
@@ -142,9 +153,8 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
         <div className="avatar-wrapper-lg" onClick={() => fileInputRef.current.click()}>
-          
           <img src={userAvatar} alt="Profile" className="large-avatar" />
-          <div className="status-emoji">
+          <div className="status-emoji"> 
             <Icon icon="lucide:camera" />
           </div>
           <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*" />
@@ -184,10 +194,10 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                   <p className="main-bio-text">{user.bio}</p>
                 </div>
                 <div className="academic-details">
-                  <p><span className="label">Course:</span> {user.course}</p>
-                  <p><span className="label">Group:</span> {user.group}</p>
+                  <p><span className="label">{config.academicLabel}:</span> {isLecturer ? user.education : user.course}</p>
+                  <p><span className="label">{config.groupLabel}:</span> {isLecturer ? user.department : user.group}</p>
                   <div className="learning-section">
-                    <span className="label">Modules:</span>
+                    <span className="label">{config.modulesLabel}:</span>
                     <ul className="modules-list">
                       {user.modules.map((m, i) => <li key={i}>{m}</li>)}
                     </ul>
@@ -199,7 +209,7 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                   <p>{user.aboutMe}</p>
                 </div>
                 <div className="skills-section">
-                  <h3>✨ My Skills</h3>
+                  <h3>✨ {config.skillsLabel}</h3>
                   <div className="skills-grid">
                     {user.skills.map((s, i) => <div key={i} className="skill-pill-light">{s}</div>)}
                   </div>
@@ -208,7 +218,7 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
             ) : (
               /* FULL EDIT MODE */
               <div className="content-wrapper">
-                <h2 className="edit-header">Update Profile ✨</h2>
+                <h2 className="edit-header">Update {isLecturer ? 'Lecturer' : 'Student'} Profile ✨</h2>
                 <form className="edit-form" onSubmit={handleSave}>
                   <div className="form-row">
                     <div className="form-group">
@@ -227,14 +237,18 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                       <input name="email" value={user.email} onChange={handleChange} />
                     </div>
                     <div className="form-group">
-                      <label>Academic Group</label>
-                      <input name="group" value={user.group} onChange={handleChange} />
+                      <label>{config.groupLabel}</label>
+                      <input name={config.groupField} 
+                        value={user[config.groupField] || ''} 
+                        onChange={handleChange} />
                     </div>
                   </div>
 
                   <div className="form-group">
-                    <label>Course Name</label>
-                    <input name="course" value={user.course} onChange={handleChange} />
+                    <label>{config.academicLabel}</label>
+                    <input name={config.academicField} 
+                      value={user[config.academicField] || ''} 
+                      onChange={handleChange}/>
                   </div>
 
                   <div className="form-group">
@@ -249,12 +263,12 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Modules (comma separated)</label>
+                      <label>{config.modulesLabel} (comma separated)</label>
                       <input value={modulesInput} onChange={(e) => setModulesInput(e.target.value)} />
                     </div>
                     {/* --- NEW SKILLS SELECTOR UI --- */}
                   <div className="form-group">
-                    <label>Skills</label>
+                    <label>{config.skillsLabel}</label>
                     <div className="skills-tag-editor">
                       {user.skills.map((skill, index) => (
                         <div key={index} className="skill-tag">
@@ -266,7 +280,7 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                     <div className="skill-input-row">
                       <select value={selectedSkill} onChange={handleSkillSelectChange} className="skill-select">
                         <option value="">Choose a skill...</option>
-                        {PREDEFINED_SKILLS.map(s => <option key={s} value={s}>{s}</option>)}
+                        {config.predefinedList.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                       {showOtherInput && (
                         <input 

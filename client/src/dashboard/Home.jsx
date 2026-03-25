@@ -9,6 +9,13 @@ import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
 import { LeaderDashboard } from '../components/events/Leader/pages/Leader';
 
+// Mentoring Imports
+import PeerMentoring from '../pages/PeerMentoring';
+import LecturerMentoring from '../pages/LecturerMentoring';
+import MentorDashboardPeer from '../pages/MentorDashboardPeer';
+import MentorDashboardLecturer from '../pages/MentorDashboardLecturer';
+import MentoringHub from '../pages/MentoringHub';
+
 const SkillsView = () => (
     <div className="content-section fade-in">
         <h2>Skill Matching</h2>
@@ -16,29 +23,29 @@ const SkillsView = () => (
     </div>
 );
 
-const ArticlesView = () => (
+// Commented out the ArticlesView component
+/* const ArticlesView = () => (
     <div className="content-section fade-in">
         <h2>Articles & Resources</h2>
         <p>Read the latest academic articles and shared resources.</p>
     </div>
 );
+*/
 
 const Home = ({ myEventsList }) => {
-    const [activeTab, setActiveTab] = useState('dashboard');
     const location = useLocation();
+
 
     const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
     const [userPhoto, setUserPhoto] = useState(localStorage.getItem('user_photo') || '');
     const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'student');
+    const [activeTab, setActiveTab] = useState('dashboard');
 
-    // Define the API URL
+
+    
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
-    const sidebarUser = {
-        name: 'Alex',
-        img: 'https://i.pravatar.cc/300?img=47' 
-    };
+
 
     useEffect(() => {
         // Function to update state from localStorage
@@ -87,10 +94,15 @@ const Home = ({ myEventsList }) => {
     // Avatar Logic
     const avatarSrc = userPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${userName !== 'User' ? userName : 'Guest'}`;
     // Consistently render content based on activeTab
+    
+
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': 
-                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+                return <DashboardView 
+                    onSeeAll={() => setActiveTab('groups')} 
+                    onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
+                />;
             case 'profile':   
                 return <Profile />;
             case 'society':   
@@ -101,11 +113,25 @@ const Home = ({ myEventsList }) => {
                 return <GroupsPage />;
             case 'skills':    
                 return <SkillsView />;
-            case 'articles':  
-                return <ArticlesView />;
+            // Commented out the articles case
+            /* case 'articles':  
+                return <ArticlesView />; */
             case 'settings':  
                 return <SettingsView />;
-            default:          
+            
+            // Mentoring Views
+            case 'mentoring-hub': 
+                return <MentoringHub onSelectCategory={(category) => setActiveTab(category)} />;
+            case 'peer-mentoring': 
+                return <PeerMentoring onBack={() => setActiveTab('mentoring-hub')} />;
+            case 'lecturer-mentoring': 
+                return <LecturerMentoring onBack={() => setActiveTab('mentoring-hub')} />;
+            case 'peer-dashboard-view': 
+                return <MentorDashboardPeer />;
+            case 'lecturer-dashboard-view': 
+                return <MentorDashboardLecturer />;
+                
+            default: 
                 return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
         }
     };
@@ -162,18 +188,24 @@ const Home = ({ myEventsList }) => {
                                 <span>Groups</span>
                             </a>
                         </li>
+                        <li className={['mentoring-hub', 'peer-mentoring', 'lecturer-mentoring'].includes(activeTab) ? 'active' : ''}>
+                            <a href="#mentoring" onClick={(e) => { e.preventDefault(); setActiveTab('mentoring-hub'); }}>
+                                <Icon icon="lucide:book-open" width="20" />
+                                <span>Mentoring</span>
+                            </a>
+                        </li>
                         <li className={activeTab === 'skills' ? 'active' : ''}>
                             <a href="#skills" onClick={(e) => { e.preventDefault(); setActiveTab('skills'); }}>
                                 <Icon icon="lucide:brain-circuit" width="20" />
                                 <span>Skill Matching</span>
                             </a>
                         </li>
-                        <li className={activeTab === 'articles' ? 'active' : ''}>
+                        {/* <li className={activeTab === 'articles' ? 'active' : ''}>
                             <a href="#articles" onClick={(e) => { e.preventDefault(); setActiveTab('articles'); }}>
                                 <Icon icon="lucide:file-text" width="20" />
                                 <span>Articles</span>
                             </a>
-                        </li>
+                        </li> */}
                     </ul>
 
                     <div className="nav-divider"></div>
@@ -186,6 +218,7 @@ const Home = ({ myEventsList }) => {
                             </a>
                         </li>
                         <li className="logout-item">
+
                             <a href={`${API_URL}/auth/logout`} onClick={() => localStorage.clear()}>
                                 <Icon icon="lucide:log-out" width="20" />
                                 <span>Logout</span>
@@ -199,22 +232,21 @@ const Home = ({ myEventsList }) => {
                 <header className="dashboard-header">
                     <div className="header-left">
                         <div className="header-logo">
-                           <img src="/logo.png" alt="UniQ" width="28" height="28" />
-                           <span className="logo-text">UniQ</span>
+                            <img src="/logo.png" alt="UniQ" width="28" height="28" />
+                            <span className="logo-text">UniQ</span>
                         </div>
                     </div>
 
-                    <div className="header-center">
+                    {/* <div className="header-center">
                         <div className="search-bar">
                             <Icon icon="lucide:search" className="search-icon" />
                             <input type="text" placeholder="Search..." />
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="header-right">
-                        <button className="icon-btn">
-                            <Icon icon="lucide:mail" width="22" />
-                        </button>
+                        {/* <button className="icon-btn">
+                            <Icon icon="lucide:mail" width="22" /></button> */}
                         <button className="icon-btn relative">
                             <Icon icon="lucide:bell" width="22" />
                             <span className="notification-dot"></span>
