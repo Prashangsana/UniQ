@@ -1,68 +1,110 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
 
-const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, groups }) => {
-  // Filter groups that belong to this specific module
-  const moduleGroups = groups ? groups.filter(g => g.moduleId === module.id) : [];
+const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
+  const [moduleGroups, setModuleGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Check if the user is already in ANY group within this specific module
-  const isAlreadyInGroup = moduleGroups.some(g => g.joined === true);
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/modules/${module._id}/groups`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          setModuleGroups(data.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch module groups:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (module && module._id) {
+      fetchGroups();
+    }
+  }, [module]);
+
+  if (loading) {
+    return (
+      <div className="module-groups-view">
+        <div className="module-header">
+          <button className="back-btn" onClick={onBack}>← Back</button>
+          <h2>{module?.name || 'Module'}</h2>
+        </div>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          Loading groups...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="gf-main">
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <button className="gf-btn-back" onClick={onBack}>&larr; Back to Modules</button>
-
-        <div className="gf-header">
-          <h2>{module.id} Groups</h2>
-          <p>Showing all available project groups for {module.name}</p>
-        </div>
-        
-        {/* Only show Create button if user is NOT in a group for this module */}
-        {!isAlreadyInGroup && (
-          <button className="gf-btn-primary" style={{width:'auto'}} onClick={onCreateGroup}>
-            + Create New Group
-          </button>
-        )}
+    <div className="module-groups-view">
+      <div className="module-header">
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <h2>{module?.name || 'Module'}</h2>
+        <button 
+          className="create-group-btn"
+          onClick={() => onCreateGroup && onCreateGroup(module)}
+        >
+          + Create Group
+        </button>
       </div>
 
-      {moduleGroups.length === 0 ? (
-        <div className="gf-card-simple" style={{textAlign: 'center', padding: '3rem'}}>
-          <p style={{color: '#64748b'}}>No groups have been created for this module yet.</p>
-          <button className="gf-btn-primary" style={{width: 'auto'}} onClick={onCreateGroup}>
-            + Create First Group
-          </button>
+      <div className="module-stats">
+        <div className="stat-item">
+          <h3>{moduleGroups.length}</h3>
+          <p>Total Groups</p>
         </div>
-      ) : (
-        <div className="gf-grid">
-          {moduleGroups.map(group => (
-            <div 
-              key={group.id} 
-              className="gf-card-visual"
-              onClick={() => onSelectGroup(group)}
+        <div className="stat-item">
+          <h3>{moduleGroups.filter(g => g.isOpen).length}</h3>
+          <p>Open Groups</p>
+        </div>
+      </div>
+
+      <div className="groups-list">
+        {moduleGroups.length === 0 ? (
+          <div className="empty-state">
+            <p>No groups found for this module</p>
+            <button 
+              className="create-first-group-btn"
+              onClick={() => onCreateGroup && onCreateGroup(module)}
             >
-              {/* Use group image or a fallback */}
-              <img src={group.img || 'https://via.placeholder.com/300x200?text=Group'} alt={group.id} />
-              
-              <div className="gf-card-gradient">
-                {/* Status Badge */}
-                <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
-                  {group.joined ? (
-                    <span className="gf-badge-joined">Your Group</span>
+              Create the first group
+            </button>
+          </div>
+        ) : (
+          moduleGroups.map(group => (
+            <div 
+              key={group._id} 
+              className={`group-item ${group.joined ? 'joined' : ''}`}
+              onClick={() => onSelectGroup && onSelectGroup(group)}
+            >
+              <div className="group-info">
+                <h4>{group.name}</h4>
+                <p>{group.description}</p>
+                <div className="group-meta">
+                  <span>{group.members?.length || 0} members</span>
+                  <span>{group.maxMembers || 'No'} max</span>
+                  {group.isOpen ? (
+                    <span className="status-open">Open</span>
                   ) : (
-                    <span className="gf-badge-open">Open</span>
+                    <span className="status-closed">Closed</span>
                   )}
                 </div>
-
-                <div className="gf-card-title">{group.id}</div>
-                <div className="gf-card-sub">
-                  {group.members}/{group.maxMembers} Members • {group.domain}
-                </div>
               </div>
+              {group.joined && (
+                <div className="joined-badge">
+                  <span>✓ Joined</span>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

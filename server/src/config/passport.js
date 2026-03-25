@@ -10,7 +10,13 @@ module.exports = function(passport) {
     const userEmail = profile.emails[0].value;
     const userDomain = userEmail.split('@')[1];
 
-    if (process.env.ORG_DOMAIN && userDomain !== process.env.ORG_DOMAIN) {
+    const adminEmails = process.env.ADMIN_EMAILS 
+      ? process.env.ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase()) 
+      : [];
+
+    const isAdmin = adminEmails.includes(userEmail.toLowerCase());
+
+    if (!isAdmin && process.env.ORG_DOMAIN && userDomain !== process.env.ORG_DOMAIN) {
       return done(null, false, { message: 'Unauthorized University Domain' });
     }
 
@@ -30,4 +36,14 @@ module.exports = function(passport) {
 
     return done(null, oauthProfile);
   }));
+  
+  // Saves the user into the session
+  passport.serializeUser((user, done) => {
+    done(null, user);
+  });
+
+  // Retrieves the user from the session
+  passport.deserializeUser((user, done) => {
+    done(null, user);
+  });
 };

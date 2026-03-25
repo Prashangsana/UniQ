@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
+  const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.protect = async (req, res, next) => {
-  let token;
+  let token = req.cookies;
 
   console.log("\n=== AUTH MIDDLEWARE ===");
   console.log("Route:", req.method, req.originalUrl);

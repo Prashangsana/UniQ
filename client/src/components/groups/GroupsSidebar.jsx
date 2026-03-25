@@ -1,7 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
 
 const GroupsSidebar = ({ type, invites = [], groupId, onSelectInvite, onViewProfile, deadlines = [] }) => {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch real requests when the sidebar mounts for a group
+  useEffect(() => {
+    if (type === 'group' && groupId) {
+      setLoading(true);
+      fetch(`http://localhost:5000/api/groups/${groupId}/requests`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) setRequests(data.data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("Failed to fetch requests", err);
+          setLoading(false);
+        });
+    }
+  }, [type, groupId]);
+
   return (
     <aside className="gf-sidebar">
       
@@ -33,22 +53,23 @@ const GroupsSidebar = ({ type, invites = [], groupId, onSelectInvite, onViewProf
       {type === 'group' && (
         <>
           <h4>Join Requests</h4>
-          {groupJoinRequests.filter(r => r.groupId === groupId).length === 0 ? 
+          {loading ? <p style={{color:'#94a3b8'}}>Loading requests...</p> : 
+           requests.length === 0 ?
             <p style={{color:'#94a3b8'}}>No active requests</p> :
-            groupJoinRequests
-              .filter(r => r.groupId === groupId)
-              .map((r, i) => (
+            requests.map((r) => (
                 <div 
-                  key={i} 
+                  key={r._id} 
                   className="gf-request-item"
-                  onClick={() => onViewProfile(r)} /* Clickable Profile */
+                  // Package the requester data AND the requestId together
+                  onClick={() => onViewProfile({ ...r.requester, requestId: r._id, isJoinRequest: true })} 
                 >
                    <div style={{display:'flex', justifyContent:'space-between'}}>
-                    <strong>{r.student}</strong>
+                    <strong>{r.requester.name}</strong>
                     <small style={{color:'#5b7cbd'}}>Review</small>
                   </div>
                   <div>
-                    {r.skills.map(skill => (
+                    {/* Fallback in case mock user lacks skills array */}
+                    {(r.requester.skills || ['Student']).map(skill => (
                       <span key={skill} className="gf-skill-chip">{skill}</span>
                     ))}
                   </div>
