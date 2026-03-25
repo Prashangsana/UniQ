@@ -35,9 +35,19 @@ const PublicProfile = () => {
   if (error) return <div className="error-screen">{error}</div>;
   if (!user) return null;
 
+  const isLecturer = user.role === 'lecturer';
+  const config = {
+    academicLabel: isLecturer ? "Education & Qualifications" : "Course Name",
+    groupLabel: isLecturer ? "Department" : "Academic Group",
+    skillsLabel: isLecturer ? "Expertise Areas" : "My Skills",
+    modulesLabel: isLecturer ? "Modules Taught" : "Modules",
+  };
+
   if (!user) {
     return <div className="loading">Loading Profile...</div>;
 }
+
+  const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
 
   return (
     <div className="profile-container fade-in">
@@ -45,25 +55,28 @@ const PublicProfile = () => {
       <aside className="profile-sidebar">
         <div className="avatar-wrapper-lg">
           <img 
-            src={user.profileImage || 'https://via.placeholder.com/150'} 
-            alt="Profile" 
-            className="large-avatar" 
+            src={userAvatar} alt="Profile" className="large-avatar"
           />
           
         </div>
 
         <div className="sidebar-names">
           <h1>{user.name}</h1>
-          <p className="username">@{user.username}</p>
+          <p className="username">@{user.username || 'username'}</p>
           <p className="user-email">{user.email}</p>
         </div>
 
-        
-
-        <div className="sidebar-socials-circular">
-          <a href="#" className="social-circle-btn"><Icon icon="lucide:instagram" /></a>
-          <a href="#" className="social-circle-btn"><Icon icon="lucide:github" /></a>
-          <a href="#" className="social-circle-btn"><Icon icon="lucide:linkedin" /></a>
+      
+       <div className="sidebar-socials-circular">
+          <a href={user.socials?.instagram || "#"} target="_blank" rel="noreferrer" className="social-circle-btn">
+            <Icon icon="lucide:instagram" />
+          </a>
+          <a href={user.socials?.github || "#"} target="_blank" rel="noreferrer" className="social-circle-btn">
+            <Icon icon="lucide:github" />
+          </a>
+          <a href={user.socials?.linkedin || "#"} target="_blank" rel="noreferrer" className="social-circle-btn">
+            <Icon icon="lucide:linkedin" />
+          </a>
         </div>
       </aside>
 
@@ -78,12 +91,12 @@ const PublicProfile = () => {
               </div>
 
               <div className="academic-details">
-                <p><span className="label">Course:</span> {user.course}</p>
-                <p><span className="label">Group:</span> {user.group}</p>
+                <p><span className="label">{config.academicLabel}:</span>{isLecturer ? user.education : user.course}</p>
+                <p><span className="label">{config.groupLabel}:</span> {isLecturer ? user.department : user.group}</p>
                 
                 {user.modules && user.modules.length > 0 && (
                   <div className="learning-section">
-                    <span className="label">Modules:</span>
+                    <span className="label">{config.modulesLabel}:</span>
                     <ul className="modules-list">
                       {user.modules?.map((m, i) => <li key={i}>{m}</li>)}
                     </ul>
@@ -100,7 +113,7 @@ const PublicProfile = () => {
 
               {user.skills && user.skills.length > 0 && (
                 <div className="skills-section">
-                  <h3>✨ My Skills</h3>
+                  <h3>✨{config.skillsLabel}</h3>
                   <div className="skills-grid">
                     {user.skills?.map((s, i) => (
                       <div key={i} className="skill-pill-light">{s}</div>
