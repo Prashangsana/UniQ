@@ -27,7 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
-    
+
     const emailInput = (document.getElementById("signup-email") as HTMLInputElement).value;
 
     try {
@@ -44,11 +44,19 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
 
       if (response.ok && data.success) {
 
+        localStorage.setItem('is_logged_in', 'true');
+
+        console.log("User Data from Server:", data.user);
+
+        localStorage.setItem('user_role', data.user.role);
+        localStorage.setItem('user_name', data.user.name); // Store full name
+        localStorage.setItem('user_photo', data.user.photo || ""); // Store photo if exists
+
         if (onSignUpSuccess) {
-          onSignUpSuccess(data.user.role); 
+          onSignUpSuccess(data.user.role);
         }
-        
-        window.location.reload(); 
+
+        window.location.reload();
       } else {
         setErrorMessage(data.message);
       }

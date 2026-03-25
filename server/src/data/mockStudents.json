@@ -6,8 +6,16 @@
     "role": "student",
     "uowId": "w2149635",
     "iitId": "20240068",
-    "skills": ["React", "UI/UX", "Node.js"],
-    "bio": "Third-year Computer Science undergrad looking for a Web Development project."
+    "username": "imasha_s",
+    "course": "Software Engineering",
+    "group": "Group A",
+    "bio": "Software Engineering student at IIT.",
+    "aboutMe": "I love building MERN stack applications and solving complex problems!",
+    "skills": ["React", "JavaScript", "Node.js"],
+    "modules": ["Software Engineering", "Database Systems"],
+    "profileImage": "https://i.pravatar.cc/150?u=user1"
+
+
   },
   {
     "_id": "user_id_student_2",
@@ -15,7 +23,16 @@
     "email": "sewmini.20240079@iit.ac.lk",
     "role": "student",
     "uowId": "w2149627",
-    "iitId": "20240079"
+    "iitId": "20240079",
+    "username": "sew_senevi",
+    "course": "Computer Science",
+    "group": "Group B",
+    "bio": "Aspiring AI researcher and CS student.",
+    "aboutMe": "Interested in machine learning and data science projects.",
+    "skills": ["Python", "C++", "Data Analysis"],
+    "modules": ["Mathematics for CS", "Algorithms"],
+    "profileImage": "https://i.pravatar.cc/150?u=user2"
+
   },
   {
     "_id": "user_id_student_3",
@@ -23,7 +40,15 @@
     "email": "yahani.20240101@iit.ac.lk",
     "role": "student",
     "uowId": "w2149629",
-    "iitId": "20240101"
+    "iitId": "20240101",
+    "username": "yahani_d",
+    "course": "Software Engineering",
+    "group": "Group A",
+    "bio": "Frontend enthusiast and UI/UX designer.",
+    "aboutMe": "I enjoy creating beautiful and accessible user interfaces.",
+    "skills": ["Figma", "CSS", "Tailwind"],
+    "modules": ["User Experience", "Web Development"],
+    "profileImage": "https://i.pravatar.cc/150?u=user3"
   },
   {
     "_id": "user_id_student_4",
@@ -31,7 +56,15 @@
     "email": "upeshi.20240155@iit.ac.lk",
     "role": "student",
     "uowId": "w2153580",
-    "iitId": "20240155"
+    "iitId": "20240155",
+    "username": "upeshi_s",
+    "course": "Business Information Systems",
+    "group": "Group C",
+    "bio": "Bridging the gap between business and tech.",
+    "aboutMe": "Focused on systems analysis and project management.",
+    "skills": ["Agile", "SQL", "Business Analysis"],
+    "modules": ["Enterprise Systems", "Management"],
+    "profileImage": "https://i.pravatar.cc/150?u=user4"
   },
   {
     "_id": "user_id_student_5",
@@ -39,7 +72,15 @@
     "email": "dinlui.20232631@iit.ac.lk",
     "role": "student",
     "uowId": "w2153575",
-    "iitId": "20232631"
+    "iitId": "20232631",
+    "username": "dinuli_h",
+    "course": "Software Engineering",
+    "group": "Group B",
+    "bio": "Backend developer in the making.",
+    "aboutMe": "I like working with APIs and server-side logic.",
+    "skills": ["Express", "MongoDB", "Java"],
+    "modules": ["Object Oriented Programming", "Networks"],
+    "profileImage": "https://i.pravatar.cc/150?u=user5"
   },
   {
     "_id": "user_id_student_6",
@@ -47,7 +88,15 @@
     "email": "pavan.20232986@iit.ac.lk",
     "role": "student",
     "uowId": "w2153388",
-    "iitId": "20220001"
+    "iitId": "20220001",
+    "username": "pavan_d",
+    "course": "Computer Science",
+    "group": "Group D",
+    "bio": "Cybersecurity student and ethical hacker.",
+    "aboutMe": "Constantly learning about network security and cryptography.",
+    "skills": ["Linux", "Penetration Testing", "Go"],
+    "modules": ["Network Security", "Operating Systems"],
+    "profileImage": "https://i.pravatar.cc/150?u=user6"
   },
   {
     "_id": "user_id_student_7",
@@ -55,7 +104,16 @@
     "email": "sanula.20240522@iit.ac.lk",
     "role": "student",
     "uowId": "w1234567",
-    "iitId": "20240522"
+    "iitId": "20240522",
+    "username": "sanula_d",
+    "course": "Software Engineering",
+    "group": "Group A",
+    "bio": "Fullstack developer and tech blogger.",
+    "aboutMe": "Sharing my coding journey through blogs and tutorials.",
+    "skills": ["Next.js", "TypeScript", "PostgreSQL"],
+    "modules": ["Advanced Programming", "Web Security"],
+    "profileImage": "https://i.pravatar.cc/150?u=user7"
+
   },
   {
     "_id": "user_id_student_8",
@@ -63,7 +121,15 @@
     "email": "deminda.20240187@iit.ac.lk",
     "role": "student",
     "uowId": "w1234567",
-    "iitId": "20240187"
+    "iitId": "20240187",
+    "username": "deminda_r",
+    "course": "Business Information Systems",
+    "group": "Group C",
+    "bio": "Data enthusiast and business strategist.",
+    "aboutMe": "Passionate about data-driven decision making.",
+    "skills": ["PowerBI", "Excel", "Tableau"],
+    "modules": ["Data Visualization", "Economics"],
+    "profileImage": "https://i.pravatar.cc/150?u=user8"
   },
   {
     "_id": "user_id_student_9",
@@ -71,7 +137,15 @@
     "email": "uddika.20240397@iit.ac.lk",
     "role": "student",
     "uowId": "w1234567",
-    "iitId": "20240397"
+    "iitId": "20240397",
+    "username": "uddika_t",
+    "course": "Computer Science",
+    "group": "Group D",
+    "bio": "Game developer and 3D modeller.",
+    "aboutMe": "Creating immersive worlds using Unity and C#.",
+    "skills": ["Unity", "C#", "Blender"],
+    "modules": ["Game Design", "Graphics"],
+    "profileImage": "https://i.pravatar.cc/150?u=user9"
   },
   {
     "_id": "user_id_student_10",
@@ -79,7 +153,15 @@
     "email": "kisalni.20240386@iit.ac.lk",
     "role": "student",
     "uowId": "w1234567",
-    "iitId": "20240386"
+    "iitId": "20240386",
+    "username": "kisalni_ds",
+    "course": "Software Engineering",
+    "group": "Group B",
+    "bio": "Mobile app developer and Swift fan.",
+    "aboutMe": "Building sleek iOS applications with SwiftUI.",
+    "skills": ["Swift", "Mobile Dev", "Firebase"],
+    "modules": ["Mobile Systems", "Cloud Computing"],
+    "profileImage": "https://i.pravatar.cc/150?u=user10"
   }
   
 ]

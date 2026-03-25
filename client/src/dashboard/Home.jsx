@@ -9,6 +9,13 @@ import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
 import { LeaderDashboard } from '../components/events/Leader/pages/Leader';
 
+// Mentoring Imports
+import PeerMentoring from '../pages/PeerMentoring';
+import LecturerMentoring from '../pages/LecturerMentoring';
+import MentorDashboardPeer from '../pages/MentorDashboardPeer';
+import MentorDashboardLecturer from '../pages/MentorDashboardLecturer';
+import MentoringHub from '../pages/MentoringHub';
+
 const SkillsView = () => (
     <div className="content-section fade-in">
         <h2>Skill Matching</h2>
@@ -16,38 +23,86 @@ const SkillsView = () => (
     </div>
 );
 
-const ArticlesView = () => (
+// Commented out the ArticlesView component
+/* const ArticlesView = () => (
     <div className="content-section fade-in">
         <h2>Articles & Resources</h2>
         <p>Read the latest academic articles and shared resources.</p>
     </div>
 );
+*/
 
 const Home = ({ myEventsList }) => {
-    const [activeTab, setActiveTab] = useState('dashboard');
     const location = useLocation();
 
-    // Define the API URL
+
+    const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
+    const [userPhoto, setUserPhoto] = useState(localStorage.getItem('user_photo') || '');
+    const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'student');
+    const [activeTab, setActiveTab] = useState('dashboard');
+
+
+    
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    // Placeholder data for the sidebar - in a real app, this would come from a global state/context
-    const sidebarUser = {
-        name: 'Alex',
-        img: 'https://i.pravatar.cc/300?img=47' 
-    };
 
-    // Sync tab with location state
+
     useEffect(() => {
+        // Function to update state from localStorage
+        const syncUserData = () => {
+            setUserName(localStorage.getItem('user_name') || 'User');
+            setUserPhoto(localStorage.getItem('user_photo') || '');
+            setUserRole(localStorage.getItem('user_role') || 'student');
+        };
+
+        // Sync tab from location
         if (location.state && location.state.tab) {
             setActiveTab(location.state.tab);
         }
+
+        // Listen for changes from Profile.jsx or Navbar.tsx
+        window.addEventListener('storage', syncUserData);
+        return () => window.removeEventListener('storage', syncUserData);
     }, [location.state]);
 
+    useEffect(() => {
+    const fetchUserForSidebar = async () => {
+        try {
+            // Fetch the actual profile from the backend
+            const response = await fetch(`${API_URL}/api/users/profile`, { 
+                credentials: 'include' 
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                const fetchedName = result.data.name || result.data.firstName || 'User';
+                setUserName(fetchedName);
+                setUserPhoto(result.data.profileImage || result.data.photo || '');
+                setUserRole(result.data.role || 'student');
+                
+                // Sync localStorage so it stays fixed
+                localStorage.setItem('user_name', fetchedName);
+            }
+        } catch (err) {
+            console.error("SideBar Sync Error:", err);
+        }
+    };
+
+    fetchUserForSidebar();
+}, []);
+
+    // Avatar Logic
+    const avatarSrc = userPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${userName !== 'User' ? userName : 'Guest'}`;
     // Consistently render content based on activeTab
+    
+
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': 
-                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+                return <DashboardView 
+                    onSeeAll={() => setActiveTab('groups')} 
+                    onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
+                />;
             case 'profile':   
                 return <Profile />;
             case 'society':   
@@ -58,11 +113,25 @@ const Home = ({ myEventsList }) => {
                 return <GroupsPage />;
             case 'skills':    
                 return <SkillsView />;
-            case 'articles':  
-                return <ArticlesView />;
+            // Commented out the articles case
+            /* case 'articles':  
+                return <ArticlesView />; */
             case 'settings':  
                 return <SettingsView />;
-            default:          
+            
+            // Mentoring Views
+            case 'mentoring-hub': 
+                return <MentoringHub onSelectCategory={(category) => setActiveTab(category)} />;
+            case 'peer-mentoring': 
+                return <PeerMentoring onBack={() => setActiveTab('mentoring-hub')} />;
+            case 'lecturer-mentoring': 
+                return <LecturerMentoring onBack={() => setActiveTab('mentoring-hub')} />;
+            case 'peer-dashboard-view': 
+                return <MentorDashboardPeer />;
+            case 'lecturer-dashboard-view': 
+                return <MentorDashboardLecturer />;
+                
+            default: 
                 return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
         }
     };
@@ -77,15 +146,19 @@ const Home = ({ myEventsList }) => {
                 <div className="sidebar-profile">
                     <div className="profile-img-container" onClick={() => setActiveTab('profile')} style={{cursor:'pointer'}}>
                         <img 
-                            src={sidebarUser.img} 
+                            src={avatarSrc}
                             alt="User Profile" 
                             className="profile-img"
                         />
                         <div className="status-indicator"></div>
                     </div>
                     <div className="profile-info">
-                        <h3>Hi, {sidebarUser.name}</h3>
-                        <p>Student Member</p>
+                        <h3>Hi, { (userName && userName !== 'undefined' && userName !== 'User') 
+                            ? userName.split(' ')[0] 
+                            : 'User' }</h3>
+                       <p className="sidebar-role-tag">
+                            {userRole === 'lecturer' ? 'University Lecturer' : 'Student Member'}
+                        </p>
                     </div>
                 </div>
 
@@ -115,18 +188,24 @@ const Home = ({ myEventsList }) => {
                                 <span>Groups</span>
                             </a>
                         </li>
+                        <li className={['mentoring-hub', 'peer-mentoring', 'lecturer-mentoring'].includes(activeTab) ? 'active' : ''}>
+                            <a href="#mentoring" onClick={(e) => { e.preventDefault(); setActiveTab('mentoring-hub'); }}>
+                                <Icon icon="lucide:book-open" width="20" />
+                                <span>Mentoring</span>
+                            </a>
+                        </li>
                         <li className={activeTab === 'skills' ? 'active' : ''}>
                             <a href="#skills" onClick={(e) => { e.preventDefault(); setActiveTab('skills'); }}>
                                 <Icon icon="lucide:brain-circuit" width="20" />
                                 <span>Skill Matching</span>
                             </a>
                         </li>
-                        <li className={activeTab === 'articles' ? 'active' : ''}>
+                        {/* <li className={activeTab === 'articles' ? 'active' : ''}>
                             <a href="#articles" onClick={(e) => { e.preventDefault(); setActiveTab('articles'); }}>
                                 <Icon icon="lucide:file-text" width="20" />
                                 <span>Articles</span>
                             </a>
-                        </li>
+                        </li> */}
                     </ul>
 
                     <div className="nav-divider"></div>
@@ -139,7 +218,8 @@ const Home = ({ myEventsList }) => {
                             </a>
                         </li>
                         <li className="logout-item">
-                            <a href={`${API_URL}/auth/logout`}>
+
+                            <a href={`${API_URL}/auth/logout`} onClick={() => localStorage.clear()}>
                                 <Icon icon="lucide:log-out" width="20" />
                                 <span>Logout</span>
                             </a>
@@ -152,22 +232,21 @@ const Home = ({ myEventsList }) => {
                 <header className="dashboard-header">
                     <div className="header-left">
                         <div className="header-logo">
-                           <img src="/logo.png" alt="UniQ" width="28" height="28" />
-                           <span className="logo-text">UniQ</span>
+                            <img src="/logo.png" alt="UniQ" width="28" height="28" />
+                            <span className="logo-text">UniQ</span>
                         </div>
                     </div>
 
-                    <div className="header-center">
+                    {/* <div className="header-center">
                         <div className="search-bar">
                             <Icon icon="lucide:search" className="search-icon" />
                             <input type="text" placeholder="Search..." />
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="header-right">
-                        <button className="icon-btn">
-                            <Icon icon="lucide:mail" width="22" />
-                        </button>
+                        {/* <button className="icon-btn">
+                            <Icon icon="lucide:mail" width="22" /></button> */}
                         <button className="icon-btn relative">
                             <Icon icon="lucide:bell" width="22" />
                             <span className="notification-dot"></span>

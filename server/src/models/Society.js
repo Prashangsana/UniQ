@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const societySchema = new mongoose.Schema({
-  _id: { type: String, required: true }, // Using string IDs to match mock data (e.g., 'rotaract-club')
+  _id: { type: String, required: true },
   name: { type: String, required: true },
   shortName: { type: String },
   description: { type: String },
   logo: { type: String },
-  leader: { type: String }, // Placeholder or reference to User
+  leader: { type: String },
   followersCount: { type: Number, default: 0 },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, { timestamps: true });

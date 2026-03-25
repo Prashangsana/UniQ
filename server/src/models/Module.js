@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const moduleSchema = new mongoose.Schema({
+
   // We use String for _id so it matches your current IDs like '5COSC019C'
   _id: { 
     type: String, 
@@ -22,3 +23,4 @@ const moduleSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.models.Module || mongoose.model('Module', moduleSchema);
+

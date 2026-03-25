@@ -1,6 +1,8 @@
 import React from "react";
 import "./DashboardView.css";
 import { Icon } from "@iconify/react";
+import { useNavigate } from "react-router-dom";
+import MentorModal from "./MentorModal";
 
 const groupsData = [
   { id: 1, name: "CS - 97", img: "/images-d/gp.jpg" },
@@ -12,6 +14,12 @@ const groupsData = [
 ];
 
 const DashboardView = ({ onSeeAll }) => {
+  const navigate = useNavigate();
+  const [showMentorModal, setShowMentorModal] = React.useState(false);
+  const handleSelectRole = (role) => {
+    setShowMentorModal(false);
+    navigate(`/mentor-auth/${role}`);
+  };
   return (
     <div className="app-inner-container">
       {/* Hero Banner */}
@@ -87,7 +95,7 @@ const DashboardView = ({ onSeeAll }) => {
           </div>
 
           <div className="register-stack">
-            <button className="register-btn">
+            <button className="register-btn" onClick={() => setShowMentorModal(true)}>
               <div className="reg-content">
                 <span className="reg-title">Register as a Mentor</span>
                 <span className="reg-sub">Share your knowledge</span>
@@ -105,6 +113,13 @@ const DashboardView = ({ onSeeAll }) => {
           </div>
         </aside>
       </div>
+
+      {showMentorModal && (
+        <MentorModal 
+          onClose={() => setShowMentorModal(false)} 
+          onSelectRole={handleSelectRole}
+        />
+      )}
     </div>
   );
 };

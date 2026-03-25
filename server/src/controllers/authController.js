@@ -1,6 +1,11 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
+const getAdminEmails = () => {
+  if (!process.env.ADMIN_EMAILS) return [];
+  return process.env.ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase());
+};
+
 const sendTokenResponse = (user, statusCode, res) => {
   const token = jwt.sign(
     { id: user._id, role: user.role },
@@ -22,11 +27,14 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.googleCallback = async (req, res) => {
   try {
     const { email, name, firstName, lastName, providerId, provider, photo } = req.user;
+    const isAdmin = getAdminEmails().includes(email.toLowerCase());
 
     let user = await User.findOne({ email });
 
     if (user) {
       user.lastLogin = Date.now();
+      if (isAdmin && user.role !== 'admin') user.role = 'admin';
+
       if (!user.providerId) {
         user.providerId = providerId;
         user.authProvider = provider;
@@ -37,6 +45,9 @@ exports.googleCallback = async (req, res) => {
       let role = "lecturer";
       if (/\.\d{8,}/.test(email)) {
         role = "student";
+      }
+      if (isAdmin) {
+        role = 'admin';
       }
 
       user = await User.create({
@@ -73,7 +84,7 @@ exports.logout = (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    
+
     if (!user) {
       return res.status(401).json({ authenticated: false, message: "User not found" });
     }
@@ -85,7 +96,7 @@ exports.getMe = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role, 
+        role: user.role,
         photo: user.photo
       }
     });
@@ -99,37 +110,44 @@ exports.localEmailLogin = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Basic Domain Check
     if (!email || !email.endsWith('@iit.ac.lk')) {
       return res.status(400).json({ success: false, message: 'Invalid email. Please log in with university email.' });
     }
-
+    const isAdmin = getAdminEmails().includes(email.toLowerCase());
     let role = '';
     let firstNameRaw = '';
 
-    // 2. Format Validation via Regex
-    const studentRegex = /^([a-zA-Z]+)\.(\d{8,})@iit\.ac\.lk$/;
-    const lecturerRegex = /^([a-zA-Z]+)\.([a-zA-Z])@iit\.ac\.lk$/;
-
-    const studentMatch = email.match(studentRegex);
-    const lecturerMatch = email.match(lecturerRegex);
-
-    if (studentMatch) {
-      role = 'student';
-      firstNameRaw = studentMatch[1];
-    } else if (lecturerMatch) {
-      role = 'lecturer';
-      firstNameRaw = lecturerMatch[1]; 
+    if (isAdmin) {
+      role = 'admin';
+      firstNameRaw = email.split('@')[0];
     } else {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid email format. Use name.studentid@iit.ac.lk or name.initial@iit.ac.lk' 
-      });
+
+      // 2. Format Validation via Regex
+      const studentRegex = /^([a-zA-Z]+)\.(\d{8,})@iit\.ac\.lk$/;
+      const lecturerRegex = /^([a-zA-Z]+)\.([a-zA-Z])@iit\.ac\.lk$/;
+
+      const studentMatch = email.match(studentRegex);
+      const lecturerMatch = email.match(lecturerRegex);
+
+      if (studentMatch) {
+        role = 'student';
+        firstNameRaw = studentMatch[1];
+      } else if (lecturerMatch) {
+        role = 'lecturer';
+        firstNameRaw = lecturerMatch[1];
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format. Use name.studentid@iit.ac.lk or name.initial@iit.ac.lk'
+        });
+      }
+
     }
+
 
     // Format Names
     const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
-    const lastName = 'LastName'; 
+    const lastName = 'LastName';
     const fullName = `${firstName} ${lastName}`;
 
     // Database Check/Creation
@@ -138,19 +156,21 @@ exports.localEmailLogin = async (req, res) => {
     if (!user) {
       user = await User.create({
         name: fullName,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        role: role,
+        firstName,
+        lastName,
+        email,
+        role,
         authProvider: 'local',
         lastLogin: Date.now(),
       });
     } else {
       user.lastLogin = Date.now();
+
+      // Sync admin role if email is now in admin list
+      if (isAdmin && user.role !== 'admin') user.role = 'admin';
       await user.save();
     }
 
-    // Generate Token and Cookie (Similar to Google OAuth)
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -164,7 +184,6 @@ exports.localEmailLogin = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     };
 
-    // Send JSON response instead of a redirect so React can handle the UI
     res.status(200).cookie("token", token, options).json({
       success: true,
       user: { role: user.role }
