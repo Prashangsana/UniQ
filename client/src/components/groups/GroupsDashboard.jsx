@@ -9,6 +9,8 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
   const [myGroups, setMyGroups] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
 
+  const [allDeadlines, setAllDeadlines] = useState([]);
+
   // Dynamic Modules
   const [modules, setModules] = useState([]);
   const [loadingModules, setLoadingModules] = useState(true);
@@ -17,11 +19,15 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
   useEffect(() => {
     const fetchInvites = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/invites/my');
+        const response = await fetch('http://localhost:5000/api/invites/my', {
+          credentials: 'include'
+        });
         const data = await response.json();
         
-        if (data.success) {
+        if (data.success && Array.isArray(data.data)) {
           setInvites(data.data);
+        } else {
+          setInvites([]); // Fallback to empty array to prevent .map() errors
         }
       } catch (error) {
         console.error("Failed to fetch invites:", error);
@@ -31,7 +37,9 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     const fetchMyGroups = async () => {
       try {
         setLoadingGroups(true);
-        const response = await fetch('http://localhost:5000/api/groups/my');
+        const response = await fetch('http://localhost:5000/api/groups/my', {
+          credentials: 'include'
+        });
         const data = await response.json();
         if (data.success) setMyGroups(data.data);
       } catch (error) {
@@ -44,7 +52,9 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     // Fetch only modules that have an Open Group Project
     const fetchOpenModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/modules/open');
+        const response = await fetch('http://localhost:5000/api/groups/modules/open', {
+          credentials: 'include'
+        });
         const data = await response.json();
         if (data.success) {
           setModules(data.data);
@@ -56,9 +66,24 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
       }
     };
 
+    const fetchAllDeadlines = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/groups/my-deadlines', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          setAllDeadlines(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch all deadlines:", error);
+      }
+    };
+
     fetchInvites();
     fetchMyGroups();
     fetchOpenModules();
+    fetchAllDeadlines();
   }, []);
 
   return (
@@ -81,7 +106,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
                 onClick={() => onSelectGroup(group)}
               >
                 {/* Fallback image if the backend doesn't provide one */}
-                <img src={group.img || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=60'} alt={group.name} />
+                <img src={group.img || 'https://varthana.com/school/wp-content/uploads/2023/08/B512.jpg'} alt={group.name} />
                 <div className="gf-card-gradient">
                   <div className="gf-card-title">{group.name}</div>
                   <div className="gf-card-sub">{group.domain}</div>
@@ -148,6 +173,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
       <GroupsSidebar 
         type="dashboard" 
         invites={invites} 
+        deadlines={allDeadlines}
         onSelectInvite={onSelectInvite}
       />
     </div>

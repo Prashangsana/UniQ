@@ -9,7 +9,6 @@ const router = express.Router();
 // Local Email Login
 router.post('/local', localEmailLogin);
 
-
 router.get('/google',
   passport.authenticate('google', { 
     scope: ['profile', 'email'],

@@ -3,7 +3,7 @@ const Module = require('../models/Module'); // Assuming the admin dev creates th
 
 // Basic check: Is the user a lecturer?
 exports.isLecturer = (req, res, next) => {
-  if (req.user && req.user.role === 'lecturer') {
+  if (req.user && req.user.role === 'lecturer' || req.user.role === 'Lecturer') {
     next();
   } else {
     res.status(403).json({ success: false, message: 'Access denied. Lecturers only.' });
@@ -17,15 +17,16 @@ exports.isModuleLeader = async (req, res, next) => {
     const moduleId = req.params.moduleId || req.body.moduleId;
     
     // Find the module in the database
-    const moduleDoc = await Module.findOne({ _id: moduleId }); // Or search by string ID if you aren't using ObjectIds
+    const moduleDoc = await Module.findById(moduleId);
     
     if (!moduleDoc) {
       return res.status(404).json({ success: false, message: 'Module not found.' });
     }
 
     // Check if the logged-in lecturer's ID is in the moduleLeaders or moduleTeam array
-    const isLeader = moduleDoc.moduleLeaders.includes(req.user.id);
-    const isTeam = moduleDoc.moduleTeam && moduleDoc.moduleTeam.includes(req.user.id);
+    const userId = req.user._id.toString();
+    const isLeader = moduleDoc.moduleLeaders.some(id => id.toString() === userId);
+    const isTeam = moduleDoc.moduleTeam.some(id => id.toString() === userId);
 
     if (isLeader || isTeam) {
       next(); // They are authorized!
