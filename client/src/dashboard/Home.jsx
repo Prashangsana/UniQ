@@ -8,6 +8,7 @@ import GroupsPage from '../pages/GroupsPage';
 import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
 import { LeaderDashboard } from '../components/events/Leader/pages/Leader';
+>>>>>>>>> Temporary merge branch 2
 
 const SkillsView = () => (
     <div className="content-section fade-in">
@@ -16,32 +17,63 @@ const SkillsView = () => (
     </div>
 );
 
-const ArticlesView = () => (
+// Commented out the ArticlesView component
+/* const ArticlesView = () => (
     <div className="content-section fade-in">
         <h2>Articles & Resources</h2>
         <p>Read the latest academic articles and shared resources.</p>
     </div>
 );
+*/
 
 const Home = ({ myEventsList }) => {
-    const [activeTab, setActiveTab] = useState('dashboard');
     const location = useLocation();
 
+<<<<<<<<< Temporary merge branch 1
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+=========
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     // Placeholder data for the sidebar - in a real app, this would come from a global state/context
+>>>>>>>>> Temporary merge branch 2
     const sidebarUser = {
         name: 'Alex',
         img: 'https://i.pravatar.cc/300?img=47' 
     };
 
+<<<<<<<<< Temporary merge branch 1
+    // Sync tab with location state
+=========
+>>>>>>>>> Temporary merge branch 2
     useEffect(() => {
         if (location.state && location.state.tab) {
             setActiveTab(location.state.tab);
         }
-    }, [location.state]);
+    }, [location]);
 
+<<<<<<<<< Temporary merge branch 1
+    // Consistently render content based on activeTab
+    const renderContent = () => {
+        switch(activeTab) {
+            case 'dashboard': 
+                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+            case 'profile':   
+                return <Profile />;
+            case 'society':   
+                return <EventsPage myEventsList={myEventsList} />;
+            case 'groups':    
+                return <GroupsPage />;
+            case 'skills':    
+                return <SkillsView />;
+            case 'articles':  
+                return <ArticlesView />;
+            case 'settings':  
+                return <SettingsView />;
+            default:          
+                return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
+=========
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': return <DashboardView />;
@@ -53,6 +85,7 @@ const Home = ({ myEventsList }) => {
             case 'articles':  return <ArticlesView />;
             case 'settings':  return <SettingsView />;
             default:          return <DashboardView />;
+>>>>>>>>> Temporary merge branch 2
         }
     };
 
@@ -62,10 +95,16 @@ const Home = ({ myEventsList }) => {
                 <div className="sidebar-brand-mobile">
                     <span className="brand-text">UniQ</span>
                 </div>
+<<<<<<<<< Temporary merge branch 1
+
+                <div className="sidebar-profile">
+                    <div className="profile-img-container" onClick={() => setActiveTab('profile')} style={{cursor:'pointer'}}>
+=========
                 
 
                 <div className="sidebar-profile">
                     <div className="profile-img-container" onClick={() =>setActiveTab('profile')} style={{cursor:'pointer'}}>
+>>>>>>>>> Temporary merge branch 2
                         <img 
                             src={sidebarUser.img} 
                             alt="User Profile" 
@@ -105,18 +144,24 @@ const Home = ({ myEventsList }) => {
                                 <span>Groups</span>
                             </a>
                         </li>
+                        <li className={['mentoring-hub', 'peer-mentoring', 'lecturer-mentoring'].includes(activeTab) ? 'active' : ''}>
+                            <a href="#mentoring" onClick={(e) => { e.preventDefault(); setActiveTab('mentoring-hub'); }}>
+                                <Icon icon="lucide:book-open" width="20" />
+                                <span>Mentoring</span>
+                            </a>
+                        </li>
                         <li className={activeTab === 'skills' ? 'active' : ''}>
                             <a href="#skills" onClick={(e) => { e.preventDefault(); setActiveTab('skills'); }}>
                                 <Icon icon="lucide:brain-circuit" width="20" />
                                 <span>Skill Matching</span>
                             </a>
                         </li>
-                        <li className={activeTab === 'articles' ? 'active' : ''}>
+                        {/* <li className={activeTab === 'articles' ? 'active' : ''}>
                             <a href="#articles" onClick={(e) => { e.preventDefault(); setActiveTab('articles'); }}>
                                 <Icon icon="lucide:file-text" width="20" />
                                 <span>Articles</span>
                             </a>
-                        </li>
+                        </li> */}
                     </ul>
 
                     <div className="nav-divider"></div>
@@ -129,7 +174,10 @@ const Home = ({ myEventsList }) => {
                             </a>
                         </li>
                         <li className="logout-item">
-                            <a href={`${API_URL}/auth/logout`}>
+                            <a 
+                                href={`${API_URL}/auth/logout`} 
+                                onClick={() => localStorage.removeItem('is_logged_in')}
+                            >
                                 <Icon icon="lucide:log-out" width="20" />
                                 <span>Logout</span>
                             </a>
@@ -142,22 +190,21 @@ const Home = ({ myEventsList }) => {
                 <header className="dashboard-header">
                     <div className="header-left">
                         <div className="header-logo">
-                           <img src="/logo.png" alt="UniQ" width="28" height="28" />
-                           <span className="logo-text">UniQ</span>
+                            <img src="/logo.png" alt="UniQ" width="28" height="28" />
+                            <span className="logo-text">UniQ</span>
                         </div>
                     </div>
 
-                    <div className="header-center">
+                    {/* <div className="header-center">
                         <div className="search-bar">
                             <Icon icon="lucide:search" className="search-icon" />
                             <input type="text" placeholder="Search..." />
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="header-right">
-                        <button className="icon-btn">
-                            <Icon icon="lucide:mail" width="22" />
-                        </button>
+                        {/* <button className="icon-btn">
+                            <Icon icon="lucide:mail" width="22" /></button> */}
                         <button className="icon-btn relative">
                             <Icon icon="lucide:bell" width="22" />
                             <span className="notification-dot"></span>

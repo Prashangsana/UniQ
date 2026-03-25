@@ -1,365 +1,297 @@
 const Event = require("../models/Event");
-const SavedEvent = require("../models/SavedEvent");
-const Society = require("../models/Society");
-const Notification = require("../models/Notification");
-const Follow = require("../models/Follow");
-const mongoose = require("mongoose");
+<<<<<<<<< Temporary merge branch 1
 
-/* ================= NOTIFICATIONS HELPERS ================= */
+/*
+TEMP STORAGE (until DB exists)
+*/
+let savedEvents = [];
+let notifications = [];
 
-// Helper function to notify all followers of a society
-exports.notifyFollowersOfNewEvent = async (societyId, societyName, eventId) => {
-  try {
-    const followers = await Follow.find({ society: societyId });
-    const notifications = followers.map(f => ({
-      user: f.user,
-      message: `${societyName} has added a new event.`,
-      type: 'new_event',
-      eventId: eventId,
-      societyId: societyId
-    }));
-    
-    if (notifications.length > 0) {
-      await Notification.insertMany(notifications);
-    }
-  } catch (error) {
-    console.error("Error creating notifications:", error);
-  }
-};
-
-// Helper function to remove notifications for a specific event
-exports.removeEventNotifications = async (eventId) => {
-  try {
-    const result = await Notification.deleteMany({ 
-      eventId: eventId
-    });
-    console.log(`Removed ${result.deletedCount} notifications for event ${eventId}`);
-  } catch (error) {
-    console.error("Error removing event notifications:", error);
-  }
-};
-
-// Helper function to clean up expired event notifications
-exports.cleanupExpiredEventNotifications = async () => {
-  try {
-    const expiredEvents = await Event.find({
-      date: { $lt: new Date() },
-      status: { $in: ['Active', 'Featured'] }
-    });
-    
-    for (const event of expiredEvents) {
-      await Notification.deleteMany({
-        message: { $regex: event._id }
-      });
-    }
-  } catch (error) {
-    console.error("Error cleaning up expired notifications:", error);
-  }
-};
-
-// Helper function to clean up orphaned notifications (notifications for deleted events)
-exports.cleanupOrphanedNotifications = async () => {
-  try {
-    // Get all notifications
-    const allNotifications = await Notification.find({ type: 'new_event' });
-    
-    for (const notification of allNotifications) {
-      // Check if the event still exists
-      if (notification.eventId) {
-        const eventExists = await Event.findById(notification.eventId);
-        if (!eventExists) {
-          // Event was deleted, remove the notification
-          await Notification.findByIdAndDelete(notification._id);
-          console.log(`Removed orphaned notification for deleted event ${notification.eventId}`);
-        }
-      } else {
-        // Old notification without eventId, check by society name
-        const societyName = notification.message.split(' has added a new event.')[0];
-        if (societyName) {
-          // Find the society
-          const society = await Society.findOne({ name: societyName });
-          if (society) {
-            // Check if this society has any active events
-            const activeEvents = await Event.find({ 
-              society: society._id,
-              status: { $in: ['Active', 'Featured'] }
-            });
-            
-            // If no active events, remove the notification
-            if (activeEvents.length === 0) {
-              await Notification.findByIdAndDelete(notification._id);
-              console.log(`Removed orphaned notification for society ${societyName} (no active events)`);
-            }
-          } else {
-            // Society doesn't exist, remove notification
-            await Notification.findByIdAndDelete(notification._id);
-            console.log(`Removed orphaned notification for non-existent society ${societyName}`);
-          }
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error cleaning up orphaned notifications:", error);
-  }
-};
 
 /* ================= MAIN EVENT ================= */
 
 exports.getMainEvent = async (req, res) => {
-  try {
-    const today = new Date();
-    const event = await Event
-      .findOne({ 
-        date: { $gte: today },
-        status: { $in: ['Active', 'Featured'] }
-      })
-      .sort({ date: 1 });
 
-    if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: "No upcoming events found"
+  try {
+
+    const event = await Event
+      .find()
+      .sort({ date: 1 })
+      .limit(1);
+
+    /* fallback to mock data if DB empty */
+    if (!event || event.length === 0) {
+
+      const sorted = [...events].sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
+
+      return res.json({
+        success: true,
+        data: sorted[0]
       });
     }
 
     res.json({
       success: true,
-      data: event
+      data: event[0]
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: "Error fetching main event"
     });
+
   }
+
 };
 
 
 /* ================= LATEST EVENTS ================= */
 
 exports.getLatestEvents = async (req, res) => {
+
   try {
+
     const latest = await Event
       .find()
       .sort({ createdAt: -1 })
       .limit(6);
 
+    /* fallback if DB empty */
+    if (!latest || latest.length === 0) {
+
+      const sorted = [...events]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 6);
+
+      return res.json({
+        success: true,
+        data: sorted
+      });
+    }
+
     res.json({
       success: true,
       data: latest
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: "Error fetching latest events"
     });
+
   }
+
 };
 
 
 /* ================= TOP EVENTS THIS WEEK ================= */
 
 exports.getTopEvents = async (req, res) => {
+
   try {
-    const today = new Date();
+
     const topEvents = await Event
-      .find({ date: { $gte: today } })
+      .find()
       .sort({ date: 1 })
       .limit(6);
+
+    /* fallback if DB empty */
+    if (!topEvents || topEvents.length === 0) {
+
+      const sorted = [...events]
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 6);
+
+      return res.json({
+        success: true,
+        data: sorted
+      });
+    }
 
     res.json({
       success: true,
       data: topEvents
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: "Error fetching top events"
     });
+
   }
+
 };
 
 
 /*
 GET EVENT DETAILS
 */
-exports.getEventDetails = async (req, res) => {
-  try {
-    const eventId = req.params.id;
+exports.getEventDetails = (req, res) => {
 
-    // Handle mock IDs for the Society Leader dashboard
-    const mockIds = ["main-hackathon-2026", "rec-event-1", "rec-event-2", "old-event-1", "top-0", "top-1", "top-2"];
-    
-    if (mockIds.includes(eventId)) {
-      // Return a specific mock event "ESCAPED" for the top events to match the user's screenshot
-      const escapedMock = {
-        _id: eventId,
-        title: "ESCAPED",
-        description: "A thrilling escape room experience.",
-        date: new Date("2026-03-08"),
-        time: "09:00 AM",
-        venue: "IIT Auditorium",
-        adminLink: "https://docs.google.com/forms/...",
-        status: "Draft",
-        tickets: [
-          { name: "Standard", price: "1000" },
-          { name: "VIP", price: "2500" }
-        ],
-        bannerImage: ""
-      };
-      
-      return res.json({
-        success: true,
-        data: escapedMock
-      });
-    }
+  const eventId = req.params.id;
 
-    const event = await Event.findById(eventId);
+  const event = events.find(e => e._id === eventId);
 
-    if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found"
-      });
-    }
-
-    res.json({
-      success: true,
-      data: event
-    });
-  } catch (error) {
-    res.status(500).json({
+  if (!event) {
+    return res.status(404).json({
       success: false,
-      message: "Error fetching event details"
+      message: "Event not found"
     });
   }
+
+  res.json({
+    success: true,
+    data: event
+  });
 };
 
 
 /*
 GET EVENTS BY SOCIETY
 */
-exports.getSocietyEvents = async (req, res) => {
-  try {
-    const societyId = req.params.societyId;
-    const society = await Society.findById(societyId);
+exports.getSocietyEvents = (req, res) => {
 
-    if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found"
-      });
-    }
+  const societyId = req.params.societyId;
 
-    const societyEvents = await Event.find({ society: societyId });
+  const society = societies.find(s => s._id === societyId);
 
-    res.json({
-      success: true,
-      data: societyEvents
-    });
-  } catch (error) {
-    res.status(500).json({
+  if (!society) {
+    return res.status(404).json({
       success: false,
-      message: "Error fetching society events"
+      message: "Society not found"
     });
   }
+
+  const societyEvents = events.filter(e => e.society === societyId);
+
+  res.json({
+    success: true,
+    data: societyEvents
+  });
 };
 
 
 /*
 ADD EVENT
 */
-exports.addEventToMyEvents = async (req, res) => {
-  try {
-    const userId = req.user.id; // Assuming req.user is populated by authMiddleware
-    const eventId = req.params.id;
+exports.addEventToMyEvents = (req, res) => {
 
-    const eventExists = await Event.findById(eventId);
-    if (!eventExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found"
-      });
-    }
+  const userId = "mock-user-001";
+  const eventId = req.params.id;
 
-    const exists = await SavedEvent.findOne({ user: userId, event: eventId });
-    if (exists) {
-      return res.json({
-        success: true,
-        message: "Event already added"
-      });
-    }
+  const eventExists = events.find(e => e._id === eventId);
 
-    const savedEvent = new SavedEvent({ user: userId, event: eventId });
-    await savedEvent.save();
-
-    res.json({
-      success: true,
-      message: "Event added"
-    });
-  } catch (error) {
-    res.status(500).json({
+  if (!eventExists) {
+    return res.status(404).json({
       success: false,
-      message: "Error adding event"
+      message: "Event not found"
     });
   }
+
+  const exists = savedEvents.find(
+    e => e.user === userId && e.event === eventId
+  );
+
+  if (exists) {
+    return res.json({
+      success: true,
+      message: "Event already added"
+    });
+  }
+
+  savedEvents.push({
+    user: userId,
+    event: eventId
+  });
+
+  res.json({
+    success: true,
+    message: "Event added"
+  });
+
 };
 
 
 /*
 REMOVE EVENT
 */
-exports.removeEventFromMyEvents = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const eventId = req.params.id;
+exports.removeEventFromMyEvents = (req, res) => {
 
-    await SavedEvent.findOneAndDelete({ user: userId, event: eventId });
+  const userId = "mock-user-001";
+  const eventId = req.params.id;
 
-    res.json({
-      success: true,
-      message: "Event removed"
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error removing event"
-    });
-  }
+  savedEvents = savedEvents.filter(
+    e => !(e.user === userId && e.event === eventId)
+  );
+
+  res.json({
+    success: true,
+    message: "Event removed"
+  });
+
 };
 
 
 /*
 GET MY EVENTS
 */
-exports.getMyEvents = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const userEvents = await SavedEvent.find({ user: userId }).populate('event');
+exports.getMyEvents = (req, res) => {
 
-    res.json({
-      success: true,
-      data: userEvents
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching my events"
-    });
-  }
+  const userId = "mock-user-001";
+
+  const userEvents = savedEvents.filter(e => e.user === userId);
+
+  res.json({
+    success: true,
+    data: userEvents
+  });
+
 };
 
 
 /*
-GET ALL EVENTS
+GET NOTIFICATIONS
 */
-exports.getAllEvents = async (req, res) => {
+exports.getNotifications = (req, res) => {
+
+  const userId = "mock-user-001";
+
+  const userNotifications = notifications.filter(
+    n => n.user === userId
+  );
+
+  res.json({
+    success: true,
+    data: userNotifications
+  });
+
+};
+=========
+const SavedEvent = require("../models/SavedEvent");
+
+/* 
+TEMP STORAGE (until DB exists) 
+*/
+let notifications = [];
+
+/* ================= MAIN EVENT (Student) ================= */
+exports.getMainEvent = async (req, res) => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 });
-    res.json({
-      success: true,
-      data: events
-    });
+    const event = await Event.find().sort({ date: 1 }).limit(1);
+
+    if (!event || event.length === 0) {
+      const sorted = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+      return res.json({ success: true, data: sorted[0] });
+    }
+    res.json({ success: true, data: event[0] });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -559,44 +491,36 @@ exports.getNotifications = async (req, res) => {
 // Immediate cleanup for BIZLINK and ROTARACT notifications
 exports.immediateCleanupForSpecificSocieties = async () => {
   try {
-    // Check BIZLINK SOCIETY
-    const bizlinkSociety = await Society.findOne({ name: 'BIZLINK SOCIETY' });
-    if (bizlinkSociety) {
-      const bizlinkEvents = await Event.find({ 
-        society: bizlinkSociety._id,
-        status: { $in: ['Active', 'Featured'] }
-      });
-      
-      if (bizlinkEvents.length === 0) {
-        // Remove all BIZLINK notifications
-        const result = await Notification.deleteMany({ 
-          message: { $regex: 'BIZLINK SOCIETY has added a new event' }
-        });
-        if (result.deletedCount > 0) {
-          console.log(`✓ Removed ${result.deletedCount} BIZLINK notifications (no active events)`);
-        }
-      }
-    }
-    
-    // Check ROTARACT CLUB
-    const rotaractSociety = await Society.findOne({ name: 'ROTARACT CLUB' });
-    if (rotaractSociety) {
-      const rotaractEvents = await Event.find({ 
-        society: rotaractSociety._id,
-        status: { $in: ['Active', 'Featured'] }
-      });
-      
-      if (rotaractEvents.length === 0) {
-        // Remove all ROTARACT notifications
-        const result = await Notification.deleteMany({ 
-          message: { $regex: 'ROTARACT CLUB has added a new event' }
-        });
-        if (result.deletedCount > 0) {
-          console.log(`✓ Removed ${result.deletedCount} ROTARACT notifications (no active events)`);
-        }
-      }
-    }
-    
+    const userId = req.user ? req.user.id : "mock-user-001";
+    const userEvents = await SavedEvent.find({ user: userId });
+    res.json({ success: true, data: userEvents });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching my events" });
+  }
+};
+
+/* ================= NOTIFICATIONS (Student) ================= */
+exports.getNotifications = (req, res) => {
+  const userId = req.user ? req.user.id : "mock-user-001";
+  const userNotifications = notifications.filter(n => n.user === userId);
+  res.json({ success: true, data: userNotifications });
+};
+
+/* ================= LEADER CRUD (Your Part) ================= */
+exports.createEvent = async (req, res) => {
+  try {
+    const eventData = { ...req.body, leader: req.user.id };
+    const event = await Event.create(eventData);
+    res.status(201).json({ success: true, data: event });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getLeaderEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ leader: req.user.id });
+    res.status(200).json({ success: true, data: events });
   } catch (error) {
     console.error("Error in immediate cleanup:", error);
   }

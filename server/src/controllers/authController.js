@@ -1,6 +1,11 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
+const getAdminEmails = () => {
+  if (!process.env.ADMIN_EMAILS) return [];
+  return process.env.ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase());
+};
+
 const sendTokenResponse = (user, statusCode, res) => {
   const token = jwt.sign(
     { id: user._id, role: user.role },
@@ -26,11 +31,14 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.oauthLogin = async (req, res) => {
   try {
     const { email, name, firstName, lastName, providerId, provider, photo } = req.user;
+    const isAdmin = getAdminEmails().includes(email.toLowerCase());
 
     let user = await User.findOne({ email });
 
     if (user) {
       user.lastLogin = Date.now();
+      if (isAdmin && user.role !== 'admin') user.role = 'admin';
+      
       if (!user.providerId) {
         user.providerId = providerId;
         user.authProvider = provider;
@@ -41,6 +49,9 @@ exports.oauthLogin = async (req, res) => {
       let role = "lecturer";
       if (/\.\d{8,}/.test(email)) {
         role = "student";
+      }
+      if (isAdmin) {
+        role = 'admin';
       }
 
       user = await User.create({
@@ -97,5 +108,88 @@ exports.getMe = async (req, res) => {
   } catch (error) {
     console.error("GetMe Error:", error);
     res.status(500).json({ authenticated: false, message: "Server Error" });
+  }
+};
+
+exports.localEmailLogin = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !email.endsWith('@iit.ac.lk')) {
+      return res.status(400).json({ success: false, message: 'Invalid email. Please log in with university email.' });
+    }
+
+    const isAdmin = getAdminEmails().includes(email.toLowerCase());
+    let role = '';
+    let firstNameRaw = '';
+
+    // If it's an admin, bypass the strict regex formatting
+    if (isAdmin) {
+      role = 'admin';
+      firstNameRaw = email.split('@')[0]; 
+    } else {
+      const studentRegex = /^([a-zA-Z]+)\.(\d{8,})@iit\.ac\.lk$/;
+      const lecturerRegex = /^([a-zA-Z]+)\.([a-zA-Z])@iit\.ac\.lk$/;
+
+      const studentMatch = email.match(studentRegex);
+      const lecturerMatch = email.match(lecturerRegex);
+
+      if (studentMatch) {
+        role = 'student';
+        firstNameRaw = studentMatch[1];
+      } else if (lecturerMatch) {
+        role = 'lecturer';
+        firstNameRaw = lecturerMatch[1]; 
+      } else {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid email format. Use name.studentid@iit.ac.lk or name.initial@iit.ac.lk' 
+        });
+      }
+    }
+
+    const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
+    const lastName = isAdmin ? 'Admin' : 'LastName'; 
+    const fullName = `${firstName} ${lastName}`;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name: fullName,
+        firstName,
+        lastName,
+        email,
+        role,
+        authProvider: 'local',
+        lastLogin: Date.now(),
+      });
+    } else {
+      user.lastLogin = Date.now();
+      if (isAdmin && user.role !== 'admin') user.role = 'admin';
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    const options = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
+
+    res.status(200).cookie("token", token, options).json({
+      success: true,
+      user: { role: user.role }
+    });
+
+  } catch (error) {
+    console.error("Local Login Error:", error);
+    res.status(500).json({ success: false, message: "Login failed" });
   }
 };

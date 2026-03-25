@@ -6,12 +6,8 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String }, // Added as requested
   lastName: { type: String },  // Added as requested
   email: { type: String, required: true, unique: true },
-  
-  password: { type: String, required: false }, 
-  
-  role: { type: String, enum: ['student', 'lecturer', 'society_leader'], default: 'student' },
-  
-  // OAuth Fields
+  password: { type: String, required: false },
+  role: { type: String, enum: ['student', 'lecturer'], default: 'student' },
   authProvider: { type: String, default: 'local' },
   providerId: { type: String },
   photo: { type: String }, // Adding photo URL from Google

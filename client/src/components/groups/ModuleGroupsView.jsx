@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
 
-const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, groups }) => {
+const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
   // Filter groups that belong to this specific module
-  const moduleGroups = groups ? groups.filter(g => g.moduleId === module.id) : [];
+  const moduleGroups = groups.filter(g => g.moduleId === module.id);
 
   // Check if the user is already in ANY group within this specific module
   const isAlreadyInGroup = moduleGroups.some(g => g.joined === true);
@@ -14,11 +14,10 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, groups
         <button className="gf-btn-back" onClick={onBack}>&larr; Back to Modules</button>
 
         <div className="gf-header">
-          <h2>{module.id} Groups</h2>
+          <h2>{module._id} Groups</h2>
           <p>Showing all available project groups for {module.name}</p>
         </div>
         
-        {/* Only show Create button if user is NOT in a group for this module */}
         {!isAlreadyInGroup && (
           <button className="gf-btn-primary" style={{width:'auto'}} onClick={onCreateGroup}>
             + Create New Group
@@ -35,32 +34,37 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, groups
         </div>
       ) : (
         <div className="gf-grid">
-          {moduleGroups.map(group => (
-            <div 
-              key={group.id} 
-              className="gf-card-visual"
-              onClick={() => onSelectGroup(group)}
-            >
-              {/* Use group image or a fallback */}
-              <img src={group.img || 'https://via.placeholder.com/300x200?text=Group'} alt={group.id} />
-              
-              <div className="gf-card-gradient">
-                {/* Status Badge */}
-                <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
-                  {group.joined ? (
-                    <span className="gf-badge-joined">Your Group</span>
-                  ) : (
-                    <span className="gf-badge-open">Open</span>
-                  )}
-                </div>
+          {moduleGroups.map(group => {
+            if (!group) return null; // Failsafe
+            
+            // Checks if Imasha is in this specific card
+            const isMyGroup = group.members && group.members.some(m => (m._id || m) === CURRENT_USER_ID);
 
-                <div className="gf-card-title">{group.id}</div>
-                <div className="gf-card-sub">
-                  {group.members}/{group.maxMembers} Members • {group.domain}
+            return (
+              <div 
+                key={group._id} 
+                className="gf-card-visual"
+                onClick={() => onSelectGroup(group)}
+              >
+                <img src={group.img || `https://via.placeholder.com/300x200?text=${group.name}`} alt={group.name} />
+                
+                <div className="gf-card-gradient">
+                  <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+                    {isMyGroup ? (
+                      <span className="gf-badge-joined">Your Group</span>
+                    ) : (
+                      <span className="gf-badge-open">Open</span>
+                    )}
+                  </div>
+
+                  <div className="gf-card-title">{group.name}</div>
+                  <div className="gf-card-sub">
+                    {group.memberCount}/{group.maxMembers} Members • {group.domain}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
