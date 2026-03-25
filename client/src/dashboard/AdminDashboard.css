@@ -203,7 +203,7 @@
 }
 
 /* Modal Overlay */
-.modal-overlay {
+.admin-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -217,7 +217,7 @@
 }
 
 /* Modal Content Box */
-.modal-content {
+.admin-modal-content {
   background-color: var(--white);
   padding: 30px;
   border-radius: 8px;
@@ -225,7 +225,7 @@
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.modal-content h3 {
+.admin-modal-content h3 {
   margin-top: 0;
   margin-bottom: 20px;
   color: var(--dark-heading-text);
@@ -251,7 +251,7 @@
 }
 
 /* Modal Buttons */
-.modal-actions {
+.admin-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -293,7 +293,7 @@
 }
 
 /* Modal Tabs */
-.modal-tabs {
+.admin-modal-tabs {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
@@ -301,7 +301,7 @@
   padding-bottom: 10px;
 }
 
-.modal-tabs button {
+.admin-modal-tabs button {
   background: none;
   border: none;
   font-size: 0.95rem;
@@ -313,15 +313,15 @@
   transition: color 0.3s;
 }
 
-.modal-tabs button:hover {
+.admin-modal-tabs button:hover {
   color: var(--accent-cyan);
 }
 
-.modal-tabs button.active-tab {
+.admin-modal-tabs button.active-tab {
   color: var(--deep-banner-blue);
 }
 
-.modal-tabs button.active-tab::after {
+.admin-modal-tabs button.active-tab::after {
   content: '';
   position: absolute;
   bottom: -12px;
@@ -365,4 +365,23 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+}
+
+/* Society Specific Forms */
+.add-society-form {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 2fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.add-society-form input, .add-society-form select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.add-society-form select {
+  background-color: var(--white);
 }

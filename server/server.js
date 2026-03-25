@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
 const connectDB = require('./src/config/db');
 
 connectDB();//connect to MongoDB
@@ -27,8 +28,20 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// Initialize Passport 
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'super_secret_key_uniq',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', 
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
+
 app.use(passport.initialize());
+app.use(passport.session());
 require('./src/config/passport')(passport);
 
 
