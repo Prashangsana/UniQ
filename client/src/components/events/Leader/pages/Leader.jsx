@@ -28,9 +28,14 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
       .then(data => {
         if (data.success) {
           setSocieties(data.data);
-          if (isNewEvent && preselectedSocietyId) {
-            const match = data.data.find((s) => s._id === preselectedSocietyId);
-            if (match) setSelectedSociety(preselectedSocietyId);
+
+          if (isNewEvent) {
+            if (preselectedSocietyId) {
+              const match = data.data.find((s) => s._id === preselectedSocietyId);
+              if (match) setSelectedSociety(preselectedSocietyId);
+            } else if (data.data.length === 1) {
+              setSelectedSociety(data.data[0]._id);
+            }
           }
         }
       })
@@ -836,6 +841,22 @@ export const LeaderSocietyManager = () => {
 
   const [society, setSociety] = useState(null);
   const [events, setEvents] = useState([]);
+  const [isLeader, setIsLeader] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Check if user leads THIS society
+          if (id) {
+            const leadingThis = data.data.some(s => s._id === id);
+            setIsLeader(leadingThis);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading leader status:", err));
+  }, [id, API_URL]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
@@ -844,31 +865,11 @@ export const LeaderSocietyManager = () => {
         if (data.success) {
           setSociety(data.data.society);
           setEvents(data.data.events);
-        } else {
-          // 2. If backend returns error, use local fallback
-          useLocalFallback();
         }
       })
       .catch(err => {
-        console.error("Backend unreachable, using local fallback:", err);
-        useLocalFallback();
+        console.error("Backend unreachable:", err);
       });
-
-    // Local fallback logic for demos
-    function useLocalFallback() {
-      const mockSocieties = [
-        { _id: "rotaract-club", name: "ROTARACT CLUB", logo: "/images-e/societies/rotaract-club.png" },
-        { _id: "ieee-club", name: "IEEE CLUB", logo: "/images-e/societies/ieee-club.png" },
-        { _id: "bizlink-society", name: "BIZLINK SOCIETY", logo: "" },
-        { _id: "iit-sports-club", name: "IIT SPORTS CLUB", logo: "" }
-      ];
-      
-      const found = mockSocieties.find(s => s._id === id);
-      if (found) {
-        setSociety(found);
-        setEvents([{ _id: "mock-1", title: `${found.name} EVENT 1`, status: "Active" }]);
-      }
-    }
   }, [id, API_URL]);
 
   return (
@@ -892,20 +893,22 @@ export const LeaderSocietyManager = () => {
             {society && !society.logo && 'Logo'}
           </div>
           <h1>{society ? `${society.name} Admin Space` : 'Admin Space'}</h1>
-          <button
-            type="button"
-            className="edit-profile-btn"
-            onClick={() => society && navigate(`/admin/society/${id}/edit`, { state: { tab: 'leader' } })}
-          >
-            Edit Society Profile
-          </button>
+          {isLeader && (
+            <button
+              type="button"
+              className="edit-profile-btn"
+              onClick={() => society && navigate(`/admin/society/${id}/edit`, { state: { tab: 'leader' } })}
+            >
+              Edit Society Profile
+            </button>
+          )}
         </div>
       </header>
 
       <section className="manager-events">
         <div className="manager-events-header">
           <h3>Managed Events</h3>
-          <button className="small-add-btn" onClick={() => navigate('/admin/event/new')}>+ Add Event</button>
+          {isLeader && <button className="small-add-btn" onClick={() => navigate('/admin/event/new', { state: { preselectedSocietyId: id } })}>+ Add Event</button>}
         </div>
         <div className="manager-grid">
           {events.filter(e => e.status === 'Active' || e.status === 'Featured').map((ev, i) => (

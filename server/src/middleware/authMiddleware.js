@@ -1,29 +1,19 @@
-  const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.protect = async (req, res, next) => {
-  let token = req.cookies;
+  let token;
 
   console.log("\n=== AUTH MIDDLEWARE ===");
   console.log("Route:", req.method, req.originalUrl);
-  console.log("All Cookies:", req.cookies);
-  console.log("Signed Cookies:", req.signedCookies);
-  console.log("Cookie Header:", req.headers.cookie);
-
+  
   // Check for token in cookies (both regular and signed)
   if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
-    console.log("✓ Token found in unsigned cookies");
-  } else if (req.signedCookies && req.signedCookies.token) {
-    token = req.signedCookies.token;
-    console.log("✓ Token found in signed cookies");
-  } else if (req.headers.authorization) {
-    // Fallback: check Authorization header
-    const parts = req.headers.authorization.split(' ');
-    if (parts.length === 2 && parts[0] === 'Bearer') {
-      token = parts[1];
-      console.log("✓ Token found in Authorization header");
-    }
+    console.log("✓ Token found in cookies");
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+    console.log("✓ Token found in Authorization header");
   }
   
   if (!token) {

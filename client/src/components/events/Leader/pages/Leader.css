@@ -2,11 +2,11 @@
 
 /* Same canvas as Society & Events (.events-page): full width of viewport, dashboard-style padding */
 .admin-page {
-  width: 100%;
+  width: calc(100% - 80px);
+  margin-left: 80px;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  margin: 0;
   padding: clamp(1rem, 2.5vw, 2rem);
   background-color: var(--main-bg-off-white);
   min-height: 100vh;

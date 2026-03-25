@@ -7,6 +7,7 @@ import "./Event.css";
 export const EventsPage = ({ myEventsList = [] }) => {
 
   const [societies, setSocieties] = useState([]);
+  const [mySocieties, setMySocieties] = useState([]);
   const [showAllSocieties, setShowAllSocieties] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
@@ -19,7 +20,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
   /* LOAD SOCIETIES */
   useEffect(() => {
-
+    // Load ALL societies
     fetch(`${API_URL}/api/societies`, {
       credentials: "include"
     })
@@ -30,6 +31,18 @@ export const EventsPage = ({ myEventsList = [] }) => {
         }
       })
       .catch(err => console.error("Error loading societies:", err));
+
+    // Load societies user leads
+    fetch(`${API_URL}/api/societies/leader/all`, {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setMySocieties(data.data);
+        }
+      })
+      .catch(err => console.error("Error loading my societies:", err));
 
   }, [API_URL]);
 
@@ -100,6 +113,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
   }, [API_URL]);
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
+  const displayedMySocieties = showAllSocieties ? mySocieties : mySocieties.slice(0, 5);
 
   return (
     <div className="events-page">
@@ -155,6 +169,42 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
             <div className="societies-list">
 
+              {displayedMySocieties.map((club) => (
+
+                <SocietyCard
+                  key={club._id}
+                  id={club._id}
+                  name={club.name}
+                  logo={club.logo}
+                />
+
+              ))}
+
+              {mySocieties.length === 0 && (
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', padding: '10px 0' }}>
+                  You don't lead any societies yet.
+                </p>
+              )}
+
+            </div>
+
+            {mySocieties.length > 5 && (
+              <button
+                className="sidebar-view-more"
+                onClick={() => setShowAllSocieties(!showAllSocieties)}
+              >
+                {showAllSocieties ? "Show less" : "More >"}
+              </button>
+            )}
+
+          </div>
+
+          <div className="societies-section" style={{ marginTop: '20px' }}>
+
+            <h3>Explore societies</h3>
+
+            <div className="societies-list">
+
               {displayedSocieties.map((club) => (
 
                 <SocietyCard
@@ -168,12 +218,14 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
             </div>
 
-            <button
-              className="sidebar-view-more"
-              onClick={() => setShowAllSocieties(!showAllSocieties)}
-            >
-              {showAllSocieties ? "Show less" : "More >"}
-            </button>
+            {societies.length > 5 && (
+              <button
+                className="sidebar-view-more"
+                onClick={() => setShowAllSocieties(!showAllSocieties)}
+              >
+                {showAllSocieties ? "Show less" : "More >"}
+              </button>
+            )}
 
           </div>
 

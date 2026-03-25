@@ -1,8 +1,0 @@
-{
-  "_id": "60d0fe4f5311236168a109ca", 
-  "name": "Adithya Student",
-  "email": "adithya@example.com",
-  "role": "student",
-  "skills": ["React", "UI/UX", "Node.js"],
-  "bio": "Third-year Computer Science undergrad looking for a Web Development project."
-}
