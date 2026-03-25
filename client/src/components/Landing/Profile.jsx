@@ -100,12 +100,37 @@ const handleSocialChange = (e) => {
     setUser({ ...user, skills: user.skills.filter(s => s !== skillToRemove) });
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-    reader.onloadend = () => {
-      setUser({ ...user, profileImage: reader.result });
+  const handleImageChange = async (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    // 1. Instant Preview for the user (UI only)
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+      
+      // Update local state so the big circle changes immediately
+      setUser(prev => ({ ...prev, profileImage: base64Image }));
+
+      // 2. Auto-Save to Backend & Dashboard
+      try {
+        const response = await fetch('http://localhost:5000/api/users/profile', {
+          credentials: 'include',
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...user, profileImage: base64Image }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          
+          localStorage.setItem('user_photo', base64Image);
+         
+          window.dispatchEvent(new Event("storage")); 
+          console.log("Avatar auto-saved successfully");
+        }
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -183,10 +208,31 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
         </button>
 
         <div className="sidebar-socials-circular">
-          <a href="#" className="social-circle-btn"><Icon icon="lucide:instagram" /></a>
-          <a href="#" className="social-circle-btn"><Icon icon="lucide:github" /></a>
-          <a href="#" className="social-circle-btn"><Icon icon="lucide:linkedin" /></a>
-        </div>
+  <a 
+    href={user.socials?.instagram || "#"} 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="social-circle-btn"
+  >
+    <Icon icon="lucide:instagram" />
+  </a>
+  <a 
+    href={user.socials?.github || "#"} 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="social-circle-btn"
+  >
+    <Icon icon="lucide:github" />
+  </a>
+  <a 
+    href={user.socials?.linkedin || "#"} 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="social-circle-btn"
+  >
+    <Icon icon="lucide:linkedin" />
+  </a>
+</div>
       </aside>
 
       <main className="profile-main-content">
@@ -241,7 +287,7 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
                   <div className="form-row">
                     <div className="form-group">
                       <label>Email Address</label>
-                      <input name="email" value={user.email} onChange={handleChange} />
+                      <input name="email" value={user.email} disabled  className="disabled-input" />
                     </div>
                     <div className="form-group">
                       <label>{config.groupLabel}</label>

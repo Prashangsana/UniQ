@@ -117,7 +117,7 @@ function App() {
         {isLoggedIn ? (
           /* Authenticated View */
           <>
-          {/* Default Routes */}
+          {/* Default Routes */} 
           <Route path="/" element={
             userRole === 'admin' ? <AdminDashboard /> :userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
           } />
