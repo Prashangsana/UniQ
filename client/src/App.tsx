@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 
@@ -14,7 +14,6 @@ import Footer from './components/Landing/Footer';
 // Dashboard & Core Pages
 import Home from './dashboard/Home';
 import DashboardView from './dashboard/DashboardView';
-
 import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
@@ -24,13 +23,13 @@ import LecturerMentoring from './pages/LecturerMentoring';
 import PeerMentoring from './pages/PeerMentoring';
 import MentorLogin from './pages/MentorLogin';
 
-
 const MentoringWrapper = ({ Component }: { Component: any }) => {
   const navigate = useNavigate();
   return <Component onBack={() => navigate('/')} />;
 };
 
-function App() {
+function App(){
+  const navigate = useNavigate();
   // State Management
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('is_logged_in') === 'true';
@@ -43,20 +42,22 @@ function App() {
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
   // Auth Handlers
-  const handleLogin = (role: string = 'student'): void => {
+  const handleLogin = useCallback((role: string = 'student'): void => {
     localStorage.setItem('is_logged_in', 'true');
     localStorage.setItem('user_role', role);
     setIsLoggedIn(true);
     setUserRole(role);
+    navigate('/'); // Navigate to dashboard after login
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [navigate]);
 
-  const handleLogout = (): void => {
+  const handleLogout = useCallback((): void => {
     localStorage.removeItem('is_logged_in');
     localStorage.removeItem('user_role');
     setIsLoggedIn(false);
     setUserRole(null);
-  };
+    navigate('/'); // Navigate to landing page after logout
+  }, [navigate]);
 
   const handleAddEvent = (eventId: string): void => {
     if (!myEventsList.includes(eventId)) {
@@ -84,7 +85,7 @@ function App() {
       }
     };
     checkAuth();
-  }, [API_URL]);
+  }, [API_URL, handleLogin, handleLogout]);
 
   // Scroll animations for Landing Page
   useEffect(() => {
@@ -103,7 +104,6 @@ function App() {
   }, [isLoggedIn]);
 
     return (
-        <BrowserRouter>
           <Routes>
             {isLoggedIn ? (
               /* Authenticated View: Includes Role-based Main and Mentoring routes */
@@ -111,11 +111,11 @@ function App() {
                 {/* Default / Dashboard Routes based on role */}
                 <Route 
                   path="/" 
-                  element={userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />} 
+                  element={userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />}
                 />
                 <Route 
                   path="/dashboard" 
-                  element={userRole === 'society_leader' ? <LeaderDashboard /> : <DashboardView onSeeAll={() => { }} />} 
+                  element={userRole === 'society_leader' ? <LeaderDashboard /> : <DashboardView onSeeAll={() => { }} onSeeEvents={() => { }}  />} 
                 />
 
                 {/* Shared Core Routes */}
@@ -155,9 +155,9 @@ function App() {
                   element={<MentoringWrapper Component={PeerMentoring} />}
                 />
                 <Route path="/mentor-auth/:role" element={<MentorLogin />} />
-              </>
+              </>      
             ) : (
-              /* Landing Page View (Animations + updated Navbar prop preserved) */
+        /* Landing Page View */
               <Route path="/" element={
                 <div className="app-container">
                   <Navbar onSignUpSuccess={() => handleLogin('student')} />
@@ -174,8 +174,7 @@ function App() {
             {/* Redirect unknown routes back to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
-      );
+        );
 }
 
 export default App;

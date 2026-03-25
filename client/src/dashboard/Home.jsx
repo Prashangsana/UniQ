@@ -23,7 +23,6 @@ const SkillsView = () => (
     </div>
 );
 
-// Commented out the ArticlesView component
 /* const ArticlesView = () => (
     <div className="content-section fade-in">
         <h2>Articles & Resources</h2>
@@ -32,11 +31,13 @@ const SkillsView = () => (
 );
 */
 
-const Home = ({ myEventsList }) => {
+const Home = ({ myEventsList, onLogout, userRole }) => {
     const location = useLocation();
 
     // Active tab state
     const [activeTab, setActiveTab] = useState('dashboard');
+
+    const [showContactModal, setShowContactModal] = useState(false);
 
     // Define the API URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -59,6 +60,7 @@ const Home = ({ myEventsList }) => {
             case 'dashboard': 
                 return <DashboardView 
                     onSeeAll={() => setActiveTab('groups')} 
+                    onSeeEvents={() => setActiveTab('society')}
                     onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
                 />;
             case 'profile':   
@@ -168,10 +170,10 @@ const Home = ({ myEventsList }) => {
                             </a>
                         </li>
                         <li className="logout-item">
-                            <a 
+                            <a
                                 href={`${API_URL}/auth/logout`} 
                                 onClick={() => localStorage.removeItem('is_logged_in')}
-                            >
+                                >
                                 <Icon icon="lucide:log-out" width="20" />
                                 <span>Logout</span>
                             </a>
@@ -208,6 +210,26 @@ const Home = ({ myEventsList }) => {
 
                 <main className="dashboard-content">
                     {renderContent()}
+
+                    {showContactModal && (
+                        <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
+                            <div className="contact-form-modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3>Send a Message</h3>
+                                    <button className="close-btn" onClick={() => setShowContactModal(false)}>
+                                        <Icon icon="lucide:x" width="20" />
+                                    </button>
+                                </div>
+                                <form className="modal-form">
+                                    <label>Subject</label>
+                                    <input type="text" placeholder="What is this regarding?" />
+                                    <label>Message</label>
+                                    <textarea rows="4" placeholder="Type your message here..."></textarea>
+                                    <button type="submit" className="submit-btn">Send Message</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     <footer className="dashboard-footer">
                         <p>&copy; {new Date().getFullYear()} UniQ by Team Csypher. All rights reserved.</p>

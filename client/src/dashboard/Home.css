@@ -6,9 +6,8 @@
   color: var(--text-color);
 }
 
-/* --- SIDEBAR STYLES (Mini-Variant Drawer Logic) --- */
 .sidebar {
-  width: 80px; /* Default collapsed width */
+  width: 80px; 
   background-color: var(--white);
   border-right: 1px solid #e5e7eb;
   display: flex;
@@ -24,7 +23,6 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 
-/* Expand on Hover */
 .sidebar:hover {
   width: 260px;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
@@ -51,7 +49,7 @@
 
 .profile-img-container {
   position: relative;
-  min-width: 48px; /* Prevents image from shrinking */
+  min-width: 48px; 
   width: 48px;
   height: 48px;
   flex-shrink: 0;
@@ -76,11 +74,10 @@
   border: 2px solid var(--white);
 }
 
-/* Profile Text Fading Effect */
 .profile-info {
   opacity: 0;
-  visibility: hidden; /* Completely hides it from flow when collapsed */
-  transform: translateX(-10px); /* Adds a slick slide-in effect */
+  visibility: hidden; 
+  transform: translateX(-10px); 
   transition: all 0.3s ease;
 }
 
@@ -135,7 +132,6 @@
   box-sizing: border-box;
 }
 
-/* THE FIX: Forcing the icon to NEVER shrink */
 .sidebar-nav a svg {
   flex-shrink: 0;
   min-width: 20px;
@@ -156,7 +152,7 @@
 /* Link Text Fading Effect */
 .sidebar-nav span {
   opacity: 0;
-  visibility: hidden; /* Hides text perfectly */
+  visibility: hidden; 
   transform: translateX(-10px);
   transition: all 0.3s ease;
   white-space: nowrap;
@@ -330,22 +326,15 @@
 }
 
 .dashboard-footer {
-  /* Sticky & Floating Positioning */
   position: sticky;
-  bottom: 1.5rem; /* Lifts it slightly off the bottom edge */
+  bottom: 1.5rem; 
   z-index: 80; 
-  
-  /* Modern Frosted Glass Effect */
-  background-color: rgba(255, 255, 255, 0.6); /* Slightly brightened for a clean look */
+  background-color: rgba(255, 255, 255, 0.6); 
   backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
-  
-  /* The Chic Curves & Shadow */
-  border-radius: 30px; /* This gives it the beautifully curved ends */
-  border: 1px solid rgba(255, 255, 255, 0.4); /* Soft border all around */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Soft floating drop-shadow */
-  
-  /* Spacing */
+  border-radius: 30px; 
+  border: 1px solid rgba(255, 255, 255, 0.4); 
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   margin-top: 3rem; 
   margin-bottom: 0; 
   padding: 1rem 2rem; 
