@@ -14,9 +14,7 @@ const GroupsPage = () => {
   const [loading, setLoading] = useState(true);
 
   // --- ROLE STATE ---
-  const [userRole, setUserRole] = useState(() => {
-    return localStorage.getItem('user_role') || 'student';
-  });
+  const [userRole, setUserRole] = useState(null);
 
   // State: 'dashboard', 'module', 'group', 'invite', 'profile'
   const [view, setView] = useState('dashboard');
@@ -118,14 +116,6 @@ const GroupsPage = () => {
   if (userRole === 'lecturer') {
     return (
       <div style={{ position: 'relative' }}>
-        {/* DEV TOGGLE: Remove this button later when real Auth is connected */}
-        <button 
-          onClick={() => setUserRole('student')} 
-          style={{ position: 'absolute', top: '10px', right: '10px', background: '#334155', color: 'white', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', cursor: 'pointer', zIndex: 100 }}
-        >
-          Switch to Student View
-        </button>
-
         <LecturerDashboard />
       </div>
     );
@@ -134,14 +124,6 @@ const GroupsPage = () => {
   // --- STUDENT VIEWS ---
   return (
     <div style={{ position: 'relative' }}>
-      {/* DEV TOGGLE: Remove this button later when real Auth is connected */}
-      <button 
-        onClick={() => setUserRole('lecturer')} 
-        style={{ position: 'absolute', top: '10px', right: '10px', background: '#334155', color: 'white', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', cursor: 'pointer', zIndex: 100 }}
-      >
-        Switch to Lecturer View
-      </button>
-
       {view === 'module' && (
         <ModuleGroupsView
           module={selectedModule}

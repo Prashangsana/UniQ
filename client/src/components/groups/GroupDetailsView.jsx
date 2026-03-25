@@ -6,6 +6,12 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+
+  useEffect(() => {
+    if (group) setNewName(group.name);
+  }, [group]);
 
   const handleLeaveGroup = async () => {
     if (window.confirm(`Are you sure you want to leave ${group.name}?`)) {
@@ -45,6 +51,64 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
       setRequesting(false);
     }
   }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Basic validation: Check if it's an image
+    if (!file.type.startsWith('image/')) {
+      return alert("Please select an image file.");
+    }
+
+    // Convert to Base64
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/groups/groups/${group._id}/update`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ img: base64Image })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setGroup({ ...group, img: base64Image });
+          alert("Group image updated!");
+        } else {
+          alert("Error: " + data.message);
+        }
+      } catch (error) {
+        aconsole.error("Upload Error:", error); // This will show the actual error in the Browser Console (F12)
+        alert("Failed to upload image. Check console for details.");
+      }
+    };
+  };
+
+  const handleUpdateName = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/groups/groups/${group._id}/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: newName })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setGroup({ ...group, name: newName });
+        setIsEditingName(false);
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      alert("Failed to update name");
+    }
+  };
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -96,6 +160,57 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
       <div className="gf-main">
         <button className="gf-btn-back" onClick={onBack}>&larr; Back</button>
 
+        {/* --- NEW: Group Image Header --- */}
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          height: '200px',
+          borderRadius: '15px',
+          overflow: 'hidden',
+          marginBottom: '2rem',
+          backgroundColor: '#e2e8f0'
+        }}>
+          <img
+            src={group.img || 'https://varthana.com/school/wp-content/uploads/2023/08/B512.jpg'}
+            alt="Group cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+
+          {isLeader && (
+            <>
+              {/* The actual hidden file input */}
+              <input
+                type="file"
+                id="group-img-upload"
+                hidden
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              {/* The label acts as the clickable button */}
+              <label
+                htmlFor="group-img-upload"
+                style={{
+                  position: 'absolute',
+                  bottom: '15px',
+                  right: '15px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: '20px',
+                  padding: '8px 16px',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}
+              >
+                📸 Change Cover
+              </label>
+            </>
+          )}
+        </div>
+
         <div className="gf-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           {/* FEEDBACK ALERT FOR REJECTED GROUPS */}
           {group.status === 'open' && group.feedback && group.feedback !== "Approved" && (
@@ -122,8 +237,59 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
             </div>
           )}
           <div>
-            <h2>{group.name}</h2>
-            <p>{group.domain} • {group.members.length}/{group.maxMembers} Members</p>
+            <div>
+              {isEditingName ? (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input
+                    className="gf-input"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    style={{ fontSize: '1.5rem', fontWeight: 'bold', padding: '5px' }}
+                  />
+                  <button className="gf-btn-primary" onClick={handleUpdateName}>Save</button>
+                  <button className="gf-btn-outline" onClick={() => setIsEditingName(false)}>Cancel</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h2 style={{ margin: 0 }}>{group.name}</h2>
+                  {isLeader && (
+                    <button
+                      onClick={() => {
+                        setNewName(group.name); // Reset to current name before opening
+                        setIsEditingName(true);
+                      }}
+                      style={{
+                        background: '#f1f5f9',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        transition: 'background 0.2s'
+                      }}
+                      title="Edit Group Name"
+                      onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
+                      onMouseOut={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#64748b"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
+              <p>{group.domain} • {group.members.length}/{group.maxMembers} Members</p>
+            </div>
           </div>
           <div>
             {isMember ? (
@@ -219,7 +385,12 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
       </div>
 
       {isMember && (
-        <GroupsSidebar type="group" groupId={group._id} onViewProfile={onViewProfile} />
+        <GroupsSidebar
+          type="group"
+          groupId={group._id}
+          deadlines={group.deadlines} // Pass the group's specific deadlines
+          onViewProfile={onViewProfile}
+        />
       )}
     </div>
   );

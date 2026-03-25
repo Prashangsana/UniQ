@@ -75,7 +75,7 @@ exports.getModuleGroups = async (req, res) => {
     // Fetch groups for the specific module
     const groups = await Group.find({ moduleId })
       .populate('members', 'name email') 
-      .select('name domain members maxMembers isFinalised leader');
+      .select('name domain members maxMembers isFinalised leader img deadlines finalisedCode');
 
     // Format the response to explicitly include member count for the frontend
     const formattedGroups = groups.map(group => ({
@@ -86,7 +86,9 @@ exports.getModuleGroups = async (req, res) => {
       maxMembers: group.maxMembers,
       isFinalised: group.isFinalised,
       leader: group.leader,
-      members: group.members
+      members: group.members,
+      img: group.img,
+      deadlines: group.deadlines
     }));
 
     res.status(200).json({ success: true, count: formattedGroups.length, data: formattedGroups });
@@ -231,5 +233,92 @@ exports.leaveGroup = async (req, res) => {
   } catch (error) {
     console.error("Leave Group Error:", error);
     res.status(500).json({ success: false, message: 'Server Error: Could not leave group.' });
+  }
+};
+
+/**
+ * @desc    Update group details (like image)
+ * @route   PUT /api/groups/groups/:groupId/update
+ * @access  Private (Leader only)
+ */
+exports.updateGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { img, name } = req.body;
+    const userId = (req.user._id || req.user.id).toString();
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+
+    // Security Check: Only the leader can change the group image
+    if (group.leader.toString() !== userId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Unauthorized: Only the group leader can update group details.' 
+      });
+    }
+
+    // Update the image field
+    group.img = img;
+    if (name) group.name = name;
+
+    await group.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Group updated successfully', 
+      data: group 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+// GET /api/groups/my-deadlines
+exports.getAllMyDeadlines = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    
+    // Find all groups where the user is a member
+    const groups = await Group.find({ members: userId }).select('name deadlines');
+    
+    // Flatten all deadlines into one array and add the group name for context
+    const allDeadlines = groups.flatMap(g => 
+      (g.deadlines || []).map(d => ({ 
+        ...d.toObject(), 
+        groupName: g.name,
+        groupId: g._id 
+      }))
+    );
+
+    res.status(200).json({ success: true, data: allDeadlines });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update the existing updateDeadlines to be more robust
+exports.updateDeadlines = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { deadlines } = req.body; 
+    const userId = (req.user._id || req.user.id).toString();
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ success: false, message: "Group not found" });
+
+    if (group.leader.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Only leaders can edit deadlines" });
+    }
+
+    group.deadlines = deadlines;
+    await group.save();
+
+    res.status(200).json({ success: true, data: group.deadlines });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating deadlines" });
   }
 };
