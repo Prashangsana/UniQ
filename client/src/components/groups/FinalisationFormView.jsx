@@ -1,21 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
 
 const FinalisationFormView = ({ group, onBack, onSubmit }) => {
   const allowedPrefixes = ["SE", "CS", "DS", "AI"]; 
   
   const [selectedPrefix, setSelectedPrefix] = useState(allowedPrefixes[0]);
-  const [memberDetails, setMemberDetails] = useState(
-    group?.members.map(m => ({ 
-      id: m._id || m.id, 
-      name: m.name, 
-      iitId: m.iitId || '', // Might come from profile later
-      uowId: m.uowId || '', // Might come from profile later
-      phone: '', 
-      tutorialGroup: '' 
-    })) || []
-  );
+  
+  const [memberDetails, setMemberDetails] = useState([]);
 
+  useEffect(() => {
+    if (group?.members) {
+      const details = group.members.map(m => {
+        const isObject = typeof m === 'object' && m !== null;
+        return {
+          id: isObject ? (m._id || m.id) : m,
+          name: isObject ? (m.name || 'Member') : 'Member',
+          iitId: m.iitId || '',
+          uowId: m.uowId || '',
+          phone: '',
+          tutorialGroup: ''
+        };
+      });
+      setMemberDetails(details);
+    }
+  }, [group]);
+  
   const handleDetailChange = (index, field, value) => {
     const updatedDetails = [...memberDetails];
     updatedDetails[index][field] = value;
@@ -34,12 +43,17 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
 
     const submissionData = {
       selectedPrefix,
-      tutorialGroup: memberDetails[0]?.tutorialGroup || 'N/A', 
-      memberExtraInfo: memberExtraInfo
+     formData: {
+        tutorialGroup: memberDetails[0]?.tutorialGroup || 'N/A', 
+        memberExtraInfo: memberExtraInfo
+      }
     };
 
     onSubmit(group._id || group.id, submissionData);
   };
+
+  if (!group) return <div className="gf-main">Loading group...</div>;
+  if (memberDetails.length === 0) return <div className="gf-main">Processing member details...</div>;
 
   return (
     <div className="gf-main" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '2rem' }}>
@@ -59,7 +73,7 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
             <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>
               Select Degree Pathway / Prefix
             </label>
-            <select className="gf-input" value={selectedPrefix} onChange={(e) => setSelectedPrefix(e.target.value)}>
+            <select className="gf-form-input" value={selectedPrefix} onChange={(e) => setSelectedPrefix(e.target.value)}>
               {allowedPrefixes.map(prefix => (
                 <option key={prefix} value={prefix}>{prefix}</option>
               ))}
@@ -78,22 +92,22 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
                 {/* UoW ID */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '5px' }}>UoW ID</label>
-                  <input type="text" className="gf-input" placeholder="e.g. w1234567" value={member.uowId} onChange={(e) => handleDetailChange(index, 'uowId', e.target.value)} required />
+                  <input type="text" className="gf-form-input" placeholder="e.g. w1234567" value={member.uowId} onChange={(e) => handleDetailChange(index, 'uowId', e.target.value)} required />
                 </div>
                 {/* IIT ID */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '5px' }}>IIT ID</label>
-                  <input type="text" className="gf-input" placeholder="e.g. 20220001" value={member.iitId} onChange={(e) => handleDetailChange(index, 'iitId', e.target.value)} required />
+                  <input type="text" className="gf-form-input" placeholder="e.g. 20220001" value={member.iitId} onChange={(e) => handleDetailChange(index, 'iitId', e.target.value)} required />
                 </div>
                 {/* Phone Number */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '5px' }}>Phone Number</label>
-                  <input type="tel" className="gf-input" placeholder="07X XXX XXXX" value={member.phone} onChange={(e) => handleDetailChange(index, 'phone', e.target.value)} required />
+                  <input type="tel" className="gf-form-input" placeholder="07X XXX XXXX" value={member.phone} onChange={(e) => handleDetailChange(index, 'phone', e.target.value)} required />
                 </div>
                 {/* Tutorial Group */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '5px' }}>Tutorial Group</label>
-                  <input type="text" className="gf-input" placeholder="e.g. Group A / T1" value={member.tutorialGroup} onChange={(e) => handleDetailChange(index, 'tutorialGroup', e.target.value)} required />
+                  <input type="text" className="gf-form-input" placeholder="e.g. Group A / T1" value={member.tutorialGroup} onChange={(e) => handleDetailChange(index, 'tutorialGroup', e.target.value)} required />
                 </div>
               </div>
             </div>

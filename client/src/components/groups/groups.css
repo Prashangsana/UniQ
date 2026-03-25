@@ -18,7 +18,7 @@
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease;
   cursor: pointer;
   background-color: #fff;
@@ -26,7 +26,7 @@
 
 .gf-card-visual:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .gf-card-visual img {
@@ -67,7 +67,7 @@
   background: white;
   border-radius: 1rem;
   padding: 1.2rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
   cursor: pointer;
   border: 1px solid #f1f5f9;
   transition: all 0.2s;
@@ -84,7 +84,7 @@
   background: white;
   border-radius: 1rem;
   padding: 1.5rem;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
   height: fit-content;
 }
 
@@ -137,9 +137,36 @@
   transition: opacity 0.2s;
 }
 
-.gf-btn-primary { background: #5b7cbd; color: white; }
-.gf-btn-danger { background: #ef4444; color: white; }
-.gf-btn-outline { background: transparent; border: 2px solid #5b7cbd; color: #5b7cbd; }
+.gf-btn-primary {
+  background: #5b7cbd;
+  color: white;
+}
+
+.gf-btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+/* Find this section in your groups.css and update it */
+.gf-btn-outline {
+  background: transparent;
+  border: 2px solid #5b7cbd;
+  color: #5b7cbd;
+
+  padding: 8px 24px !important;
+  /* 8px top/bottom, 24px left/right */
+  border-radius: 12px !important;
+
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Optional: Add a hover effect for a smoother feel */
+.gf-btn-outline:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+}
 
 .gf-skill-chip {
   display: inline-block;
@@ -153,14 +180,29 @@
 }
 
 /* === Layout Utilities === */
-.gf-header { margin-bottom: 1.5rem; }
-.gf-header h2 { margin: 0; color: #1e293b; }
-.gf-header p { margin: 0.5rem 0 0; color: #64748b; }
-.gf-section-title { margin: 2rem 0 1rem; color: #334155; }
+.gf-header {
+  margin-bottom: 1.5rem;
+}
+
+.gf-header h2 {
+  margin: 0;
+  color: #1e293b;
+}
+
+.gf-header p {
+  margin: 0.5rem 0 0;
+  color: #64748b;
+}
+
+.gf-section-title {
+  margin: 2rem 0 1rem;
+  color: #334155;
+}
 
 /* Status Badges for Module View */
 .gf-badge-open {
-  background: #22c55e; /* Green */
+  background: #22c55e;
+  /* Green */
   color: white;
   padding: 4px 10px;
   border-radius: 20px;
@@ -171,7 +213,8 @@
 }
 
 .gf-badge-joined {
-  background: #5b7cbd; /* Theme Blue */
+  background: #5b7cbd;
+  /* Theme Blue */
   color: white;
   padding: 4px 10px;
   border-radius: 20px;
@@ -188,8 +231,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Form Inputs */
@@ -238,4 +288,143 @@
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid #f1f5f9;
+}
+
+.gf-input:focus {
+  background-color: #e2e8f0 !important;
+  transition: background-color 0.2s ease;
+}
+
+.gf-input {
+  border-radius: 25px !important;
+  background-color: #f1f5f9 !important;
+  border: 1px solid transparent !important;
+  padding: 0 20px;
+  transition: all 0.2s ease;
+}
+
+.gf-input:focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+}
+
+.gf-btn-primary {
+  padding: 8px 24px !important; /* 8px top/bottom, 24px left/right */
+  border-radius: 12px !important;
+  transition: transform 0.1s active;
+}
+
+.gf-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.gf-name {
+  border-radius: 5px !important;
+  /* Changed from 3px to 25px for the pill shape */
+  background-color: #f1f5f9 !important;
+  border: 1px solid transparent !important;
+
+  /* Vertical padding: 12px (top/bottom) | Horizontal padding: 20px (left/right) */
+  padding: 12px 20px !important;
+
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Ensures padding doesn't break the width */
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.gf-name:focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Sidebar Items */
+.gf-empty-text {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.gf-deadline-item {
+  margin-bottom: 1rem;
+  border-left: 3px solid #ef4444;
+  padding-left: 10px;
+}
+
+.gf-deadline-item strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.gf-deadline-item small {
+  color: #64748b;
+}
+
+/* Edit Mode Styling */
+.gf-edit-row {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  position: relative;
+}
+
+.gf-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gf-edit-row input {
+  width: 100%;
+  margin-bottom: 5px;
+  font-size: 0.8rem;
+  padding: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.gf-edit-link {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.gf-form-input {
+  border-radius: 5px !important;
+  /* Changed from 3px to 25px for the pill shape */
+  background-color: #f1f5f9 !important;
+  border: 1px solid transparent !important;
+
+  /* Vertical padding: 12px (top/bottom) | Horizontal padding: 20px (left/right) */
+  padding: 12px 20px !important;
+
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Ensures padding doesn't break the width */
+  transition: all 0.2s ease;
+  outline: none;
 }

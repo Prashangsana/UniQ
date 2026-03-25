@@ -13,7 +13,7 @@ const groupsData = [
   { id: 6, name: "Machine Learning", img: "/images-d/ml.jpg" },
 ];
 
-const DashboardView = ({ onSeeAll }) => {
+const DashboardView = ({ onSeeAll, onSeeEvents }) => {
   const navigate = useNavigate();
   const [showMentorModal, setShowMentorModal] = React.useState(false);
   const handleSelectRole = (role) => {
@@ -86,11 +86,11 @@ const DashboardView = ({ onSeeAll }) => {
               </span>{" "}
               Rankings
             </button>
-            <button className="tile-btn blue">
+            <button className="tile-btn blue" onClick={onSeeEvents}>
               <span className="icon">
                 <Icon icon="lucide:ticket" width="32" />
               </span>{" "}
-              My Events
+              Events
             </button>
           </div>
 

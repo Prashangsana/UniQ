@@ -5,9 +5,9 @@ const router = express.Router();
 // const { createRequest, getGroupRequests, approveRequest, rejectRequest } = require('../controllers/requestController');
 
 // MOCK CONTROLLER
-const { createRequest, getGroupRequests, approveRequest, rejectRequest } = require('../controllers/mockRequestController');
+const { createRequest, getGroupRequests, approveRequest, rejectRequest } = require('../controllers/requestController');
 
-const { protect } = require('../middleware/mockAuthMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 router.use(protect);
 

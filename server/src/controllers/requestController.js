@@ -63,7 +63,7 @@ exports.approveRequest = async (req, res) => {
     const group = await Group.findById(request.group);
 
     // Ensure the person approving is actually in the group
-    if (!group.members.includes(userId)) {
+    if (!group.members.some(m => m.toString() === userId)) {
       return res.status(403).json({ success: false, message: 'Only group members can approve' });
     }
 

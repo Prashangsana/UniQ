@@ -6,13 +6,24 @@ const InviteDetailsView = ({ invite, onBack }) => {
 
   // Generic handler for both Accept and Reject actions
   const handleInviteAction = async (action) => {
+    if (!invite?._id) {
+      alert("Error: Invite ID is missing.");
+      return;
+    }
+
     setLoading(true);
     try {
       // Action will be either 'accept' or 'reject'
-      const response = await fetch(`http://localhost:5000/api/invites/${invite._id}/${action}`, {
+      const response = await fetch(`http://localhost:5000/api/invites/invites/${invite._id}/${action}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server did not return JSON. Check your backend console.");
+      }
       
       const data = await response.json();
       
@@ -35,8 +46,8 @@ const InviteDetailsView = ({ invite, onBack }) => {
       <button className="gf-btn-back" onClick={onBack}>&larr; Back to Dashboard</button>
       
       <div className="gf-card-simple" style={{ padding: '2rem', textAlign: 'center' }}>
-        <h2 style={{ marginBottom: '0.5rem' }}>Invitation from {invite.groupId}</h2>
-        <p style={{ color: '#64748b', marginBottom: '2rem' }}>Module: {invite.moduleId}</p>
+        <h2 style={{ marginBottom: '0.5rem' }}>Invitation from {invite.group?.name}</h2>
+        <p style={{ color: '#64748b', marginBottom: '2rem' }}>Module: {invite.group?.moduleId}</p>
         
         <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '1rem', marginBottom: '2rem' }}>
           <p style={{ fontStyle: 'italic', color: '#475569' }}>"{invite.message}"</p>

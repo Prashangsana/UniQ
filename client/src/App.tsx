@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+/* EDITED: Removed 'BrowserRouter' from here; it must only be in main.tsx */
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
-
-
 
 // Landing Page Components
 import Navbar from './components/Landing/Navbar';
@@ -16,7 +15,6 @@ import PublicProfile from './components/Landing/PublicProfile';
 
 // Dashboard & Core Pages
 import Home from './dashboard/Home';
-import DashboardView from './dashboard/DashboardView';
 import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
@@ -33,6 +31,8 @@ const MentoringWrapper = ({ Component }: { Component: any }) => {
 };
 
 function App() {
+  const navigate = useNavigate();
+
   // State Management
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('is_logged_in') === 'true';
@@ -42,24 +42,27 @@ function App() {
   });
   
   const [isLoading, setIsLoading] = useState<boolean>(true); 
-  
+
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
   // Auth Handlers
-  const handleLogin = (role: string = 'student'): void => {
+  const handleLogin = useCallback((role: string = 'student'): void => {
     localStorage.setItem('is_logged_in', 'true');
     localStorage.setItem('user_role', role);
     setIsLoggedIn(true);
     setUserRole(role);
-  };
+    navigate('/'); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [navigate]);
 
-  const handleLogout = (): void => {
+  const handleLogout = useCallback((): void => {
     localStorage.removeItem('is_logged_in');
     localStorage.removeItem('user_role');
     setIsLoggedIn(false);
     setUserRole(null);
-  };
+    navigate('/'); 
+  }, [navigate]);
 
   const handleAddEvent = (eventId: string): void => {
     if (!myEventsList.includes(eventId)) {
@@ -89,7 +92,7 @@ function App() {
       }
     };
     checkAuth();
-  }, [API_URL]);
+  }, [API_URL, handleLogin, handleLogout]);
 
   // Scroll animations for Landing Page
   useEffect(() => {
@@ -108,83 +111,88 @@ function App() {
   }, [isLoggedIn, isLoading]);
 
   if (isLoading) {
-    return <div className="loading-screen">Loading...</div>; 
+    return <div className="loading-screen">Loading UniQ...</div>; 
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {isLoggedIn ? (
-          /* Authenticated View */
-          <>
-          {/* Default Routes */} 
-          <Route path="/" element={
-            userRole === 'admin' ? <AdminDashboard /> :userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
-          } />
-          
-          <Route path="/dashboard" element={
-            userRole === 'admin' ? <AdminDashboard /> :userRole === 'society_leader' ? <LeaderDashboard /> : <Home myEventsList={myEventsList} />
-          } />
-          {userRole === 'admin' && (
-              <Route path="/admin" element={<AdminDashboard />} />
-            )}
 
+    <Routes>
+      {isLoggedIn ? (
+        /* --- AUTHENTICATED VIEW --- */
+        <>
+          {/* Default Dashboards based on role */}
+          <Route 
+            path="/" 
+            element={
+              userRole === 'admin' ? <AdminDashboard /> : 
+              userRole === 'society_leader' ? <LeaderDashboard /> : 
+              <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
+            } 
+          />
+
+          
+          <Route 
+            path="/dashboard" 
+            element={
+              userRole === 'admin' ? <AdminDashboard /> : 
+              userRole === 'society_leader' ? <LeaderDashboard /> : 
+              <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
+            } 
+          />
+
+          {/* Shared Core Routes */}
+          <Route path="/society/:id" element={<SocietyProfilePage />} />
+          <Route path="/groups" element={<GroupsPage />} />
           <Route path="/profile/:id" element={<PublicProfile />} />
 
-          <Route path="/groups" element={<GroupsPage />} />
-
-          <Route path="/society/:id" element={<SocietyProfilePage />} />
-
-          {/* Leader Specific Routes */}
+          {/* Role-Based Event Logic */}
           {userRole === 'society_leader' ? (
+            /* Leader sees Editor for CRUD operations */
             <Route path="/event/:eventId" element={<LeaderEventEditor />} />
           ) : (
-            <>
-            
-              <Route
-                path="/event/:eventId"
-                element={
-                  <EventDetailsPage
-                    onAddEvent={handleAddEvent}
-                    onRemoveEvent={handleRemoveEvent}
-                    myEventsList={myEventsList as any}
-                  />
-                }
-              />
-              <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
-            </>
-         ) }
+            /* Students see Event Details */
+            <Route
+              path="/event/:eventId"
+              element={
+                <EventDetailsPage
+                  onAddEvent={handleAddEvent}
+                  onRemoveEvent={handleRemoveEvent}
+                  myEventsList={myEventsList as any}
+                />
+              }
+            />
+          )}
 
-        <Route path="/mentoring/lecturers" element={<MentoringWrapper Component={LecturerMentoring} />} />
-        <Route path="/mentoring/peers" element={<MentoringWrapper Component={PeerMentoring} />} />
-        <Route path="/mentor-auth/:role" element={<MentorLogin />} />
+          {/* Admin Path Fallback */}
+          <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </>
-          ) : (
-          /* --- PUBLIC / LANDING PAGE VIEW --- */
-          <>
-            <Route path="/" element={
-              <div className="app-container">
-                <Navbar onSignUpSuccess={(role) => handleLogin(role)} />
-                <Hero />
-                <div className="reveal-on-scroll"><Features /></div>
-                <div className="reveal-on-scroll"><HowItWorks /></div>
-                <div className="reveal-on-scroll"><Pricing /></div>
-                <div className="reveal-on-scroll"><Team /></div>
-                <Footer />
-              </div>
-            } />
-
-            <Route path="/profile/:id" element={<PublicProfile />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </>
-        )}
-      </Routes>
-    </BrowserRouter>
+          {/* Mentoring Routes */}
+          <Route path="/mentoring/lecturers" element={<MentoringWrapper Component={LecturerMentoring} />} />
+          <Route path="/mentoring/peers" element={<MentoringWrapper Component={PeerMentoring} />} />
+          <Route path="/mentor-auth/:role" element={<MentorLogin />} />
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </>      
+      ) : (
+        /* --- PUBLIC / LANDING PAGE VIEW --- */
+        <>
+          <Route path="/" element={
+            <div className="app-container">
+              <Navbar onSignUpSuccess={(role) => handleLogin(role)} />
+              <Hero />
+              <div className="reveal-on-scroll"><Features /></div>
+              <div className="reveal-on-scroll"><HowItWorks /></div>
+              <div className="reveal-on-scroll"><Pricing /></div>
+              <div className="reveal-on-scroll"><Team /></div>
+              <Footer />
+            </div>
+          } />
+          <Route path="/profile/:id" element={<PublicProfile />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </>
+      )}
+    </Routes>
   );
 }
 
 export default App;
-        

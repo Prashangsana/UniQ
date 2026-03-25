@@ -8,10 +8,16 @@ const UserProfileView = ({ user, type, onBack }) => {
   const handleRequestAction = async (action) => {
     try {
       // action will be either 'approve' or 'reject'
-      const response = await fetch(`http://localhost:5000/api/requests/${user.requestId}/${action}`, {
+      const response = await fetch(`http://localhost:5000/api/requests/requests/${user.requestId}/${action}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server did not return JSON. Check your backend console.");
+      }
       
       const data = await response.json();
       if (data.success) {
@@ -29,10 +35,11 @@ const UserProfileView = ({ user, type, onBack }) => {
   const handleSendInvite = async () => {
     setProcessing(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/groups/${user.targetGroupId}/invite`, {
+      const response = await fetch(`http://localhost:5000/api/invites/groups/${user.targetGroupId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user._id }) 
+        credentials: 'include',
+        body: JSON.stringify({ invitedUserId: user._id }) // Match your controller's req.body.invitedUserId
       });
       
       const data = await response.json();
