@@ -115,6 +115,7 @@ function App() {
   }
 
   return (
+
     <Routes>
       {isLoggedIn ? (
         /* --- AUTHENTICATED VIEW --- */
@@ -128,6 +129,7 @@ function App() {
               <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
             } 
           />
+
           
           <Route 
             path="/dashboard" 
