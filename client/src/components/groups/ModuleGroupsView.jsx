@@ -64,12 +64,20 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, curren
   return (
     <div className="gf-layout">
       <div className="gf-main">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <button className="gf-btn-back" onClick={onBack}>&larr; Back to Modules</button>
+        </div>
 
-          <div className="gf-header">
-            <h2>{module._id} Groups</h2>
-            <p>Showing all available project groups for {module.name}</p>
+        {/* --- Header and Create Button row --- */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start', // Align items to the top
+          marginBottom: '2rem'
+        }}>
+          <div className="gf-header" style={{ textAlign: 'left' }}>
+            <h2 style={{ margin: 0 }}>{module._id} Groups</h2>
+            <p style={{ margin: '5px 0 0 0' }}>Showing all available project groups for {module.name}</p>
           </div>
 
           {!isAlreadyInGroup && (
