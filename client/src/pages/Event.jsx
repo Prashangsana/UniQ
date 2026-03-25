@@ -180,7 +180,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
 
 /* ================= EVENT DETAILS PAGE ================= */
-export const EventDetailsPage = () => {
+export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] }) => {
 
   const params = useParams();
   const eventId = params.eventId || params.id;
@@ -192,7 +192,7 @@ export const EventDetailsPage = () => {
   const [eventData, setEventData] = useState(null);
   const [fetchDone, setFetchDone] = useState(false);
 
-  const isAdded = (location.state?.myEventsList || []).some(
+  const isAdded = (myEventsList || []).some(
     e => {
       const savedEventId = e.event?._id || e.event || e;
       return savedEventId.toString() === eventId?.toString();

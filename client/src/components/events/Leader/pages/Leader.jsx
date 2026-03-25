@@ -147,6 +147,64 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
     }
   };
 
+  const handleSaveAsDraft = async () => {
+    if (!title || !date.dd || !date.mm || !date.yyyy) {
+      alert("Please fill in the Event Name and Date.");
+      return;
+    }
+
+    if (!selectedSociety) {
+      alert("Please select a society for this event.");
+      return;
+    }
+
+    const eventData = {
+      title,
+      description,
+      date: `${date.yyyy}-${date.mm}-${date.dd}`,
+      time: `${time.hh}:${time.min} ${time.period}`,
+      venue,
+      adminLink,
+      registerLink,
+      instagramLink,
+      tickets,
+      status: 'Draft',
+      bannerImage,
+      society: selectedSociety
+    };
+
+    const url = isNewEvent
+      ? `${API_URL}/api/events`
+      : `${API_URL}/api/events/${eventId}`;
+
+    const method = isNewEvent ? 'POST' : 'PUT';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(eventData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(isNewEvent ? "Event Saved as Draft!" : "Draft Updated Successfully!");
+        // Navigate back to society profile if we came from one or if event belongs to a society
+        const targetSocietyId = selectedSociety;
+        if (targetSocietyId) {
+          navigate(`/admin/society/${targetSocietyId}`, { state: { tab: 'leader' } });
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        alert(`Failed to save draft: ${data.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Save draft error:", err);
+      alert("Network error: Failed to connect to server");
+    }
+  };
+
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
@@ -222,6 +280,7 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
     selectedSociety,
     setSelectedSociety,
     handleSave,
+    handleSaveAsDraft,
     handleDelete,
     handleImageUpload,
     addTicketTier,
@@ -252,6 +311,7 @@ function LeaderEventFormBody({
   selectedSociety,
   setSelectedSociety,
   handleSave,
+  handleSaveAsDraft,
   handleDelete,
   handleImageUpload,
   addTicketTier,
@@ -460,6 +520,9 @@ function LeaderEventFormBody({
             <div className="admin-actions">
               <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
                 {isNewEvent ? 'Publish Event' : 'Save Changes'}
+              </button>
+              <button className="save-btn" onClick={handleSaveAsDraft} style={{ background: '#64748b', padding: '16px 40px', borderRadius: '12px', marginLeft: '10px' }}>
+                {isNewEvent ? 'Draft Event' : 'Save as Draft'}
               </button>
               {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
             </div>
@@ -846,7 +909,7 @@ export const LeaderSocietyManager = () => {
         </div>
         <div className="manager-grid">
           {events.filter(e => e.status === 'Active' || e.status === 'Featured').map((ev, i) => (
-            <LeaderEventBanner key={`managed-${i}`} id={ev._id} title={ev.title} />
+            <LeaderEventBanner key={`managed-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} />
           ))}
           {events.filter(e => e.status !== 'Active' && e.status !== 'Featured').length === 0 && events.length === 0 && (
             <div className="leader-empty">No managed events yet.</div>
@@ -860,7 +923,7 @@ export const LeaderSocietyManager = () => {
         </div>
         <div className="manager-grid">
           {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).map((ev, i) => (
-            <LeaderEventBanner key={`draft-${i}`} id={ev._id} title={ev.title} />
+            <LeaderEventBanner key={`draft-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} />
           ))}
           {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).length === 0 && (
             <div className="leader-empty">No drafted or past events.</div>

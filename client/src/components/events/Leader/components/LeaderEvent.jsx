@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import "./LeaderEvent.css";
 
 // 1. Admin Event Banner
-export const LeaderEventBanner = ({ large, id = "sample-event", title }) => {
+export const LeaderEventBanner = ({ large, id = "sample-event", title, image }) => {
   const navigate = useNavigate();
   const displayTitle = title || id.replace(/-/g, ' ').toUpperCase();
   
@@ -11,7 +11,13 @@ export const LeaderEventBanner = ({ large, id = "sample-event", title }) => {
     <div 
       className={`leader-banner ${large ? "large" : ""}`} 
       onClick={() => navigate(`/admin/event/${id}`)}
-      style={{ cursor: 'pointer', position: 'relative' }}
+      style={{ 
+        cursor: 'pointer', 
+        position: 'relative',
+        backgroundImage: `url(${image || "/images-e/default.jpg"})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     >
       <div className="leader-banner-text">
         {displayTitle}
@@ -43,7 +49,8 @@ export const LeaderEventRow = ({ title, events = [] }) => {
           displayItems.map((event, index) => {
             const eventId = typeof event === 'string' ? event : event._id;
             const eventTitle = typeof event === 'string' ? null : event.title;
-            return <LeaderEventBanner key={index} id={eventId} title={eventTitle} />;
+            const bannerImage = typeof event === 'object' ? event.bannerImage : null;
+            return <LeaderEventBanner key={index} id={eventId} title={eventTitle} image={bannerImage} />;
           })
         )}
       </div>
