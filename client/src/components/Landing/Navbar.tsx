@@ -3,12 +3,13 @@ import { Icon } from "@iconify/react";
 import "./Navbar.css";
 
 interface NavbarProps {
-  onSignUpSuccess?: () => void;
+  onSignUpSuccess?: (role?: string) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Define the API URL
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -20,14 +21,51 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
   const openSignUp = () => {
     setIsMenuOpen(false);
     setIsSignUpOpen(true);
+    setErrorMessage("");
   };
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign up submitted");
+    setErrorMessage("");
+    
+    const emailInput = (document.getElementById("signup-email") as HTMLInputElement).value;
 
-    if (onSignUpSuccess) {
-      onSignUpSuccess();
+    try {
+      const response = await fetch(`${API_URL}/auth/local`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: emailInput }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+
+        localStorage.setItem('is_logged_in', 'true');
+
+        console.log("User Data from Server:", data.user);
+
+        const displayName = data.user.name || data.user.firstName || "User";
+        localStorage.setItem('user_role', data.user.role);
+        localStorage.setItem('user_name', data.user.name); // Store full name
+        localStorage.setItem('user_photo', data.user.photo || ""); // Store photo if exists
+
+
+
+        if (onSignUpSuccess) {
+          onSignUpSuccess(data.user.role); 
+        }
+        
+        window.location.reload(); 
+      } else {
+        setErrorMessage(data.message);
+      }
+    } catch (error) {
+      console.error("Login request failed", error);
+      setErrorMessage("An error occurred connecting to the server.");
     }
   };
 
@@ -113,6 +151,11 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
                   placeholder="name@domain.com"
                   autoFocus
                 />
+                {errorMessage && (
+                  <p className="error-text" style={{ color: 'red', fontSize: '0.8rem', marginTop: '0.2rem' }}>
+                    {errorMessage}
+                  </p>
+                )}
               </div>
 
               <button type="submit" className="btn-modal primary">

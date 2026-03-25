@@ -1,10 +1,12 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Event = require('./src/models/Event');
-const Society = require('./src/models/Society');
+//const Society = require('./src/models/Society');
+const User = require('./src/models/User');
 const eventsData = require('./src/mockData/events.json');
 const societiesData = require('./src/mockData/societies.json');
-const studentsData = require('./data/mockstudent.json');
+
+const mockUsers = require('./src/mockData/mockUsers');
 
 const seedDB = async () => {
   try {
@@ -12,10 +14,20 @@ const seedDB = async () => {
     console.log('Connected to MongoDB for seeding...');
 
     // Clear existing data (optional, but good for fresh start)
-    await Event.deleteMany({});
-    await Society.deleteMany({});
+    //await Event.deleteMany({});
+    //await Society.deleteMany({});
     await User.deleteMany({});
 
+    console.log('Seeding your Student data...');
+    // This adds your data from mockUsers.js into Atlas
+    const cleanedUsers = mockUsers.map(user => {
+      const { _id, ...rest } = user; 
+      return rest;
+    });
+    await User.insertMany(cleanedUsers); 
+    console.log('✅ Students seeded successfully!');
+
+   
     // 1. Insert Societies
     const societyMap = {};
 
@@ -37,15 +49,14 @@ const seedDB = async () => {
     const eventsToInsert = eventsData.map(e => ({
       title: e.title,
       date: new Date(e.date),
-      society: societyMap[e.society] || e.society, // Use mapped ObjectId if available
+      //society: societyMap[e.society] || e.society, // Use mapped ObjectId if available
       bannerImage: e.bannerImage,
       createdAt: e.createdAt ? new Date(e.createdAt) : new Date()
     }));
 
     // 3. Insert student 
-    console.log('Seeding Students...');
-    await User.insertMany(studentsData); 
-    console.log('Students seeded with Bios and Skills!');
+   
+    
 
     await Event.insertMany(eventsToInsert);
     console.log('Events seeded!');

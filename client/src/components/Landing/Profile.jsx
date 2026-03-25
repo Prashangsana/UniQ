@@ -1,66 +1,180 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import './Profile.css';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);//
+  const [error, setError] = useState(null);//
   const fileInputRef = useRef(null);
 
-  const [user, setUser] = useState({
-    name: 'Alex',
-    username: 'lexes',
-    email: 'alex@student.uni.ac.lk',
-    course: 'Computer Science Undergraduate',
-    group: 'CS 2023 / Group A',
-    modules: ['Java', 'Web Development', 'Software Engineering'],
-    bio: 'I am a computer-science student at IIT',
-    aboutMe: 'Outside of code, I enjoy building projects and learning new tech.',
-    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'UI/UX Design'],
-    profileImage: 'https://i.pravatar.cc/300?img=47'
-  });
+  
 
-  // Local state for comma-separated inputs
-  const [skillsInput, setSkillsInput] = useState(user.skills.join(', '));
-  const [modulesInput, setModulesInput] = useState(user.modules.join(', '));
+  // Initialize with null - data will come from your userMock.js via the Controller
+  const [user, setUser] = useState(null);
+  const [modulesInput, setModulesInput] = useState('');
+
+  // select skills 
+  const PREDEFINED_SKILLS = ["React", "Node.js", "Java", "Python", "UI/UX Design", "SQL", "Figma", "TypeScript", "JavaScript", "C++", "Other"];
+  const [selectedSkill, setSelectedSkill] = useState('');
+  const [otherSkill, setOtherSkill] = useState('');
+  const [showOtherInput, setShowOtherInput] = useState(false);
+
+  const isLecturer = user?.role === 'lecturer'; 
+
+  const config = {
+    academicLabel: isLecturer ? "Education & Qualifications" : "Course Name",
+    academicField: isLecturer ? "education" : "course",
+    groupLabel: isLecturer ? "Department" : "Academic Group",
+    groupField: isLecturer ? "department" : "group",
+    skillsLabel: isLecturer ? "Expertise Areas" : "My Skills",
+    modulesLabel: isLecturer ? "Modules Taught" : "Modules",
+    predefinedList: isLecturer 
+      ? ["Artificial Intelligence", "Cyber Security", "Cloud Computing", "Software Architecture", "Data Science", "Machine Learning", "Other"]
+      : ["React", "Node.js", "Java", "Python", "UI/UX Design", "SQL", "Figma", "TypeScript", "Other"]
+  };
+
+  // --- STAGE 1 & 3: FETCH DATA FROM BACKEND ---
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/users/profile',{credentials:'include'});
+        const result = await response.json();
+
+        if (result.success) {
+          const data =result.data;
+          setUser({
+            ...data,
+          skills: data.skills || [],
+          modules: data.modules || [],
+          education: data.education || '',
+          department: data.department || '',
+          socials: data.socials || { instagram: '', github: '', linkedin: '' }
+          });
+         
+          setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
+        } else {
+          setError(result.message);
+        }
+      } catch (err) {
+        setError("Could not connect to the server. Make sure your Node backend is running on port 5000.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
+  const { name, value } = e.target;
+  setUser({ ...user, [name]: value });
+};
+
+const handleSocialChange = (e) => {
     const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
+    setUser({
+      ...user,
+      socials: { ...user.socials, [name]: value }
+    });
+  };
+
+// --- NEW SKILL METHODS ---
+  const handleSkillSelectChange = (e) => {
+    const val = e.target.value;
+    setSelectedSkill(val);
+    setShowOtherInput(val === "Other");
+  };
+
+  const addSkill = () => {
+    const skillToAdd = selectedSkill === "Other" ? otherSkill.trim() : selectedSkill;
+    if (skillToAdd && !user.skills.includes(skillToAdd)) {
+      setUser({ ...user, skills: [...user.skills, skillToAdd] });
+      setSelectedSkill('');
+      setOtherSkill('');
+      setShowOtherInput(false);
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    setUser({ ...user, skills: user.skills.filter(s => s !== skillToRemove) });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUser({ ...user, profileImage: URL.createObjectURL(file) });
+      const reader = new FileReader();
+    reader.onloadend = () => {
+      setUser({ ...user, profileImage: reader.result });
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    // Convert strings back to arrays
+    
+    const updatedModules = modulesInput.split(',').map(m => m.trim()).filter(m => m !== "");
+    
+    const updatedData = { 
+      ...user, 
+      
+      modules: updatedModules 
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        //*
+        credentials:'include',
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setUser(result.data);
+        const finalPhoto = result.data.profileImage || result.data.photo || "";
+        localStorage.setItem('user_name', result.data.name);
+        localStorage.setItem('user_photo', finalPhoto); 
+        window.dispatchEvent(new Event("storage"));
+        setIsEditing(false);
+        alert("Profile Updated Successfully ");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      alert("Failed to save changes.");
     }
   };
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    // Convert strings back to arrays
-    const updatedSkills = skillsInput.split(',').map(s => s.trim()).filter(s => s !== "");
-    const updatedModules = modulesInput.split(',').map(m => m.trim()).filter(m => m !== "");
-    
-    setUser({ 
-      ...user, 
-      skills: updatedSkills, 
-      modules: updatedModules 
-    });
-    setIsEditing(false);
-  };
+  
 
+/* --- CHANGE: ADD FALLBACK IMAGE LOGIC --- */
+
+if (loading) return <div className="loading-screen">Loading Profile...</div>;
+if (error) return <div className="error-screen">{error}</div>;
+if (!user) return null;
+
+const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
+ 
   return (
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
         <div className="avatar-wrapper-lg" onClick={() => fileInputRef.current.click()}>
-          <img src={user.profileImage} alt="Profile" className="large-avatar" />
-          <div className="status-emoji"><Icon icon="lucide:camera" /></div>
+          <img src={userAvatar} alt="Profile" className="large-avatar" />
+          <div className="status-emoji"> 
+            <Icon icon="lucide:camera" />
+          </div>
           <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*" />
         </div>
 
         <div className="sidebar-names">
           <h1>{user.name}</h1>
-          <p className="username">@{user.username}</p>
+          
+          {/* --- CHANGE: ADD DYNAMIC ROLE TAG --- */}
+          
+          <p className="username">@{user.username || 'username'}</p>
           <p className="user-email">{user.email}</p>
         </div>
 
@@ -86,10 +200,10 @@ const Profile = () => {
                   <p className="main-bio-text">{user.bio}</p>
                 </div>
                 <div className="academic-details">
-                  <p><span className="label">Course:</span> {user.course}</p>
-                  <p><span className="label">Group:</span> {user.group}</p>
+                  <p><span className="label">{config.academicLabel}:</span> {isLecturer ? user.education : user.course}</p>
+                  <p><span className="label">{config.groupLabel}:</span> {isLecturer ? user.department : user.group}</p>
                   <div className="learning-section">
-                    <span className="label">Modules:</span>
+                    <span className="label">{config.modulesLabel}:</span>
                     <ul className="modules-list">
                       {user.modules.map((m, i) => <li key={i}>{m}</li>)}
                     </ul>
@@ -101,7 +215,7 @@ const Profile = () => {
                   <p>{user.aboutMe}</p>
                 </div>
                 <div className="skills-section">
-                  <h3>✨ My Skills</h3>
+                  <h3>✨ {config.skillsLabel}</h3>
                   <div className="skills-grid">
                     {user.skills.map((s, i) => <div key={i} className="skill-pill-light">{s}</div>)}
                   </div>
@@ -110,7 +224,7 @@ const Profile = () => {
             ) : (
               /* FULL EDIT MODE */
               <div className="content-wrapper">
-                <h2 className="edit-header">Update Profile ✨</h2>
+                <h2 className="edit-header">Update {isLecturer ? 'Lecturer' : 'Student'} Profile ✨</h2>
                 <form className="edit-form" onSubmit={handleSave}>
                   <div className="form-row">
                     <div className="form-group">
@@ -123,20 +237,25 @@ const Profile = () => {
                     </div>
                   </div>
 
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Email Address</label>
                       <input name="email" value={user.email} onChange={handleChange} />
                     </div>
                     <div className="form-group">
-                      <label>Academic Group</label>
-                      <input name="group" value={user.group} onChange={handleChange} />
+                      <label>{config.groupLabel}</label>
+                      <input name={config.groupField} 
+                        value={user[config.groupField] || ''} 
+                        onChange={handleChange} />
                     </div>
                   </div>
 
                   <div className="form-group">
-                    <label>Course Name</label>
-                    <input name="course" value={user.course} onChange={handleChange} />
+                    <label>{config.academicLabel}</label>
+                    <input name={config.academicField} 
+                      value={user[config.academicField] || ''} 
+                      onChange={handleChange}/>
                   </div>
 
                   <div className="form-group">
@@ -151,12 +270,53 @@ const Profile = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Modules (comma separated)</label>
+                      <label>{config.modulesLabel} (comma separated)</label>
                       <input value={modulesInput} onChange={(e) => setModulesInput(e.target.value)} />
                     </div>
-                    <div className="form-group">
-                      <label>Skills (comma separated)</label>
-                      <input value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
+                    {/* --- NEW SKILLS SELECTOR UI --- */}
+                  <div className="form-group">
+                    <label>{config.skillsLabel}</label>
+                    <div className="skills-tag-editor">
+                      {user.skills.map((skill, index) => (
+                        <div key={index} className="skill-tag">
+                          {skill}
+                          <Icon icon="lucide:x" onClick={() => removeSkill(skill)} className="remove-tag-icon" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="skill-input-row">
+                      <select value={selectedSkill} onChange={handleSkillSelectChange} className="skill-select">
+                        <option value="">Choose a skill...</option>
+                        {config.predefinedList.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      {showOtherInput && (
+                        <input 
+                          placeholder="Type skill..." 
+                          value={otherSkill}
+                          onChange={(e) => setOtherSkill(e.target.value)}
+                          className="other-skill-input"
+                        />
+                      )}
+                      <button type="button" onClick={addSkill} className="btn-add-skill">Add</button>
+                    </div>
+                  </div>
+                  </div>
+                  {/* SOCIAL MEDIA SECTION */}
+                  <div className="form-group">
+                    <label>Social Media Profiles</label>
+                    <div className="social-inputs-grid">
+                      <div className="social-input-item">
+                        <Icon icon="lucide:instagram" />
+                        <input name="instagram" placeholder="Instagram URL" value={user.socials?.instagram || ''} onChange={handleSocialChange} />
+                      </div>
+                      <div className="social-input-item">
+                        <Icon icon="lucide:github" />
+                        <input name="github" placeholder="GitHub URL" value={user.socials?.github || ''} onChange={handleSocialChange} />
+                      </div>
+                      <div className="social-input-item">
+                        <Icon icon="lucide:linkedin" />
+                        <input name="linkedin" placeholder="LinkedIn URL" value={user.socials?.linkedin || ''} onChange={handleSocialChange} />
+                      </div>
                     </div>
                   </div>
 
