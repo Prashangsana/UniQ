@@ -50,7 +50,14 @@ const groupSchema = new mongoose.Schema({
   },
   // Stores the form data (IIT IDs, UoW IDs, Phone numbers, Tutorial Groups)
   finalisationForm: { 
-    type: mongoose.Schema.Types.Mixed 
+    tutorialGroup: { type: String },
+    memberExtraInfo: [{
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      iitId: { type: String },
+      uowId: { type: String },
+      phone: { type: String }
+    }],
+    submittedAt: { type: Date, default: Date.now } 
   },
   // Stores any feedback from the lecturer if rejected
   feedback: {

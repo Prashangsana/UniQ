@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './groups.css';
 
 const LecturerDashboard = () => {
@@ -9,7 +9,7 @@ const LecturerDashboard = () => {
 
   const [pendingGroups, setPendingGroups] = useState([]);
   const [finalisedGroups, setFinalisedGroups] = useState([]);
-  
+
   // Form States for setting up a project
   const [moduleId, setModuleId] = useState('');
   const [minMembers, setMinMembers] = useState(3);
@@ -19,58 +19,82 @@ const LecturerDashboard = () => {
 
   const [expandedGroupId, setExpandedGroupId] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('token');
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectGroupId, setRejectGroupId] = useState(null);
+  const [rejectFeedback, setRejectFeedback] = useState('');
 
-        // Fetch Lecturer's Modules
-        const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules', {
-          credentials: 'include',
-          headers:{
-            'Content-Type': 'application/json'
-          }
-        });
-        const modData = await modRes.json();
-        if (modData.success) {
-          setMyModules(modData.data);
-          if (modData.data.length > 0) setModuleId(modData.data[0]._id);
-        }
+  const toggleExpand = (id) => {
+    setExpandedGroupId(prevId => (prevId === id ? null : id));
+  };
 
-        // Fetch Groups (Pending & Finalised)
-        const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups', {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        const grpData = await grpRes.json();
-        if (grpData.success) {
-          setPendingGroups(grpData.data.pending);
-          setFinalisedGroups(grpData.data.finalised);
-        }
-      } catch (error) {
-        console.error("Error fetching lecturer data", error);
-      } finally {
-        setIsLoadingModules(false);
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoadingModules(true);
+      const token = localStorage.getItem('token');
+
+      // Common headers including the JWT token
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      // Fetch Lecturer's Modules
+      const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules', {
+        credentials: 'include',
+        headers: headers
+      });
+      const modData = await modRes.json();
+      if (modData.success) {
+        setMyModules(modData.data);
+        if (modData.data.length > 0 && !moduleId) setModuleId(modData.data[0]._id);
       }
-    };
+
+      // Fetch Groups
+      const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups', {
+        credentials: 'include',
+        headers: headers
+      });
+      const grpData = await grpRes.json();
+      if (grpData.success) {
+        setPendingGroups(grpData.data.pending || []);
+        setFinalisedGroups(grpData.data.finalised || []);
+      }
+    } catch (error) {
+      console.error("Error fetching lecturer data", error);
+    } finally {
+      setIsLoadingModules(false);
+    }
+  }, [moduleId]);
+
+  useEffect(() => {
     fetchData();
-  }, [activeTab]); // Re-fetch when changing tabs to get latest data
+  }, [fetchData]);
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
+
+    if (parseInt(maxMembers) < parseInt(minMembers)) {
+      alert("Max members cannot be less than Min members.");
+      return;
+    }
+
     const prefixArray = prefixes.split(',').map(p => p.trim());
     const selectedModule = myModules.find(m => m._id === moduleId);
-    
+    const token = localStorage.getItem('token');
+
     try {
       const response = await fetch(`http://localhost:5000/api/lecturer/modules/${moduleId}/group-project`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ minMembers, maxMembers, deadline, allowedPrefixes: prefixArray, moduleName: selectedModule?.name })
+        body: JSON.stringify({
+          minMembers: parseInt(minMembers),
+          maxMembers: parseInt(maxMembers),
+          deadline,
+          allowedPrefixes: prefixArray,
+          moduleName: selectedModule?.name
+        })
       });
       const data = await response.json();
       if (data.success) {
@@ -84,32 +108,47 @@ const LecturerDashboard = () => {
     }
   };
 
-  // --- NEW: Handle Approve/Reject Action ---
   const handleReview = async (groupId, action) => {
+    if (action === 'reject') {
+      setRejectGroupId(groupId);
+      setRejectFeedback(''); // Reset feedback
+      setIsRejectModalOpen(true);
+      return; // Stop here and wait for modal confirmation
+    }
+
+    // If action is 'approve', proceed as normal
+    await processReview(groupId, 'approve', 'Approved');
+  };
+
+  const confirmReject = async () => {
+    if (!rejectFeedback.trim()) {
+      alert("Please provide feedback so students know what to fix.");
+      return;
+    }
+    await processReview(rejectGroupId, 'reject', rejectFeedback);
+    setIsRejectModalOpen(false);
+  };
+
+  // Extracted logic to keep code clean
+  const processReview = async (groupId, action, feedback) => {
     try {
       const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/review`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action, feedback: action === 'reject' ? "Please adjust members" : "Approved" })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, feedback })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         alert(`Group ${action}ed successfully!`);
-        // Remove from pending locally to update UI immediately
         setPendingGroups(prev => prev.filter(g => g._id !== groupId));
         if (action === 'approve') {
-          // Add to finalised groups list locally
           setFinalisedGroups(prev => [...prev, data.data]);
         }
-      } else {
-        alert(`Error: ${data.message}`);
       }
     } catch (error) {
-      alert("Failed to process review.");
+      alert("Error processing request.");
     }
   };
 
@@ -122,20 +161,20 @@ const LecturerDashboard = () => {
 
       {/* TABS */}
       <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #e2e8f0', marginBottom: '2rem' }}>
-        <button 
+        <button
           onClick={() => setActiveTab('setup')}
           style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'setup' ? '3px solid #5b7cbd' : 'none', fontWeight: activeTab === 'setup' ? 'bold' : 'normal', cursor: 'pointer' }}
         >
           Open Group Project
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('review')}
           style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'review' ? '3px solid #f59e0b' : 'none', fontWeight: activeTab === 'review' ? 'bold' : 'normal', cursor: 'pointer' }}
         >
           {/* Dynamically show the number of pending reviews */}
           Pending Reviews ({pendingGroups.length})
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('finalised')}
           style={{ padding: '10px 20px', background: 'none', border: 'none', borderBottom: activeTab === 'finalised' ? '3px solid #10b981' : 'none', fontWeight: activeTab === 'finalised' ? 'bold' : 'normal', cursor: 'pointer' }}
         >
@@ -148,7 +187,7 @@ const LecturerDashboard = () => {
         <div className="gf-card-simple" style={{ padding: '2rem' }}>
           <h3>Open a New Group Project</h3>
           <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Allow students to start forming groups for a module.</p>
-          
+
           {isLoadingModules ? (
             <p>Loading your assigned modules...</p>
           ) : myModules.length === 0 ? (
@@ -158,10 +197,10 @@ const LecturerDashboard = () => {
 
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Module</label>
-                <select 
-                  className="gf-input" 
-                  value={moduleId} 
-                  onChange={(e) => setModuleId(e.target.value)} 
+                <select
+                  className="gf-input"
+                  value={moduleId}
+                  onChange={(e) => setModuleId(e.target.value)}
                   required
                 >
                   {myModules.map(mod => (
@@ -210,36 +249,36 @@ const LecturerDashboard = () => {
               const isExpanded = expandedGroupId === group._id;
 
               return (
-                <div 
-                  key={group._id} 
-                  className="gf-card-simple" 
-                  style={{ 
-                    padding: '1.5rem', 
-                    marginBottom: '1rem', 
+                <div
+                  key={group._id}
+                  className="gf-card-simple"
+                  style={{
+                    padding: '1.5rem',
+                    marginBottom: '1rem',
                     borderLeft: '4px solid #f59e0b',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
-                  onClick={() => setExpandedGroupId(isExpanded ? null : group._id)}
+                  onClick={() => toggleExpand(group._id)}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <h4 style={{ margin: 0 }}>{group.name} <small style={{color:'#64748b'}}>({group.moduleId})</small></h4>
+                      <h4 style={{ margin: 0 }}>{group.name} <small style={{ color: '#64748b' }}>({group.moduleId})</small></h4>
                       <p style={{ margin: 0, fontSize: '0.85rem', color: isExpanded ? '#5b7cbd' : '#64748b' }}>
                         {isExpanded ? '▴ Click to collapse' : '▾ Click to view submission details'}
                       </p>
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'reject'); }} 
-                        className="gf-btn-outline" 
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'reject'); }}
+                        className="gf-btn-outline"
                         style={{ color: '#ef4444', borderColor: '#ef4444', padding: '5px 15px' }}
                       >
                         Reject
                       </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'approve'); }} 
-                        className="gf-btn-primary" 
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleReview(group._id, 'approve'); }}
+                        className="gf-btn-primary"
                         style={{ background: '#10b981', padding: '5px 15px' }}
                       >
                         Approve
@@ -248,45 +287,71 @@ const LecturerDashboard = () => {
                   </div>
 
                   {/* EXPANDED SECTION */}
-                  {isExpanded && group.finalisationForm && (
+                  {isExpanded && (
                     <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '1.5rem' }}>
-                        <div className="detail-item">
-                          <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Tutorial Group</label>
-                          <strong>{group.finalisationForm.tutorialGroup}</strong>
-                        </div>
-                        <div className="detail-item">
-                          <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Requested Prefix</label>
-                          <strong style={{ color: '#5b7cbd' }}>{group.prefix}</strong>
-                        </div>
-                      </div>
 
-                      <h5 style={{ marginBottom: '10px' }}>Member Registration Details</h5>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                        <thead>
-                          <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
-                            <th style={{ padding: '10px' }}>Name</th>
-                            <th style={{ padding: '10px' }}>IIT ID</th>
-                            <th style={{ padding: '10px' }}>UOW ID</th>
-                            <th style={{ padding: '10px' }}>Phone Number</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {group.members.map(member => {
-                            const mId = member._id || member;
-                            const extra = group.finalisationForm.memberExtraInfo?.find(info => info.userId === mId);
+                      {!group.finalisationForm ? (
+                        <div style={{ padding: '1rem', background: '#fff2f2', border: '1px solid #ef4444', borderRadius: '8px' }}>
+                          <p style={{ color: '#b91c1c', margin: '0 0 10px 0' }}>
+                            <strong>⚠️ Data Missing in Database</strong>
+                          </p>
+                          <p style={{ fontSize: '0.85rem', color: '#7f1d1d' }}>
+                            The field <code>finalisationForm</code> is undefined for this group ID: <code>{group._id}</code>.
+                            This usually happens if the student submission failed or the field wasn't included in the API response.
+                          </p>
+                          {/* This button helps you see the raw object in console */}
+                          <button
+                            onClick={() => console.log("Raw Group Object:", group)}
+                            style={{ padding: '4px 8px', fontSize: '0.75rem', cursor: 'pointer' }}
+                          >
+                            Log Raw Data to Console
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '1.5rem' }}>
+                            <div className="detail-item">
+                              <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Tutorial Group</label>
+                              <strong>{group.finalisationForm.tutorialGroup}</strong>
+                            </div>
+                            <div className="detail-item">
+                              <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Requested Prefix</label>
+                              <strong style={{ color: '#5b7cbd' }}>{group.prefix}</strong>
+                            </div>
+                          </div>
 
-                            return (
-                              <tr key={mId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ padding: '10px' }}>{member.name || "Student"}</td>
-                                <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.iitId || 'Not Provided'}</td>
-                                <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.uowId || 'Not Provided'}</td>
-                                <td style={{ padding: '10px' }}>{extra?.phone || 'N/A'}</td>
+                          <h5 style={{ marginBottom: '10px' }}>Member Registration Details</h5>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <thead>
+                              <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
+                                <th style={{ padding: '10px' }}>Name</th>
+                                <th style={{ padding: '10px' }}>IIT ID</th>
+                                <th style={{ padding: '10px' }}>UOW ID</th>
+                                <th style={{ padding: '10px' }}>Phone Number</th>
                               </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                            </thead>
+                            <tbody>
+                              {group.members?.map(member => {
+                                const mId = member?._id || member;
+                                const mName = member?.name || "Unknown Student";
+
+                                const extra = group.finalisationForm?.memberExtraInfo?.find(info =>
+                                  (info.userId?._id || info.userId)?.toString() === mId?.toString()
+                                );
+
+                                return (
+                                  <tr key={mId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                    <td style={{ padding: '10px' }}>{mName}</td>
+                                    <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.iitId || 'Not Provided'}</td>
+                                    <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.uowId || 'Not Provided'}</td>
+                                    <td style={{ padding: '10px' }}>{extra?.phone || 'N/A'}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -306,26 +371,26 @@ const LecturerDashboard = () => {
               const isExpanded = expandedGroupId === group._id;
 
               return (
-                <div 
-                  key={group._id} 
-                  className="gf-card-simple" 
-                  style={{ 
-                    padding: '1.25rem', 
+                <div
+                  key={group._id}
+                  className="gf-card-simple"
+                  style={{
+                    padding: '1.25rem',
                     borderLeft: '5px solid #10b981',
                     cursor: 'pointer',
                     background: '#fff',
                     transition: 'transform 0.1s ease'
                   }}
-                  onClick={() => setExpandedGroupId(isExpanded ? null : group._id)}
+                  onClick={() => toggleExpand(group._id)}
                 >
                   {/* Top Row: Summary Info */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                      <div style={{ 
-                        background: '#dcfce7', 
-                        color: '#166534', 
-                        padding: '8px 12px', 
-                        borderRadius: '6px', 
+                      <div style={{
+                        background: '#dcfce7',
+                        color: '#166534',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
                         fontWeight: 'bold',
                         minWidth: '60px',
                         textAlign: 'center',
@@ -347,55 +412,84 @@ const LecturerDashboard = () => {
 
                   {/* Expanded Section: Content now uses full card width */}
                   {isExpanded && group.finalisationForm && (
-                    <div 
-                      style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }} 
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* Meta Details Row */}
-                      <div style={{ display: 'flex', gap: '40px', marginBottom: '1.5rem', background: '#f8fafc', padding: '15px', borderRadius: '8px' }}>
-                        <div>
-                          <label style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' }}>Tutorial Group</label>
-                          <strong style={{ fontSize: '1rem' }}>{group.finalisationForm.tutorialGroup}</strong>
+                    group.finalisationForm ? (
+                      <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '1.5rem' }}>
+                          <div className="detail-item">
+                            <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Tutorial Group</label>
+                            <strong>{group.finalisationForm.tutorialGroup}</strong>
+                          </div>
+                          <div className="detail-item">
+                            <label style={{ color: '#64748b', fontSize: '0.8rem', display: 'block' }}>Requested Prefix</label>
+                            <strong style={{ color: '#5b7cbd' }}>{group.prefix}</strong>
+                          </div>
                         </div>
-                        <div>
-                          <label style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' }}>Assigned Prefix</label>
-                          <strong style={{ fontSize: '1rem', color: '#10b981' }}>{group.prefix}</strong>
-                        </div>
-                      </div>
 
-                      <h5 style={{ marginBottom: '12px', color: '#334155', fontSize: '0.95rem' }}>Confirmed Member Details</h5>
-                      <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                        <h5 style={{ marginBottom: '10px' }}>Member Registration Details</h5>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                           <thead>
-                            <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left', color: '#64748b' }}>
-                              <th style={{ padding: '12px 8px' }}>Name</th>
-                              <th style={{ padding: '12px 8px' }}>IIT ID</th>
-                              <th style={{ padding: '12px 8px' }}>UOW ID</th>
-                              <th style={{ padding: '12px 8px' }}>Phone</th>
+                            <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
+                              <th style={{ padding: '10px' }}>Name</th>
+                              <th style={{ padding: '10px' }}>IIT ID</th>
+                              <th style={{ padding: '10px' }}>UOW ID</th>
+                              <th style={{ padding: '10px' }}>Phone Number</th>
                             </tr>
                           </thead>
                           <tbody>
                             {group.members.map(member => {
-                              const mId = member._id || member;
-                              const extra = group.finalisationForm.memberExtraInfo?.find(info => info.userId === mId);
+                              const mId = member?._id || member;
+                              const mName = member?.name || "Unknown Student";
+
+                              const extra = group.finalisationForm?.memberExtraInfo?.find(info =>
+                                (info.userId?._id || info.userId)?.toString() === mId?.toString()
+                              );
+
                               return (
-                                <tr key={mId} style={{ borderBottom: '1px solid #f8fafc' }}>
-                                  <td style={{ padding: '12px 8px', fontWeight: '500' }}>{member.name || "Student"}</td>
-                                  <td style={{ padding: '12px 8px', fontFamily: 'monospace', color: '#475569' }}>{extra?.iitId || 'N/A'}</td>
-                                  <td style={{ padding: '12px 8px', fontFamily: 'monospace', color: '#475569' }}>{extra?.uowId || 'N/A'}</td>
-                                  <td style={{ padding: '12px 8px', color: '#475569' }}>{extra?.phone || 'N/A'}</td>
+                                <tr key={mId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                  <td style={{ padding: '10px' }}>{mName}</td>
+                                  <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.iitId || 'Not Provided'}</td>
+                                  <td style={{ padding: '10px', fontFamily: 'monospace' }}>{extra?.uowId || 'Not Provided'}</td>
+                                  <td style={{ padding: '10px' }}>{extra?.phone || 'N/A'}</td>
                                 </tr>
                               );
                             })}
                           </tbody>
                         </table>
                       </div>
-                    </div>
+                    ) : (
+                      <div style={{ marginTop: '1rem', padding: '1rem', background: '#fef2f2', color: '#991b1b', borderRadius: '8px' }}>
+                        ⚠️ <strong>Data Error:</strong> No finalisation details found for this group.
+                        Check if the submission saved correctly in the database.
+                      </div>
+                    )
                   )}
                 </div>
               );
             })
           )}
+        </div>
+      )}
+
+      {/* REJECTION FEEDBACK MODAL */}
+      {isRejectModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="gf-card-simple" style={{ width: '400px', padding: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginTop: 0 }}>Reject Group Submission</h3>
+            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Explain to the students what needs to be changed.</p>
+
+            <textarea
+              className="gf-input"
+              style={{ width: '100%', height: '100px', marginBottom: '1.5rem', padding: '10px', boxSizing: 'border-box' }}
+              placeholder="e.g. Member IIT-001 has the wrong phone number..."
+              value={rejectFeedback}
+              onChange={(e) => setRejectFeedback(e.target.value)}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button onClick={() => setIsRejectModalOpen(false)} className="gf-btn-outline">Cancel</button>
+              <button onClick={confirmReject} className="gf-btn-primary" style={{ background: '#ef4444' }}>Confirm Rejection</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

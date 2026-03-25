@@ -35,7 +35,7 @@ const seedDB = async () => {
       moduleId: seModule._id,
       leader: LECTURER_ID,
       members: [LECTURER_ID],
-      maxMembers: 4,
+      maxMembers: 3,
       status: 'open'
     });
 

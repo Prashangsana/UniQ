@@ -1,21 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
 
 const FinalisationFormView = ({ group, onBack, onSubmit }) => {
   const allowedPrefixes = ["SE", "CS", "DS", "AI"]; 
   
   const [selectedPrefix, setSelectedPrefix] = useState(allowedPrefixes[0]);
-  const [memberDetails, setMemberDetails] = useState(
-    group?.members.map(m => ({ 
-      id: m._id || m.id, 
-      name: m.name, 
-      iitId: m.iitId || '', // Might come from profile later
-      uowId: m.uowId || '', // Might come from profile later
-      phone: '', 
-      tutorialGroup: '' 
-    })) || []
-  );
+  
+  const [memberDetails, setMemberDetails] = useState([]);
 
+  useEffect(() => {
+    if (group?.members) {
+      const details = group.members.map(m => {
+        const isObject = typeof m === 'object' && m !== null;
+        return {
+          id: isObject ? (m._id || m.id) : m,
+          name: isObject ? (m.name || 'Member') : 'Member',
+          iitId: m.iitId || '',
+          uowId: m.uowId || '',
+          phone: '',
+          tutorialGroup: ''
+        };
+      });
+      setMemberDetails(details);
+    }
+  }, [group]);
+  
   const handleDetailChange = (index, field, value) => {
     const updatedDetails = [...memberDetails];
     updatedDetails[index][field] = value;
@@ -34,12 +43,17 @@ const FinalisationFormView = ({ group, onBack, onSubmit }) => {
 
     const submissionData = {
       selectedPrefix,
-      tutorialGroup: memberDetails[0]?.tutorialGroup || 'N/A', 
-      memberExtraInfo: memberExtraInfo
+     formData: {
+        tutorialGroup: memberDetails[0]?.tutorialGroup || 'N/A', 
+        memberExtraInfo: memberExtraInfo
+      }
     };
 
     onSubmit(group._id || group.id, submissionData);
   };
+
+  if (!group) return <div className="gf-main">Loading group...</div>;
+  if (memberDetails.length === 0) return <div className="gf-main">Processing member details...</div>;
 
   return (
     <div className="gf-main" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '2rem' }}>

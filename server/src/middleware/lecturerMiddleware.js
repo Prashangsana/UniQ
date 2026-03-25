@@ -3,7 +3,7 @@ const Module = require('../models/Module'); // Assuming the admin dev creates th
 
 // Basic check: Is the user a lecturer?
 exports.isLecturer = (req, res, next) => {
-  if (req.user && req.user.role === 'lecturer') {
+  if (req.user && req.user.role === 'lecturer' || req.user.role === 'Lecturer') {
     next();
   } else {
     res.status(403).json({ success: false, message: 'Access denied. Lecturers only.' });

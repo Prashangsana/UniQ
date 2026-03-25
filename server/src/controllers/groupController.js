@@ -74,6 +74,7 @@ exports.getModuleGroups = async (req, res) => {
 
     // Fetch groups for the specific module
     const groups = await Group.find({ moduleId })
+      .populate('members', 'name email') 
       .select('name domain members maxMembers isFinalised leader');
 
     // Format the response to explicitly include member count for the frontend
@@ -84,7 +85,8 @@ exports.getModuleGroups = async (req, res) => {
       memberCount: group.members.length,
       maxMembers: group.maxMembers,
       isFinalised: group.isFinalised,
-      leader: group.leader
+      leader: group.leader,
+      members: group.members
     }));
 
     res.status(200).json({ success: true, count: formattedGroups.length, data: formattedGroups });

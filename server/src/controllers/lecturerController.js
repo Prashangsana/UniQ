@@ -5,8 +5,13 @@ const Module = require('../models/Module'); // Need to import the Admin's model
 // GET /api/lecturer/my-modules
 exports.getMyModules = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
     const lecturerId = req.user._id || req.user.id;
 
+    console.log("Lecturer ID from Request:", lecturerId.toString());
     console.log("Searching modules for Lecturer ID:", lecturerId);
 
     const authorizedModules = await Module.find({
@@ -40,7 +45,13 @@ exports.getLecturerGroups = async (req, res) => {
     const myModuleIds = myModules.map(m => m._id);
     
     const relevantGroups = await Group.find({ moduleId: { $in: myModuleIds } })
-      .populate('members', 'name email');
+      .populate('members', 'name email iitId uowId') 
+      .lean();
+
+    const pendingGroup = relevantGroups.find(g => g.status === 'pending_review');
+    console.log("Pending Group Form Data:", pendingGroup?.finalisationForm);
+
+    console.log("Sample Group Form Data:", relevantGroups[0]?.finalisationForm);
 
     res.status(200).json({ 
       success: true, 
@@ -64,6 +75,15 @@ exports.createGroupProject = async (req, res) => {
     const existingProject = await GroupProject.findOne({ moduleId });
     if (existingProject) {
       return res.status(400).json({ success: false, message: 'A group project is already open for this module.' });
+    }
+
+    const isAuthorized = await Module.findOne({
+      _id: moduleId,
+      $or: [{ moduleLeaders: req.user.id }, { moduleTeam: req.user.id }]
+    });
+
+    if (!isAuthorized) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to manage this module.' });
     }
 
     const project = await GroupProject.findOneAndUpdate(
@@ -100,10 +120,19 @@ exports.submitFinalisation = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Only the group leader can submit for finalisation.' });
     }
 
+    group.finalisationForm = {
+      tutorialGroup: formData.tutorialGroup,
+      memberExtraInfo: formData.memberExtraInfo,
+      submittedAt: Date.now()
+    };
+
     // Lock the group, save form data, and save their chosen prefix
     group.status = 'pending_review';
-    group.finalisationForm = formData;
     group.prefix = selectedPrefix || "GRP"; 
+    group.isFinalised = false;
+
+    group.markModified('finalisationForm');
+
     await group.save();
 
     res.status(200).json({ success: true, message: 'Group submitted for lecturer review!', data: group });
@@ -142,7 +171,12 @@ exports.reviewGroup = async (req, res) => {
     }
 
     await group.save();
-    res.status(200).json({ success: true, data: group });
+
+    const updatedGroup = await Group.findById(groupId)
+      .populate('members', 'name email iitId uowId')
+      .select('+finalisationForm +prefix');
+
+    res.status(200).json({ success: true, data: updatedGroup });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error reviewing group' });
