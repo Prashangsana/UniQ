@@ -14,7 +14,7 @@ export const LeaderEventBanner = ({ large, id = "sample-event", title, image }) 
       style={{ 
         cursor: 'pointer', 
         position: 'relative',
-        backgroundImage: `url(${image || "/images-e/default.jpg"})`,
+        backgroundImage: `url(${image || "/logo.png"})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
@@ -84,14 +84,20 @@ export const LeaderSidebar = ({ title }) => {
 
 // 4. Admin Society Card
 export const LeaderSocietyCard = ({ name, id, logo }) => {
+  const slug = name ? name.toLowerCase().replace(/\\s+/g, '-') : '';
+  const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'S')}&background=e2e8f0&color=64748b&bold=true`;
+
   return (
     <Link to={`/admin/society/${id}`} state={{ tab: 'leader' }} className="leader-card-link">
       <div className="leader-card">
         <img
-          src={logo || `/images-e/societies/${id}.png`}
+          src={logo || `/images-e/societies/${slug}.png`}
           alt={name}
           className="leader-card-logo"
-          onError={(e) => { e.target.src = "/images-e/default.jpg"; }}
+          onError={(e) => { 
+            e.target.onerror = null; 
+            e.target.src = avatarFallback;
+          }}
         />
         <span className="leader-card-name">{name}</span>
         <div className="leader-manage-tag">✏️ Manage</div>

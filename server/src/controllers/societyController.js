@@ -157,7 +157,7 @@ exports.updateSociety = async (req, res) => {
 
     // Check if user is admin or the leader of this society
     const isAdmin = req.user.role === 'admin';
-    const isLeader = society.leader.toString() === req.user.id;
+    const isLeader = society.leader && society.leader.toString() === req.user.id;
 
     if (!isAdmin && !isLeader) {
       return res.status(403).json({

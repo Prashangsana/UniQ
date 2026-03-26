@@ -57,9 +57,26 @@ exports.getLeaderEvents = async (req, res) => {
 // CREATE EVENT
 exports.createEvent = async (req, res) => {
   try {
+    const societyId = req.body.society;
+    if (!societyId) {
+      return res.status(400).json({ success: false, message: "Society ID is required" });
+    }
+
+    const society = await Society.findById(societyId);
+    if (!society) {
+      return res.status(404).json({ success: false, message: "Society not found" });
+    }
+
+    const isAdmin = req.user.role === 'admin';
+    const isLeader = society.leader && society.leader.toString() === req.user.id;
+
+    if (!isAdmin && !isLeader) {
+      return res.status(403).json({ success: false, message: "Only an admin or the society leader can create events" });
+    }
+
     const eventData = {
       ...req.body,
-      society: req.body.society
+      society: societyId
     };
 
     const event = await Event.create(eventData);
@@ -74,17 +91,26 @@ exports.createEvent = async (req, res) => {
 // UPDATE EVENT
 exports.updateEvent = async (req, res) => {
   try {
-    const event = await Event.findByIdAndUpdate(
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ success: false, message: "Event not found" });
+    }
+
+    const society = await Society.findById(event.society);
+    const isAdmin = req.user.role === 'admin';
+    const isLeader = society && society.leader && society.leader.toString() === req.user.id;
+
+    if (!isAdmin && !isLeader) {
+      return res.status(403).json({ success: false, message: "Only an admin or the society leader can update this event" });
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     ).populate('society', 'name logo');
     
-    if (!event) {
-      return res.status(404).json({ success: false, message: "Event not found" });
-    }
-    
-    res.status(200).json({ success: true, data: event });
+    res.status(200).json({ success: true, data: updatedEvent });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error updating event" });
   }
@@ -93,11 +119,20 @@ exports.updateEvent = async (req, res) => {
 // DELETE EVENT
 exports.deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findByIdAndDelete(req.params.id);
-    
+    const event = await Event.findById(req.params.id);
     if (!event) {
       return res.status(404).json({ success: false, message: "Event not found" });
     }
+
+    const society = await Society.findById(event.society);
+    const isAdmin = req.user.role === 'admin';
+    const isLeader = society && society.leader && society.leader.toString() === req.user.id;
+
+    if (!isAdmin && !isLeader) {
+      return res.status(403).json({ success: false, message: "Only an admin or the society leader can delete this event" });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
     
     // Remove from saved events
     await SavedEvent.deleteMany({ event: req.params.id });

@@ -3,31 +3,56 @@ import { useNavigate, Link } from "react-router-dom";
 import "./EventsComponents.css";
 
 // --- EVENT BANNER ---
-export const EventBanner = ({ large, id = "sample-event", image }) => {
+export const EventBanner = ({ large, id = "sample-event", title, image }) => {
   const navigate = useNavigate();
+  const displayTitle = title || id.replace(/-/g, ' ').toUpperCase();
+  
   return (
     <div
       className={`event-banner ${large ? "large" : ""}`}
       onClick={() => navigate(`/event/${id}`)}
       style={{ 
-        backgroundImage: `url(${image || "/images-e/default.jpg"})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url(${image || "/logo.png"})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center'
+        backgroundPosition: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}
-    />
+    >
+      <div className="event-banner-text" style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '12px 16px',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: '15px',
+        textAlign: 'left',
+        background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.9))',
+      }}>
+        {displayTitle}
+      </div>
+    </div>
   );
 };
 
 // --- SOCIETY CARD ---
 export const SocietyCard = ({ name, id, logo }) => {
+  const slug = name ? name.toLowerCase().replace(/\\s+/g, '-') : '';
+  const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'S')}&background=e2e8f0&color=64748b&bold=true`;
+
   return (
     <Link to={`/society/${id}`} state={{ tab: 'society' }} className="society-card-link">
       <div className="society-card">
         <img
-          src={logo || `/images-e/societies/${id}.png`}
+          src={logo || `/images-e/societies/${slug}.png`}
           alt={name}
           className="society-logo"
-          onError={(e) => { e.target.src = "/images-e/default.jpg"; }}
+          onError={(e) => { 
+            e.target.onerror = null; 
+            e.target.src = avatarFallback;
+          }}
         />
         <span>{name}</span>
       </div>
@@ -106,7 +131,7 @@ export const SidebarSection = ({ title, events = [] }) => {
             <div
               className="sidebar-card-banner"
               style={{ 
-                backgroundImage: `url(${event.bannerImage || "/images-e/default.jpg"})`,
+                backgroundImage: `url(${event.bannerImage || "/logo.png"})`,
                 backgroundSize: 'cover'
               }}
             />

@@ -23,23 +23,33 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   const [selectedSociety, setSelectedSociety] = useState('');
 
   useEffect(() => {
-    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setSocieties(data.data);
+    const loadData = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        if (!authData.authenticated) return;
 
-          if (isNewEvent) {
+        const fetchUrl = `${API_URL}/api/societies`;
+
+        const socRes = await fetch(fetchUrl, { credentials: 'include' });
+        const data = await socRes.json();
+        if (data.success) {
+          setSocieties(data.data || []);
+
+          if (isNewEvent && (data.data || []).length > 0) {
             if (preselectedSocietyId) {
-              const match = data.data.find((s) => s._id === preselectedSocietyId);
+              const match = data.data.find(s => s._id === preselectedSocietyId);
               if (match) setSelectedSociety(preselectedSocietyId);
             } else if (data.data.length === 1) {
               setSelectedSociety(data.data[0]._id);
             }
           }
         }
-      })
-      .catch(err => console.error("Error loading societies:", err));
+      } catch (err) {
+        console.error("Error loading form data:", err);
+      }
+    };
+    loadData();
 
     if (!isNewEvent) {
       fetch(`${API_URL}/api/events/${eventId}`, {
@@ -551,32 +561,37 @@ export const LeaderDashboard = () => {
   const [userName, setUserName] = useState('Leader');
 
   useEffect(() => {
-    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.authenticated) {
-          setUserName(data.user.name);
-        }
-      })
-      .catch(err => console.error("Error loading user info:", err));
+    const fetchData = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        
+        if (!authData.authenticated) return;
+        setUserName(authData.user.name);
+        
+        const isAdmin = authData.user.role === 'admin';
+        const userId = authData.user.id || authData.user._id;
 
-    fetch(`${API_URL}/api/societies`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data.length > 0) setSocieties(data.data);
-      })
-      .catch(err => console.error("Error loading societies:", err));
-
-    fetch(`${API_URL}/api/events`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data.length > 0) {
-          const allEvents = data.data;
-          setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
-          setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
+        const socUrl = `${API_URL}/api/societies`;
+        const socRes = await fetch(socUrl, { credentials: 'include' });
+        const socData = await socRes.json();
+        if (socData.success) {
+           setSocieties(socData.data || []);
         }
-      })
-      .catch(err => console.error("Error loading events:", err));
+
+        const evtUrl = isAdmin ? `${API_URL}/api/events` : `${API_URL}/api/events/leader/${userId}`;
+        const evtRes = await fetch(evtUrl, { credentials: 'include' });
+        const evtData = await evtRes.json();
+        if (evtData.success && evtData.data) {
+           const allEvents = evtData.data;
+           setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
+           setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      }
+    };
+    fetchData();
   }, [API_URL]);
 
   return (
@@ -844,18 +859,27 @@ export const LeaderSocietyManager = () => {
   const [isLeader, setIsLeader] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          // Check if user leads THIS society
-          if (id) {
-            const leadingThis = data.data.some(s => s._id === id);
+    const checkAccess = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        if (!authData.authenticated) return;
+        
+        if (authData.user.role === 'admin') {
+          setIsLeader(true);
+        } else {
+          const socRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
+          const socData = await socRes.json();
+          if (socData.success && id) {
+            const leadingThis = socData.data.some(s => s._id === id);
             setIsLeader(leadingThis);
           }
         }
-      })
-      .catch(err => console.error("Error loading leader status:", err));
+      } catch (err) {
+        console.error("Error checking leader access:", err);
+      }
+    };
+    checkAccess();
   }, [id, API_URL]);
 
   useEffect(() => {
