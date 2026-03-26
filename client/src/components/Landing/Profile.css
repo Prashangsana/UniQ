@@ -192,11 +192,18 @@
   flex-direction: column;
 }
 
-/* Typography & Spacing */
 .greeting-section h2 {
   font-size: 1.8rem;
   color: #0f172a;
   margin: 0 0 10px 0;
+}
+
+.edit-header {
+  font-size: 1.8rem;
+  color: #0f172a;
+  margin: 0 0 30px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .main-bio-text {
@@ -218,37 +225,70 @@
   margin: 30px 0;
 }
 
+.about-section, 
+.skills-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
 .about-section h3, 
 .skills-section h3 {
   font-size: 1.2rem;
-  margin-bottom: 15px;
+  margin: 0 0 15px 0;
   color: #1e293b;
+}
+
+.about-section p {
+  margin: 0;
+  min-height: 24px;
+  color: #475569;
 }
 
 /* Academic Details */
 .academic-details {
-  margin-top: 10px;
+  margin-top: 15px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
   color: #334155;
   font-size: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.academic-details p {
-  margin: 8px 0;
+.academic-details > p,
+.academic-details > .learning-section {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: start;
+  margin: 0;
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.academic-details > *:first-child {
+  padding-top: 0;
+}
+
+.academic-details > *:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .label {
   font-weight: 600;
   color: #1e293b;
-  margin-right: 6px;
-}
-
-.learning-section {
-  margin-top: 12px;
+  margin-right: 0;
 }
 
 .modules-list {
-  margin: 8px 0 0 18px;
+  margin: 0 0 0 18px;
   padding: 0;
+  min-height: 24px;
 }
 
 .modules-list li {
@@ -257,12 +297,11 @@
   color: #475569;
 }
 
-
-/* Skills Pills */
 .skills-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  min-height: 36px;
 }
 
 .skill-pill-light {

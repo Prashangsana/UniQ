@@ -316,12 +316,12 @@ const Profile = () => {
                 <div className="content-divider"></div>
                 
                 <div className="about-section">
-                  <h3>🌸 About Me</h3>
+                  <h3>About Me</h3>
                   <p>{user.aboutMe}</p>
                 </div>
                 
                 <div className="skills-section">
-                  <h3>✨ {config.skillsLabel}</h3>
+                  <h3>{config.skillsLabel}</h3>
                   <div className="skills-grid">
                     {user.skills.map((s, i) => <div key={i} className="skill-pill-light">{s}</div>)}
                   </div>
@@ -330,7 +330,7 @@ const Profile = () => {
             ) : (
               // FULL EDIT MODE
               <div className="content-wrapper">
-                <h2 className="edit-header">Update {isLecturer ? 'Lecturer' : 'Student'} Profile ✨</h2>
+                <h2 className="edit-header">Update {isLecturer ? 'Lecturer' : 'Student'} Profile</h2>
                 <form className="edit-form" onSubmit={handleSave}>
                   <div className="form-row">
                     <div className="form-group">
@@ -403,7 +403,7 @@ const Profile = () => {
                           onChange={(e) => setSelectedModule(e.target.value)}
                           className="skill-select"
                         >
-                          <option value="">Choose a module...</option>
+                          <option value="">Select a module...</option>
                           {availableModules.map(mod => (
                             <option key={mod._id} value={mod.name}>
                               {mod.name} ({mod._id})

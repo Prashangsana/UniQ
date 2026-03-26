@@ -1,4 +1,5 @@
 const Module = require('../models/Module');
+const User = require('../models/User');
 
 exports.getModules = async (req, res) => {
   try {
@@ -83,7 +84,15 @@ exports.deleteModule = async (req, res) => {
       return res.status(404).json({ success: false, message: "Module not found" });
     }
 
-    res.status(200).json({ success: true, message: "Module removed successfully" });
+    await User.updateMany(
+      { modules: deletedModule.name }, 
+      { $pull: { modules: deletedModule.name } }
+    );
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Module removed successfully." 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
