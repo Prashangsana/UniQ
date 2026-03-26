@@ -314,7 +314,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="input-group">
                     <label>Description</label>
-                    <textarea rows="6" value={editingSociety.description} onChange={e => setEditingSociety({...editingSociety, description: e.target.value})} />
+                    <textarea rows="3" value={editingSociety.description} onChange={e => setEditingSociety({...editingSociety, description: e.target.value})} />
                   </div>
                   <div className="input-group">
                     <label>Leader (Student)</label>
