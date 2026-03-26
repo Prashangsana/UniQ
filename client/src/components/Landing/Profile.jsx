@@ -316,12 +316,12 @@ const Profile = () => {
                 <div className="content-divider"></div>
                 
                 <div className="about-section">
-                  <h3>About Me</h3>
+                  <h3>🌸About Me</h3>
                   <p>{user.aboutMe}</p>
                 </div>
                 
                 <div className="skills-section">
-                  <h3>{config.skillsLabel}</h3>
+                  <h3>✨{config.skillsLabel}</h3>
                   <div className="skills-grid">
                     {user.skills.map((s, i) => <div key={i} className="skill-pill-light">{s}</div>)}
                   </div>
