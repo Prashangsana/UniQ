@@ -9,12 +9,12 @@ import ModuleStudentsView from '../components/groups/ModuleStudentsView';
 import LecturerDashboard from '../components/groups/LecturerDashboard';
 import FinalisationFormView from '../components/groups/FinalisationFormView';
 
-const GroupsPage = () => {
+const GroupsPage = ({ userRole, initialSelectedGroup, onClearSelection }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // --- ROLE STATE ---
-  const [userRole, setUserRole] = useState(null);
+  //const [userRole, setUserRole] = useState(null);
 
   // State: 'dashboard', 'module', 'group', 'invite', 'profile'
   const [view, setView] = useState('dashboard');
@@ -45,7 +45,8 @@ const GroupsPage = () => {
           if (data.authenticated && data.user) {
             setCurrentUser({
               ...data.user,
-              _id: data.user._id || data.user.id
+              _id: data.user._id || data.user.id,
+              role: data.user.role
             });
           }
         } else {
