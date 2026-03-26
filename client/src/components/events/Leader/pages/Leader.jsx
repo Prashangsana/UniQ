@@ -21,90 +21,135 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   const [bannerImage, setBannerImage] = useState('');
   const [societies, setSocieties] = useState([]);
   const [selectedSociety, setSelectedSociety] = useState('');
+  const [canEdit, setCanEdit] = useState(true);
+  const [manageableSocietyIds, setManageableSocietyIds] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
       try {
         const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const authData = await authRes.json();
         if (!authData.authenticated) return;
 
-        const fetchUrl = `${API_URL}/api/societies`;
+        const admin = authData.user.role === 'admin';
+        setIsAdmin(admin);
 
-        const socRes = await fetch(fetchUrl, { credentials: 'include' });
-        const data = await socRes.json();
-        if (data.success) {
-          setSocieties(data.data || []);
+        const socRes = await fetch(`${API_URL}/api/societies`, { credentials: 'include' });
+        const socData = await socRes.json();
+        const list = socData.success ? (socData.data || []) : [];
 
-          if (isNewEvent && (data.data || []).length > 0) {
-            if (preselectedSocietyId) {
-              const match = data.data.find(s => s._id === preselectedSocietyId);
-              if (match) setSelectedSociety(preselectedSocietyId);
-            } else if (data.data.length === 1) {
-              setSelectedSociety(data.data[0]._id);
+        if (cancelled) return;
+
+        setSocieties(list);
+        let allowedSocietyIds = list.map(s => s._id?.toString()).filter(Boolean);
+        if (!admin) {
+          const leaderSocRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
+          const leaderSocData = await leaderSocRes.json();
+          allowedSocietyIds = leaderSocData.success
+            ? (leaderSocData.data || []).map(s => s._id?.toString()).filter(Boolean)
+            : [];
+        }
+        setManageableSocietyIds(allowedSocietyIds);
+
+        if (isNewEvent) {
+          setCanEdit(true);
+          if (preselectedSocietyId) {
+            if (allowedSocietyIds.includes(preselectedSocietyId.toString())) {
+              setSelectedSociety(preselectedSocietyId);
+            } else {
+              if (!admin) {
+                alert("You can't add an event to another society.");
+              }
+              setSelectedSociety('');
             }
+          } else if (list.length === 1) {
+            setSelectedSociety(list[0]._id);
           }
+
+          setTitle('');
+          setDescription('');
+          setVenue('');
+          setTime({ hh: '09', min: '00', period: 'AM' });
+          setAdminLink('');
+          setRegisterLink('');
+          setInstagramLink('');
+          setTickets([{ name: 'Standard Ticket', price: '' }]);
+          setStatus('Draft');
+          setBannerImage('');
+          setDate({ dd: '', mm: '', yyyy: '' });
+          return;
+        }
+
+        const eventRes = await fetch(`${API_URL}/api/events/${eventId}`, {
+          headers: { Accept: 'application/json' },
+          credentials: 'include'
+        });
+        const eventData = await eventRes.json();
+        if (!eventData.success) return;
+
+        const ev = eventData.data;
+        const eventSocietyId = (ev.society?._id || ev.society || '').toString();
+        setCanEdit(admin || (eventSocietyId && allowedSocietyIds.includes(eventSocietyId)));
+
+        setTitle(ev.title || '');
+        setDescription(ev.description || '');
+        setVenue(ev.venue || ev.location || '');
+        setAdminLink(ev.adminLink || '');
+        setRegisterLink(ev.registerLink || '');
+        setInstagramLink(ev.instagramLink || '');
+        setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
+        setStatus(ev.status || 'Draft');
+        setBannerImage(ev.bannerImage || '');
+        setSelectedSociety(eventSocietyId);
+
+        if (ev.time) {
+          const [t, p] = ev.time.split(' ');
+          const [h, m] = t.split(':');
+          setTime({ hh: h, min: m, period: p || 'AM' });
+        }
+
+        if (ev.date) {
+          const d = new Date(ev.date);
+          setDate({
+            dd: String(d.getDate()).padStart(2, '0'),
+            mm: String(d.getMonth() + 1).padStart(2, '0'),
+            yyyy: String(d.getFullYear())
+          });
         }
       } catch (err) {
         console.error("Error loading form data:", err);
       }
     };
+
     loadData();
 
-    if (!isNewEvent) {
-      fetch(`${API_URL}/api/events/${eventId}`, {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            const ev = data.data;
-            setTitle(ev.title || '');
-            setDescription(ev.description || '');
-            setVenue(ev.venue || ev.location || '');
-            setAdminLink(ev.adminLink || '');
-            setRegisterLink(ev.registerLink || '');
-            setInstagramLink(ev.instagramLink || '');
-            setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
-            setStatus(ev.status || 'Draft');
-            setBannerImage(ev.bannerImage || '');
-            setSelectedSociety(ev.society?._id || ev.society || '');
-
-            if (ev.time) {
-              const [t, p] = ev.time.split(' ');
-              const [h, m] = t.split(':');
-              setTime({ hh: h, min: m, period: p || 'AM' });
-            }
-
-            if (ev.date) {
-              const d = new Date(ev.date);
-              setDate({
-                dd: String(d.getDate()).padStart(2, '0'),
-                mm: String(d.getMonth() + 1).padStart(2, '0'),
-                yyyy: String(d.getFullYear())
-              });
-            }
-          }
-        })
-        .catch(err => console.error("Error loading event:", err));
-    } else {
-      setTitle('');
-      setDescription('');
-      setVenue('');
-      setTime({ hh: '09', min: '00', period: 'AM' });
-      setAdminLink('');
-      setRegisterLink('');
-      setInstagramLink('');
-      setTickets([{ name: 'Standard Ticket', price: '' }]);
-      setStatus('Draft');
-      setBannerImage('');
-      setDate({ dd: '', mm: '', yyyy: '' });
-      setSelectedSociety('');
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [eventId, isNewEvent, API_URL, preselectedSocietyId]);
 
+  const handleSelectSociety = (value) => {
+    if (!value) {
+      setSelectedSociety('');
+      return;
+    }
+    if (!isAdmin && !manageableSocietyIds.includes(value.toString())) {
+      alert("You can't add an event to another society.");
+      setSelectedSociety('');
+      return;
+    }
+    setSelectedSociety(value);
+  };
+
   const handleSave = async () => {
+    if (!canEdit) {
+      alert("You don't have permission to edit events for this society.");
+      return;
+    }
+
     if (!title || !date.dd || !date.mm || !date.yyyy) {
       alert("Please fill in the Event Name and Date.");
       return;
@@ -163,6 +208,11 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   };
 
   const handleSaveAsDraft = async () => {
+    if (!canEdit) {
+      alert("You don't have permission to edit events for this society.");
+      return;
+    }
+
     if (!title || !date.dd || !date.mm || !date.yyyy) {
       alert("Please fill in the Event Name and Date.");
       return;
@@ -221,6 +271,11 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   };
 
   const handleDelete = async () => {
+    if (!canEdit) {
+      alert("You don't have permission to delete events for this society.");
+      return;
+    }
+
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
@@ -246,6 +301,7 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   };
 
   const handleImageUpload = () => {
+    if (!canEdit) return;
     const url = prompt("Please paste the image URL for your banner:", bannerImage || "https://via.placeholder.com/1200x400");
     if (url !== null) {
       if (url.trim() === "" || url.startsWith("http")) {
@@ -257,16 +313,19 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   };
 
   const addTicketTier = () => {
+    if (!canEdit) return;
     if (tickets.length < 5) {
       setTickets([...tickets, { name: '', price: '' }]);
     }
   };
 
   const removeTicketTier = (indexToRemove) => {
+    if (!canEdit) return;
     setTickets(tickets.filter((_, index) => index !== indexToRemove));
   };
 
   const updateTicket = (index, field, value) => {
+    if (!canEdit) return;
     const newTickets = [...tickets];
     newTickets[index][field] = value;
     setTickets(newTickets);
@@ -291,9 +350,11 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
     tickets,
     status,
     bannerImage,
+    canEdit,
     societies,
     selectedSociety,
     setSelectedSociety,
+    handleSelectSociety,
     handleSave,
     handleSaveAsDraft,
     handleDelete,
@@ -322,9 +383,10 @@ function LeaderEventFormBody({
   setInstagramLink,
   tickets,
   bannerImage,
+  canEdit,
   societies,
   selectedSociety,
-  setSelectedSociety,
+  handleSelectSociety,
   handleSave,
   handleSaveAsDraft,
   handleDelete,
@@ -356,7 +418,7 @@ function LeaderEventFormBody({
           }}>
             {title.trim() ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT NAME')}
           </h2>
-          <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
+          <button className="change-img-btn" onClick={handleImageUpload} disabled={!canEdit} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
           </button>
           {bannerImage && <div style={{
@@ -379,6 +441,7 @@ function LeaderEventFormBody({
                 value={title} 
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Annual Hackathon 2026" 
+                disabled={!canEdit}
               />
             </div>
 
@@ -391,18 +454,21 @@ function LeaderEventFormBody({
                     style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
                     value={date.dd} 
                     onChange={(e) => setDate({...date, dd: e.target.value})}
+                    disabled={!canEdit}
                   />
                   <input 
                     type="text" placeholder="MM" maxLength="2" 
                     style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
                     value={date.mm} 
                     onChange={(e) => setDate({...date, mm: e.target.value})}
+                    disabled={!canEdit}
                   />
                   <input 
                     type="text" placeholder="YYYY" maxLength="4" 
                     style={{ textAlign: 'center', width: '80px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
                     value={date.yyyy} 
                     onChange={(e) => setDate({...date, yyyy: e.target.value})}
+                    disabled={!canEdit}
                   />
                 </div>
               </div>
@@ -414,6 +480,7 @@ function LeaderEventFormBody({
                     style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
                     value={time.hh} 
                     onChange={(e) => setTime({...time, hh: e.target.value})}
+                    disabled={!canEdit}
                   />
                   <span>:</span>
                   <input 
@@ -421,11 +488,13 @@ function LeaderEventFormBody({
                     style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
                     value={time.min} 
                     onChange={(e) => setTime({...time, min: e.target.value})}
+                    disabled={!canEdit}
                   />
                   <select 
                     style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', cursor: 'pointer' }} 
                     value={time.period} 
                     onChange={(e) => setTime({...time, period: e.target.value})}
+                    disabled={!canEdit}
                   >
                     <option value="AM">AM</option>
                     <option value="PM">PM</option>
@@ -441,6 +510,7 @@ function LeaderEventFormBody({
                 placeholder="e.g., Main Auditorium or Online (Zoom)" 
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
+                disabled={!canEdit}
               />
             </div>
 
@@ -448,8 +518,9 @@ function LeaderEventFormBody({
               <label>Select Society</label>
               <select 
                 value={selectedSociety}
-                onChange={(e) => setSelectedSociety(e.target.value)}
+                onChange={(e) => handleSelectSociety(e.target.value)}
                 style={{ padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', cursor: 'pointer', width: '100%' }}
+                disabled={!canEdit}
               >
                 <option value="">Select a society</option>
                 {societies.map(society => (
@@ -472,6 +543,7 @@ function LeaderEventFormBody({
                     value={ticket.name}
                     onChange={(e) => updateTicket(index, 'name', e.target.value)}
                     style={{ flex: 1, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
+                    disabled={!canEdit}
                   />
                   <input 
                     type="text" 
@@ -479,11 +551,13 @@ function LeaderEventFormBody({
                     value={ticket.price}
                     onChange={(e) => updateTicket(index, 'price', e.target.value)}
                     style={{ flex: 1.5, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
+                    disabled={!canEdit}
                   />
                   
                   {tickets.length > 1 && (
                     <button 
                       onClick={() => removeTicketTier(index)}
+                      disabled={!canEdit}
                       style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '12px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
                       ✕
@@ -495,6 +569,7 @@ function LeaderEventFormBody({
               {tickets.length < 5 && (
                 <button 
                   onClick={addTicketTier}
+                  disabled={!canEdit}
                   style={{ width: '100%', background: '#d1d5db', color: '#0f172a', border: 'none', padding: '12px', borderRadius: '15px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}
                 >
                   + Add Another Ticket Tier
@@ -509,6 +584,7 @@ function LeaderEventFormBody({
                 placeholder="https://forms.gle/..." 
                 value={registerLink}
                 onChange={(e) => setRegisterLink(e.target.value)}
+                disabled={!canEdit}
               />
             </div>
 
@@ -519,6 +595,7 @@ function LeaderEventFormBody({
                 placeholder="https://instagram.com/..." 
                 value={instagramLink}
                 onChange={(e) => setInstagramLink(e.target.value)}
+                disabled={!canEdit}
               />
             </div>
 
@@ -529,17 +606,18 @@ function LeaderEventFormBody({
                 onChange={(e) => setDescription(e.target.value)}
                 rows="6" 
                 placeholder="Write all the exciting details about your event here..."
+                disabled={!canEdit}
               />
             </div>
             
             <div className="admin-actions">
-              <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
+              <button className="save-btn" onClick={handleSave} disabled={!canEdit} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
                 {isNewEvent ? 'Publish Event' : 'Publish Event'}
               </button>
-              <button className="save-btn" onClick={handleSaveAsDraft} style={{ background: '#64748b', padding: '16px 40px', borderRadius: '12px', marginLeft: '10px' }}>
+              <button className="save-btn" onClick={handleSaveAsDraft} disabled={!canEdit} style={{ background: '#64748b', padding: '16px 40px', borderRadius: '12px', marginLeft: '10px' }}>
                 {isNewEvent ? 'Draft Event' : 'Save as Draft'}
               </button>
-              {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
+              {!isNewEvent && canEdit && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
             </div>
           </div>
         </div>
@@ -559,6 +637,7 @@ export const LeaderDashboard = () => {
   const [activeEvents, setActiveEvents] = useState([]);
   const [draftEvents, setDraftEvents] = useState([]);
   const [userName, setUserName] = useState('Leader');
+  const [manageableSocietyIds, setManageableSocietyIds] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -577,6 +656,18 @@ export const LeaderDashboard = () => {
         const socData = await socRes.json();
         if (socData.success) {
            setSocieties(socData.data || []);
+        }
+
+        if (isAdmin) {
+          setManageableSocietyIds((socData.data || []).map(s => s._id?.toString()).filter(Boolean));
+        } else {
+          const leaderSocRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
+          const leaderSocData = await leaderSocRes.json();
+          if (leaderSocData.success) {
+            setManageableSocietyIds((leaderSocData.data || []).map(s => s._id?.toString()).filter(Boolean));
+          } else {
+            setManageableSocietyIds([]);
+          }
         }
 
         const evtUrl = isAdmin ? `${API_URL}/api/events` : `${API_URL}/api/events/leader/${userId}`;
@@ -617,7 +708,13 @@ export const LeaderDashboard = () => {
             </div>
             <div className="societies-list">
               {societies.map(s => (
-                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
+                <LeaderSocietyCard
+                  key={s._id}
+                  id={s._id}
+                  name={s.name}
+                  logo={s.logo}
+                  canManage={manageableSocietyIds.includes(s._id?.toString())}
+                />
               ))}
             </div>
           </div>
@@ -664,12 +761,41 @@ export const LeaderSocietyEditor = () => {
   const [shortName, setShortName] = useState('');
   const [description, setDescription] = useState('');
   const [logo, setLogo] = useState('');
+  const [canEdit, setCanEdit] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (isNew || !id) return;
-    fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        if (!authData.authenticated) return;
+
+        const admin = authData.user?.role === 'admin';
+        if (cancelled) return;
+        setIsAdmin(admin);
+
+        if (isNew) {
+          setCanEdit(admin);
+          return;
+        }
+
+        if (!id) return;
+
+        if (!admin) {
+          const socRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
+          const socData = await socRes.json();
+          const allowed = socData.success && (socData.data || []).some(s => s._id?.toString() === id?.toString());
+          if (cancelled) return;
+          setCanEdit(allowed);
+        } else {
+          setCanEdit(true);
+        }
+
+        const res = await fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' });
+        const data = await res.json();
         if (data.success && data.data?.society) {
           const s = data.data.society;
           setName(s.name || '');
@@ -677,16 +803,29 @@ export const LeaderSocietyEditor = () => {
           setDescription(s.description || '');
           setLogo(s.logo || '');
         }
-      })
-      .catch(err => console.error('Error loading society:', err));
+      } catch (err) {
+        console.error('Error loading society:', err);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, API_URL, isNew]);
 
   const handleLogoPrompt = () => {
+    if (!canEdit) return;
     const url = prompt('Paste image URL for the club logo:', logo || 'https://');
     if (url !== null) setLogo(url.trim());
   };
 
   const handleDelete = async () => {
+    if (!isAdmin) {
+      alert("Only admins can delete societies.");
+      return;
+    }
     if (!window.confirm("Are you sure you want to delete this society? This action cannot be undone.")) return;
 
     try {
@@ -709,6 +848,10 @@ export const LeaderSocietyEditor = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!canEdit) {
+      alert("You don't have permission to edit this society.");
+      return;
+    }
     if (!name.trim() || !shortName.trim() || !description.trim()) {
       alert('Please fill in full name, short name, and description.');
       return;
@@ -746,7 +889,7 @@ export const LeaderSocietyEditor = () => {
     <div className="editor-page society-editor-page">
       <div className="admin-nav">
         <button type="button" className="back-link" onClick={() => navigate('/', { state: { tab: 'leader' } })}>← Back</button>
-        <div className="status-pill">{isNew ? 'New club / society' : 'Edit society'}</div>
+        <div className="status-pill">{isNew ? 'New club / society' : (canEdit ? 'Edit society' : 'View only')}</div>
       </div>
 
       <div className="editor-container">
@@ -774,7 +917,7 @@ export const LeaderSocietyEditor = () => {
           }}>
             {isNew ? 'ADD NEW SOCIETY OR CLUB' : 'EDIT SOCIETY'}
           </h2>
-          <button type="button" className="change-img-btn" onClick={handleLogoPrompt} style={{ zIndex: 2, position: 'relative' }}>
+          <button type="button" className="change-img-btn" onClick={handleLogoPrompt} disabled={!canEdit} style={{ zIndex: 2, position: 'relative' }}>
             {logo ? 'Change logo URL' : 'Set logo (image URL)'}
           </button>
           {logo && (
@@ -797,6 +940,7 @@ export const LeaderSocietyEditor = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Rotaract Club of IIT"
                 required
+                disabled={!canEdit}
               />
             </div>
 
@@ -808,6 +952,7 @@ export const LeaderSocietyEditor = () => {
                 onChange={(e) => setShortName(e.target.value)}
                 placeholder="e.g., ROTARACT"
                 required
+                disabled={!canEdit}
               />
             </div>
 
@@ -819,14 +964,15 @@ export const LeaderSocietyEditor = () => {
                 rows={5}
                 placeholder="What does your club do? Who can join?"
                 required
+                disabled={!canEdit}
               />
             </div>
 
             <div className="admin-actions">
-              <button type="submit" className="save-btn" style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
+              <button type="submit" className="save-btn" disabled={!canEdit} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
                 {isNew ? 'Publish society' : 'Save changes'}
               </button>
-              {!isNew && (
+              {!isNew && isAdmin && (
                 <button 
                   type="button" 
                   className="cancel-btn" 
@@ -871,7 +1017,7 @@ export const LeaderSocietyManager = () => {
           const socRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
           const socData = await socRes.json();
           if (socData.success && id) {
-            const leadingThis = socData.data.some(s => s._id === id);
+            const leadingThis = socData.data.some(s => s._id?.toString() === id?.toString());
             setIsLeader(leadingThis);
           }
         }
@@ -932,11 +1078,11 @@ export const LeaderSocietyManager = () => {
       <section className="manager-events">
         <div className="manager-events-header">
           <h3>Managed Events</h3>
-          {isLeader && <button className="small-add-btn" onClick={() => navigate('/admin/event/new', { state: { preselectedSocietyId: id } })}>+ Add Event</button>}
+          {isLeader && <button className="small-add-btn" onClick={() => navigate(`/admin/event/new?societyId=${id}`, { state: { tab: 'leader' } })}>+ Add Event</button>}
         </div>
         <div className="manager-grid">
           {events.filter(e => e.status === 'Active' || e.status === 'Featured').map((ev, i) => (
-            <LeaderEventBanner key={`managed-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} />
+            <LeaderEventBanner key={`managed-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} editable={isLeader} />
           ))}
           {events.filter(e => e.status !== 'Active' && e.status !== 'Featured').length === 0 && events.length === 0 && (
             <div className="leader-empty">No managed events yet.</div>
@@ -950,7 +1096,7 @@ export const LeaderSocietyManager = () => {
         </div>
         <div className="manager-grid">
           {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).map((ev, i) => (
-            <LeaderEventBanner key={`draft-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} />
+            <LeaderEventBanner key={`draft-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} editable={isLeader} />
           ))}
           {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).length === 0 && (
             <div className="leader-empty">No drafted or past events.</div>

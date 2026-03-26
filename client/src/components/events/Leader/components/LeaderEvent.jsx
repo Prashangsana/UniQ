@@ -3,16 +3,19 @@ import { useNavigate, Link } from "react-router-dom";
 import "./LeaderEvent.css";
 
 // 1. Admin Event Banner
-export const LeaderEventBanner = ({ large, id = "sample-event", title, image }) => {
+export const LeaderEventBanner = ({ large, id = "sample-event", title, image, editable = true }) => {
   const navigate = useNavigate();
   const displayTitle = title || id.replace(/-/g, ' ').toUpperCase();
   
   return (
     <div 
       className={`leader-banner ${large ? "large" : ""}`} 
-      onClick={() => navigate(`/admin/event/${id}`)}
+      onClick={() => {
+        if (!editable) return;
+        navigate(`/admin/event/${id}`);
+      }}
       style={{ 
-        cursor: 'pointer', 
+        cursor: editable ? 'pointer' : 'default', 
         position: 'relative',
         backgroundImage: `url(${image || "/logo.png"})`,
         backgroundSize: 'cover',
@@ -22,7 +25,7 @@ export const LeaderEventBanner = ({ large, id = "sample-event", title, image }) 
       <div className="leader-banner-text">
         {displayTitle}
       </div>
-      <div className="leader-edit-badge">✏️ Edit</div>
+      {editable && <div className="leader-edit-badge">✏️ Edit</div>}
     </div>
   );
 };
@@ -83,7 +86,7 @@ export const LeaderSidebar = ({ title }) => {
 };
 
 // 4. Admin Society Card
-export const LeaderSocietyCard = ({ name, id, logo }) => {
+export const LeaderSocietyCard = ({ name, id, logo, canManage = true }) => {
   const slug = name ? name.toLowerCase().replace(/\\s+/g, '-') : '';
   const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'S')}&background=e2e8f0&color=64748b&bold=true`;
 
@@ -100,7 +103,7 @@ export const LeaderSocietyCard = ({ name, id, logo }) => {
           }}
         />
         <span className="leader-card-name">{name}</span>
-        <div className="leader-manage-tag">✏️ Manage</div>
+        <div className="leader-manage-tag">{canManage ? '✏️ Manage' : 'View'}</div>
       </div>
     </Link>
   );

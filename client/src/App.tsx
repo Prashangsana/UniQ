@@ -17,7 +17,7 @@ import PublicProfile from './components/Landing/PublicProfile';
 import Home from './dashboard/Home';
 import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
-import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
+import { LeaderDashboard, LeaderEventEditor, LeaderSocietyEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
 import AdminDashboard from './dashboard/AdminDashboard';
 
 // Mentoring Components
@@ -47,7 +47,7 @@ function App() {
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
   // Auth Handlers
-  const handleLogin = useCallback((role: string = 'student'): void => {
+  const handleLogin = useCallback((role: string = 'student', options: { redirect?: boolean } = {}): void => {
     localStorage.setItem('is_logged_in', 'true');
     localStorage.setItem('user_role', role);
     setIsLoggedIn(true);
@@ -61,8 +61,10 @@ function App() {
           setMyEventsList(ids);
         }
       });
-    navigate('/'); 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (options.redirect !== false) {
+      navigate('/'); 
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [navigate, API_URL]);
 
   const handleLogout = useCallback((): void => {
@@ -90,17 +92,7 @@ function App() {
         const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const data = await response.json();
         if (data.authenticated) {
-          handleLogin(data.user?.role || 'student');
-
-                  fetch(`${API_URL}/api/events/my`, { credentials: 'include' })
-            .then(res => res.json())
-            .then(eventData => {
-              if (eventData.success) {
-                // Converts DB objects back into the string IDs your state expects
-                const ids = eventData.data.map((item: any) => item.event?._id || item.event);
-                setMyEventsList(ids);
-              }
-            });
+          handleLogin(data.user?.role || 'student', { redirect: false });
         } else {
           handleLogout();
         }
@@ -184,6 +176,9 @@ function App() {
 
           {/* Admin Path Fallback */}
           <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
+          <Route path="/admin/society/new" element={<LeaderSocietyEditor />} />
+          <Route path="/admin/society/:id/edit" element={<LeaderSocietyEditor />} />
+          <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
 
           {/* Mentoring Routes */}
           <Route path="/mentoring/lecturers" element={<MentoringWrapper Component={LecturerMentoring} />} />
