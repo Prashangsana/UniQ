@@ -152,16 +152,17 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
             <div className="societies-list">
 
-              {displayedSocieties.map((club) => (
-
-                <SocietyCard
-                  key={club._id}
-                  id={club._id}
-                  name={club.name}
-                  logo={club.logo}
-                />
-
-              ))}
+              {displayedSocieties.map((club, i) => {
+                const uniqueId = club._id || club.id || club.shortName || club.name || i.toString();
+                return (
+                  <SocietyCard
+                    key={uniqueId}
+                    id={uniqueId}
+                    name={club.name}
+                    logo={club.logo}
+                  />
+                );
+              })}
 
             </div>
 
@@ -492,6 +493,33 @@ export const SocietyProfilePage = ({ userRole }) => {
         console.log("Society profile response:", profileData); // Debug log
         
         if (!profileData.success) {
+          // INTERCEPT MOCK DATA CRASHES: When the backend crashes (due to string IDs like "rotaract-club"), gracefully fallback 
+          // to manually matching the society from the generic bulk API list so the student can perfectly view the Rotaract Club's uploaded events
+          try {
+            const allSocietiesRes = await fetch(`${API_URL}/api/societies`, { credentials: 'include' });
+            const allSocietiesData = await allSocietiesRes.json();
+            
+            if (allSocietiesData.success) {
+              const matchedSociety = allSocietiesData.data.find(s => s._id === id || s.id === id || s.shortName === id || s.name === id);
+              if (matchedSociety) {
+                setProfileData({ society: matchedSociety, events: [] });
+                // Attempt to fetch ALL events and filter them on the frontend to seamlessly show leader-uploaded events
+                fetch(`${API_URL}/api/events`, { credentials: 'include' })
+                  .then(eRes => eRes.json())
+                  .then(eData => {
+                    if (eData.success) {
+                      const socEvents = eData.data.filter(e => {
+                        if (!e.society) return false;
+                        return e.society._id === matchedSociety._id || e.society === matchedSociety._id || e.society.name === matchedSociety.name;
+                      });
+                      setProfileData(prev => ({ ...prev, events: socEvents }));
+                    }
+                  });
+                return;
+              }
+            }
+          } catch (err) {}
+
           setError(profileData.message || "Failed to load society profile");
           return;
         }

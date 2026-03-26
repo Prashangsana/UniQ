@@ -61,7 +61,8 @@ function App() {
           setMyEventsList(ids);
         }
       });
-    if (options.redirect !== false) {
+    // Only redirect to landing page if user is explicitly on root or login page
+    if (window.location.pathname === '/' || window.location.pathname === '/login' || window.location.pathname === '') {
       navigate('/'); 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

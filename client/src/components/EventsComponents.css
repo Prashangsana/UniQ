@@ -49,7 +49,7 @@
 }
 
 /* --- SIDEBAR SECTION STYLES --- */
-.sidebar-section { margin-bottom: 30px; }
+.events-sidebar-section { margin-bottom: 30px; }
 .sidebar-title {
   font-size: var(--topic-heading-font-size);
   line-height: var(--topic-heading-line-height);

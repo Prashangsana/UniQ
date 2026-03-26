@@ -39,32 +39,8 @@ export const EventBanner = ({ large, id = "sample-event", title, image }) => {
 
 // --- SOCIETY CARD ---
 export const SocietyCard = ({ name, id, logo }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const slug = name ? name.toLowerCase().replace(/\\s+/g, '-') : '';
+  const slug = name ? name.toLowerCase().replace(/\s+/g, '-') : '';
   const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'S')}&background=e2e8f0&color=64748b&bold=true`;
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  const handleFollowClick = async (e) => {
-    e.preventDefault(); // Prevent navigation when clicking follow
-    e.stopPropagation();
-
-    try {
-      const res = await fetch(`${API_URL}/api/societies/${id}/follow`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setIsFollowing(!isFollowing);
-      } else {
-        alert(data.message || 'Failed to follow society');
-      }
-    } catch (error) {
-      console.error('Error following society:', error);
-      alert('Error following society');
-    }
-  };
 
   return (
     <Link to={`/society/${id}`} state={{ tab: 'society' }} className="society-card-link">
@@ -79,12 +55,6 @@ export const SocietyCard = ({ name, id, logo }) => {
           }}
         />
         <span>{name}</span>
-        <button 
-          className={`follow-btn ${isFollowing ? 'following' : ''}`}
-          onClick={handleFollowClick}
-        >
-          {isFollowing ? 'Following' : 'Follow'}
-        </button>
       </div>
     </Link>
   );
@@ -149,7 +119,7 @@ export const SidebarSection = ({ title, events = [] }) => {
   const displayItems = showAll ? events.slice(0, 6) : events.slice(0, 3);
 
   return (
-    <div className="sidebar-section">
+    <div className="events-sidebar-section">
       <h3 className="sidebar-title">{title}</h3>
       <div className="sidebar-items">
         {displayItems.map((event, index) => (
