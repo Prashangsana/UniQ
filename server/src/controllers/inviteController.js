@@ -1,41 +1,33 @@
 const GroupInvite = require('../models/GroupInvite');
 const Group = require('../models/Group');
 
-// POST /api/groups/:groupId/invite
-// Allow group members to invite another student
 exports.inviteUser = async (req, res) => {
   try {
     const { groupId } = req.params;
     const { invitedUserId, message } = req.body;
     const userId = (req.user._id || req.user.id).toString();
 
-    // 1. Check the GROUP first (not an inviteId)
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-    // 2. Rule: Only existing members can send invites
     if (!group.members.includes(userId)) {
       return res.status(403).json({ success: false, message: 'Only group members can send invites' });
     }
 
-    // 3. Rule: Group cannot exceed maxMembers
     if (group.members.length >= group.maxMembers) {
       return res.status(400).json({ success: false, message: 'Group is already full' });
     }
 
-    // 4. Rule: User cannot be invited if they are already in a group for this module
     const alreadyInAGroup = await Group.findOne({ moduleId: group.moduleId, members: invitedUserId });
     if (alreadyInAGroup) {
       return res.status(400).json({ success: false, message: 'User is already in a group for this module' });
     }
 
-    // 5. Prevent duplicate pending invites
     const existingInvite = await GroupInvite.findOne({ group: groupId, invitedUser: invitedUserId, status: 'pending' });
     if (existingInvite) {
       return res.status(400).json({ success: false, message: 'An invite is already pending for this user' });
     }
 
-    // 6. Create the invite
     const newInvite = await GroupInvite.create({
       group: groupId,
       invitedUser: invitedUserId,
@@ -48,13 +40,10 @@ exports.inviteUser = async (req, res) => {
   }
 };
 
-// GET /api/invites/my
-// Return all pending invites for the logged-in user
 exports.getMyInvites = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    // Fetch invites and populate group details so the UI can display group names/domains
     const myInvites = await GroupInvite.find({ invitedUser: userId, status: 'pending' })
       .populate('group', 'name domain members maxMembers moduleId');
 
@@ -64,8 +53,6 @@ exports.getMyInvites = async (req, res) => {
   }
 };
 
-// POST /api/invites/:inviteId/accept
-// Allow a student to accept an invite
 exports.acceptInvite = async (req, res) => {
   try {
     const { inviteId } = req.params;
@@ -76,7 +63,6 @@ exports.acceptInvite = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Invite no longer valid' });
     }
 
-    // Ensure the person accepting is the person who was invited
     if (invite.invitedUser.toString() !== userId) {
       return res.status(403).json({ success: false, message: 'Not authorized to accept this invite' });
     }
@@ -88,9 +74,8 @@ exports.acceptInvite = async (req, res) => {
       return res.status(400).json({ success: false, message: 'You are already in a group for this module' });
     }
     
-    // Safety check: Has the group filled up since the invite was sent?
     if (group.members.length >= group.maxMembers) {
-      invite.status = 'rejected'; // Auto-reject the invite since it's no longer valid
+      invite.status = 'rejected';
       await invite.save();
       return res.status(400).json({ success: false, message: 'Sorry, this group is now full' });
     }
@@ -108,8 +93,6 @@ exports.acceptInvite = async (req, res) => {
   }
 };
 
-// POST /api/invites/:inviteId/reject
-// Reject an invite
 exports.rejectInvite = async (req, res) => {
   try {
     const { inviteId } = req.params;
@@ -133,8 +116,6 @@ exports.rejectInvite = async (req, res) => {
   }
 };
 
-// POST /api/groups/:groupId/leave
-// Allow a member to leave a group
 exports.leaveGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -143,12 +124,10 @@ exports.leaveGroup = async (req, res) => {
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-    // Rule: Cannot leave if the group is finalized (Stage 4 prep)
     if (group.isFinalised) {
       return res.status(400).json({ success: false, message: 'Cannot leave a finalized group' });
     }
 
-    // Rule: Group leader cannot leave unless they are the only member
     if (group.leader.toString() === userId) {
       if (group.members.length > 1) {
         return res.status(400).json({ 
@@ -156,14 +135,11 @@ exports.leaveGroup = async (req, res) => {
           message: 'Leader cannot leave while there are other members. Please transfer leadership first.' 
         });
       } else {
-        // If the leader is the only member, leaving means the group is empty. 
-        // We delete the group to clean up the database.
         await Group.findByIdAndDelete(groupId);
         return res.status(200).json({ success: true, message: 'You left, and the empty group was deleted.' });
       }
     }
 
-    // Remove the user from the members array
     group.members = group.members.filter(memberId => memberId.toString() !== userId);
     await group.save();
 

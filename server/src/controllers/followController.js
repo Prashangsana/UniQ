@@ -1,9 +1,6 @@
 let follows = [];
 
-
-// FOLLOW SOCIETY
 exports.followSociety = (req, res) => {
-
   const userId = "mock-user-001";
   const societyId = req.params.id;
 
@@ -27,14 +24,9 @@ exports.followSociety = (req, res) => {
     success: true,
     message: "Now following"
   });
-
 };
 
-
-
-// UNFOLLOW SOCIETY
 exports.unfollowSociety = (req, res) => {
-
   const userId = "mock-user-001";
   const societyId = req.params.id;
 
@@ -46,13 +38,9 @@ exports.unfollowSociety = (req, res) => {
     success: true,
     message: "Unfollowed"
   });
-
 };
 
-
-// GET FOLLOWED SOCIETIES
 exports.getFollowedSocieties = (req, res) => {
-
   const userId = "mock-user-001";
 
   const userFollows = follows.filter(
@@ -63,14 +51,11 @@ exports.getFollowedSocieties = (req, res) => {
     success: true,
     data: userFollows
   });
-
 };
-
 
 module.exports.follows = follows;
 
 exports.checkFollowStatus = (req, res) => {
-
   const userId = "mock-user-001";
   const societyId = req.params.id;
 
@@ -82,5 +67,4 @@ exports.checkFollowStatus = (req, res) => {
     success: true,
     following: isFollowing
   });
-
 };

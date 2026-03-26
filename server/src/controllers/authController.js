@@ -122,7 +122,6 @@ exports.localEmailLogin = async (req, res) => {
       firstNameRaw = email.split('@')[0];
     } else {
 
-      // 2. Format Validation via Regex
       const studentRegex = /^([a-zA-Z]+)\.(\d{8,})@iit\.ac\.lk$/;
       const lecturerRegex = /^([a-zA-Z]+)\.([a-zA-Z])@iit\.ac\.lk$/;
 
@@ -144,13 +143,10 @@ exports.localEmailLogin = async (req, res) => {
 
     }
 
-
-    // Format Names
     const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
     const lastName = 'LastName';
     const fullName = `${firstName} ${lastName}`;
 
-    // Database Check/Creation
     let user = await User.findOne({ email });
 
     if (!user) {
@@ -166,7 +162,6 @@ exports.localEmailLogin = async (req, res) => {
     } else {
       user.lastLogin = Date.now();
 
-      // Sync admin role if email is now in admin list
       if (isAdmin && user.role !== 'admin') user.role = 'admin';
       await user.save();
     }

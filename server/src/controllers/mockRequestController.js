@@ -1,28 +1,23 @@
 const { groupsDb } = require('./mockGroupController');
 
-// Temporary in-memory DB for requests
 let requestsDb = [];
 
 exports.createRequest = async (req, res) => {
   const { groupId } = req.params;
   const userId = req.user.id;
   
-  // 1. Find target group
   const targetGroup = groupsDb.find(g => g._id === groupId);
   if (!targetGroup) return res.status(404).json({ success: false, message: 'Group not found' });
 
-  // 2. VALIDATION: Check if group is already full
   if (targetGroup.members.length >= targetGroup.maxMembers) {
     return res.status(400).json({ success: false, message: 'Cannot join: This group is full.' });
   }
 
-  // 3. VALIDATION: Check if user is already in another group for this module
   const existingGroup = groupsDb.find(g => 
     g.moduleId === targetGroup.moduleId && 
     g.members.some(m => (m._id || m) == userId)
   );
 
-  // Rule: Students cannot request to join if the group is already submitted to the lecturer
   if (targetGroup.status !== 'open') {
     return res.status(400).json({ 
       success: false, 
@@ -37,7 +32,6 @@ exports.createRequest = async (req, res) => {
     });
   }
 
-  // 4. VALIDATION: Check for existing pending request
   const existingRequest = requestsDb.find(r => 
     r.group === groupId && (r.requester._id || r.requester) === userId && r.status === 'pending'
   );
@@ -46,7 +40,6 @@ exports.createRequest = async (req, res) => {
     return res.status(400).json({ success: false, message: 'You already have a pending request for this group.' });
   }
 
-  // Passed all checks! Create the request.
   const newRequest = {
     _id: "req_" + Date.now(),
     group: groupId,
@@ -77,17 +70,14 @@ exports.approveRequest = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Group is now full. Request auto-rejected.' });
   }
 
-  // Simulate adding approval
   if (!request.approvals.includes(req.user.id)) {
     request.approvals.push(req.user.id);
   }
 
-  // Simulate unanimous approval logic (assuming 1 member in mock group for now)
   request.status = 'approved'; 
 
   const group = groupsDb.find(g => g._id === request.group);
   if (group) {
-    // Only add them if they aren't already in the array
     const isAlreadyMember = group.members.some(m => (m._id || m) === request.requester._id);
     if (!isAlreadyMember) {
       group.members.push(request.requester);

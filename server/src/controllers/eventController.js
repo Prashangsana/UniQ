@@ -3,11 +3,8 @@ const societies = require('../mockData/societies.json');
 const Event = require("../models/Event");
 const SavedEvent = require("../models/SavedEvent");
 
-/* TEMP STORAGE (until DB exists for notifications) 
-*/
 let notifications = [];
 
-/* ================= MAIN EVENT (Student) ================= */
 exports.getMainEvent = async (req, res) => {
   try {
     const event = await Event.find().sort({ date: 1 }).limit(1);
@@ -22,7 +19,6 @@ exports.getMainEvent = async (req, res) => {
   }
 };
 
-/* ================= LATEST EVENTS (Student) ================= */
 exports.getLatestEvents = async (req, res) => {
   try {
     const latest = await Event.find().sort({ createdAt: -1 }).limit(6);
@@ -39,7 +35,6 @@ exports.getLatestEvents = async (req, res) => {
   }
 };
 
-/* ================= TOP EVENTS THIS WEEK (Student) ================= */
 exports.getTopEvents = async (req, res) => {
   try {
     const topEvents = await Event.find().sort({ date: 1 }).limit(6);
@@ -56,7 +51,6 @@ exports.getTopEvents = async (req, res) => {
   }
 };
 
-/* ================= EVENT DETAILS (Student) ================= */
 exports.getEventDetails = async (req, res) => {
   try {
     const eventId = req.params.id;
@@ -72,14 +66,12 @@ exports.getEventDetails = async (req, res) => {
 
     res.json({ success: true, data: event });
   } catch (error) {
-    // If ID is not a valid ObjectId, search in mock data
     const event = events.find(e => e._id === req.params.id);
     if (event) return res.json({ success: true, data: event });
     res.status(500).json({ success: false, message: "Error fetching event details" });
   }
 };
 
-/* ================= SOCIETY EVENTS (Student) ================= */
 exports.getSocietyEvents = async (req, res) => {
   try {
     const societyId = req.params.societyId;
@@ -95,7 +87,6 @@ exports.getSocietyEvents = async (req, res) => {
   }
 };
 
-/* ================= MY EVENTS (Student) ================= */
 exports.addEventToMyEvents = async (req, res) => {
   try {
     const userId = req.user ? req.user.id : "mock-user-001";
@@ -135,14 +126,12 @@ exports.getMyEvents = async (req, res) => {
   }
 };
 
-/* ================= NOTIFICATIONS (Student) ================= */
 exports.getNotifications = (req, res) => {
   const userId = req.user ? req.user.id : "mock-user-001";
   const userNotifications = notifications.filter(n => n.user === userId);
   res.json({ success: true, data: userNotifications });
 };
 
-/* ================= LEADER CRUD ================= */
 exports.createEvent = async (req, res) => {
   try {
     const eventData = { ...req.body, leader: req.user.id };
@@ -167,7 +156,7 @@ exports.updateEvent = async (req, res) => {
     const event = await Event.findOneAndUpdate(
       { _id: req.params.id, leader: req.user.id },
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!event) return res.status(404).json({ success: false, message: "Event not found or unauthorized" });
     res.status(200).json({ success: true, data: event });

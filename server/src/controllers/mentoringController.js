@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/User');
 
 const { 
     mentoringCategories, 
@@ -6,14 +6,9 @@ const {
     initialAppointments 
 } = require('../data/mockMentoringData');
 
-// State management for the session (Simulating a database)
 let mentors = [...initialMentors];
 let appointments = [...initialAppointments];
 
-/**
- * 1. GET ALL MENTORS
- * Returns the full list of 20 mentors.
- */
 exports.getMentors = async (req, res) => {
     try {
         const facultyMentors = await User.find({ role: 'lecturer' });
@@ -23,14 +18,9 @@ exports.getMentors = async (req, res) => {
     }
 };
 
-/**
- * 2. GET CATEGORIES
- * Returns the 10 expertise categories for the horizontal grid.
- */
 exports.getCategories = (req, res) => {
     try {
         const { role } = req.query; 
-        // If role is provided (faculty/peer-mentor), filter them
         if (role) {
             const filteredCats = mentoringCategories.filter(c => c.role === role);
             return res.json(filteredCats);
@@ -41,10 +31,6 @@ exports.getCategories = (req, res) => {
     }
 };
 
-/**
- * 3. SEARCH MENTORS
- * Powers the search bar in the frontend.
- */
 exports.searchMentors = (req, res) => {
     try {
         const { query, role } = req.query;
@@ -67,10 +53,6 @@ exports.searchMentors = (req, res) => {
     }
 };
 
-/**
- * 4. GET APPOINTMENTS
- * Fetches sessions for Alex (s101) to display in the horizontal rows.
- */
 exports.getAppointments = (req, res) => {
     try {
         const { mentorId, studentId } = req.query;
@@ -86,15 +68,10 @@ exports.getAppointments = (req, res) => {
     }
 };
 
-/**
- * 5. BOOK SESSION
- * Handles new bookings and prevents double-booking.
- */
 exports.bookSession = (req, res) => {
     try {
         const { mentorId, date, time } = req.body;
 
-        // Validation: Check if mentor is already busy at this specific time
         const isBusy = appointments.some(app => 
             app.mentorId === mentorId && app.date === date && app.time === time && app.status !== 'Declined'
         );
@@ -119,10 +96,6 @@ exports.bookSession = (req, res) => {
     }
 };
 
-/**
- * 6. UPDATE STATUS
- * Allows mentors to accept/decline and generates a random Zoom link if Accepted.
- */
 exports.updateStatus = (req, res) => {
     try {
         const { id } = req.params;

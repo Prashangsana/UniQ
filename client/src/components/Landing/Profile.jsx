@@ -427,7 +427,7 @@ const Profile = () => {
                       </div>
                       <div className="skill-input-row">
                         <select value={selectedSkill} onChange={handleSkillSelectChange} className="skill-select">
-                          <option value="">Choose a skill...</option>
+                          <option value="">Select a skill...</option>
                           {config.predefinedList.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         {showOtherInput && (

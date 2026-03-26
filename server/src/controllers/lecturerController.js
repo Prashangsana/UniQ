@@ -1,8 +1,7 @@
 const GroupProject = require('../models/GroupProject');
 const Group = require('../models/Group');
-const Module = require('../models/Module'); // Need to import the Admin's model
+const Module = require('../models/Module');
 
-// GET /api/lecturer/my-modules
 exports.getMyModules = async (req, res) => {
   try {
     if (!req.user) {
@@ -65,13 +64,11 @@ exports.getLecturerGroups = async (req, res) => {
   }
 };
 
-// POST /api/modules/:moduleId/group-project (LECTURER ONLY)
 exports.createGroupProject = async (req, res) => {
   try {
     const { moduleId } = req.params;
-    const { minMembers, maxMembers, deadline, allowedPrefixes } = req.body; // Changed to allowedPrefixes
+    const { minMembers, maxMembers, deadline, allowedPrefixes } = req.body;
 
-    // Check if a project already exists for this module
     const existingProject = await GroupProject.findOne({ moduleId });
     if (existingProject) {
       return res.status(400).json({ success: false, message: 'A group project is already open for this module.' });
@@ -96,7 +93,7 @@ exports.createGroupProject = async (req, res) => {
         isOpen: true, 
         createdBy: req.user.id 
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     res.status(201).json({ success: true, data: project });
@@ -106,16 +103,14 @@ exports.createGroupProject = async (req, res) => {
   }
 };
 
-// POST /api/groups/:groupId/submit-finalisation (STUDENT LEADER ONLY)
 exports.submitFinalisation = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { formData, selectedPrefix } = req.body; // Extract selectedPrefix from frontend
+    const { formData, selectedPrefix } = req.body;
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-    // Verify the person submitting is the group leader
     if (group.leader.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Only the group leader can submit for finalisation.' });
     }
@@ -126,7 +121,6 @@ exports.submitFinalisation = async (req, res) => {
       submittedAt: Date.now()
     };
 
-    // Lock the group, save form data, and save their chosen prefix
     group.status = 'pending_review';
     group.prefix = selectedPrefix || "GRP"; 
     group.isFinalised = false;
@@ -142,29 +136,26 @@ exports.submitFinalisation = async (req, res) => {
   }
 };
 
-// POST /api/groups/:groupId/review (LECTURER ONLY)
 exports.reviewGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { action, feedback } = req.body; // action: 'approve' or 'reject'
+    const { action, feedback } = req.body;
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
     if (action === 'approve') {
-      // COUNTING LOGIC: Count only finalised groups in THIS module with THIS SPECIFIC prefix
       const count = await Group.countDocuments({ 
         moduleId: group.moduleId, 
         status: 'finalised',
-        prefix: group.prefix // Important: Only count SEs if this is an SE, etc.
+        prefix: group.prefix
       });
       
       group.status = 'finalised';
       group.isFinalised = true;
-      group.finalisedCode = `${group.prefix}-${count + 1}`; // e.g., SE-3
+      group.finalisedCode = `${group.prefix}-${count + 1}`;
       group.feedback = "Approved";
     } else {
-      // Send it back to the students to fix
       group.status = 'open';
       group.isFinalised = false;
       group.feedback = feedback || "Rejected. Please update your members and resubmit.";

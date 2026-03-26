@@ -4,13 +4,9 @@ const mockLecturers = require('../data/mockLecturers.json');
 const mockStudents = require('../data/mockStudents.json');
 const { groupsDb, openModulesDb } = require('./mockGroupController');
 
-// Mock Database for Group Projects
 let groupProjectsDb = [];
 
-
-// GET /api/lecturer/my-modules
 exports.getMyModules = async (req, res) => {
-  // Using user_id_lecturer_1 (Nilakshi Nonis) from your mock data
   const lecturerId = req.user ? req.user.id : 'user_id_lecturer_1'; 
 
   const authorizedModules = mockModules.filter(m => 
@@ -21,19 +17,15 @@ exports.getMyModules = async (req, res) => {
   res.status(200).json({ success: true, data: formattedModules });
 };
 
-// GET /api/lecturer/module-groups
 exports.getLecturerGroups = async (req, res) => {
   const lecturerId = req.user ? req.user.id : 'user_id_lecturer_1'; 
 
-  // 1. Get module IDs this lecturer manages
   const myModuleIds = mockModules
     .filter(m => m.moduleLeaders.includes(lecturerId) || m.moduleTeam.includes(lecturerId))
     .map(m => m._id);
 
-  // 2. Filter groups in those modules
   const relevantGroups = groupsDb.filter(g => myModuleIds.includes(g.moduleId));
 
-  // 3. Separate them
   const pendingGroups = relevantGroups.filter(g => g.status === 'pending_review');
   const finalisedGroups = relevantGroups.filter(g => g.status === 'finalised');
 
@@ -43,7 +35,6 @@ exports.getLecturerGroups = async (req, res) => {
   });
 };
 
-// POST /api/modules/:moduleId/group-project
 exports.createGroupProject = async (req, res) => {
   try {
     const { moduleId } = req.params;
@@ -55,7 +46,6 @@ exports.createGroupProject = async (req, res) => {
       minMembers,
       maxMembers,
       deadline,
-      // Store an array of prefixes (e.g. ["SE", "CS", "AI"])
       allowedPrefixes: allowedPrefixes || ["SE", "CS"], 
       isOpen: true,
       createdBy: req.user ? req.user.id : 'user_id_lecturer_1'
@@ -63,7 +53,6 @@ exports.createGroupProject = async (req, res) => {
 
     groupProjectsDb.push(newProject);
 
-    // Add to openModulesDb so students can see it
     const isAlreadyOpen = openModulesDb.find(m => m._id === moduleId);
     if (!isAlreadyOpen) {
       openModulesDb.push({
@@ -79,24 +68,19 @@ exports.createGroupProject = async (req, res) => {
   }
 };
 
-// POST /api/groups/:groupId/submit-finalisation
 exports.submitFinalisation = async (req, res) => {
   const { groupId } = req.params;
-  // This body comes from your Frontend Finalisation Form
   const { tutorialGroup, memberExtraInfo, selectedPrefix } = req.body; 
 
   const group = groupsDb.find(g => g._id === groupId);
   if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-  // Update the group in our "database" with the form data
   group.status = 'pending_review';
   group.prefix = selectedPrefix;
   
-  // This is the CRITICAL part: 
-  // We save the tutorialGroup and the array of IDs exactly as the student typed them.
   group.finalisationForm = {
     tutorialGroup,
-    memberExtraInfo // This should be the array of { userId, iitId, uowId }
+    memberExtraInfo
   };
 
   res.status(200).json({ 
@@ -106,7 +90,6 @@ exports.submitFinalisation = async (req, res) => {
   });
 };
 
-// POST /api/groups/:groupId/review
 exports.reviewGroup = async (req, res) => {
   const { groupId } = req.params;
   const { action, feedback } = req.body;
@@ -120,15 +103,13 @@ exports.reviewGroup = async (req, res) => {
 
     const chosenPrefix = group.prefix || "GRP";
     
-    // COUNT ONLY groups that are ALREADY finalised in this module with this prefix
     const count = groupsDb.filter(g => 
         g.isFinalised === true && 
         g.moduleId === group.moduleId && 
         g.prefix === chosenPrefix &&
-        g._id !== group._id // Don't count the current group we are currently approving
+        g._id !== group._id 
     ).length;
     
-    // 3. Assign the code (e.g., CS-1 if count was 0)
     group.finalisedCode = `${chosenPrefix}-${count + 1}`;
     group.feedback = "Approved";
   } else {

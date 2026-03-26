@@ -1,20 +1,17 @@
- //src/controllers/userController.js
-const mockUsers = require("../mockData/mockUsers"); // This is a reference to the object
+const mockUsers = require("../mockData/mockUsers");
 const User = require("../models/User");
 
-// GET user profile
 exports.getUserProfile = async (req, res) => {
   try {
+    const user = await User.findById(req.user._id).lean();
     
-   const user = await User.findById(req.user._id).lean();
-    
-  if (!user) {
-     return res.status(404).json({ success: false, message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
     
     res.status(200).json({
       success: true,
-      data:user 
+      data: user 
     });
   } catch (error) {
     console.error("Profile Error:", error);
@@ -22,7 +19,6 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-// GET public profile by ID (Searching the array)
 exports.getPublicProfile = async (req, res) => {
   try {
     const { id } = req.params;
@@ -30,18 +26,20 @@ exports.getPublicProfile = async (req, res) => {
     const user = await User.findById(id)
       .select("name firstName lastName photo bio skills course group profileImage")
       .lean();
+      
     if (!user) {
       return res.status(404).json({ 
         success: false, 
         message: "This user does not exist." 
       });
     }
+    
     res.status(200).json({
       success: true,
       data: user
     });
   } catch (error) {
-    console.error(" PublicProfile Error:", error.message);
+    console.error("PublicProfile Error:", error.message);
     res.status(400).json({ 
       success: false, 
       message: "Invalid User ID format" 
@@ -50,13 +48,14 @@ exports.getPublicProfile = async (req, res) => {
 };
 
 exports.updateUserProfile = async (req, res) => {
-  try  {
+  try {
     const dbUser = await User.findByIdAndUpdate(
       req.user._id, 
-      { $set: req.body }, // Explicitly set the fields
-      { new: true, runValidators: true }
+      { $set: req.body },
+      { returnDocument: 'after', runValidators: true }
     ).lean();
-  res.status(200).json({
+    
+    res.status(200).json({
       success: true,
       message: "Saved to Atlas!",
       data: dbUser, 

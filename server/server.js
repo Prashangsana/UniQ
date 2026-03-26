@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ debug: false, override: false });
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');

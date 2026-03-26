@@ -29,20 +29,18 @@ exports.createModule = async (req, res) => {
     res.status(201).json({ success: true, module: newModule });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: "Module Code already exists" });
+      return res.status(400).json({ success: false, message: "Module Code Already Exists" });
     }
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Update Module function
 exports.updateModule = async (req, res) => {
   try {
     const originalId = req.params.id;
     const { newId, name, moduleLeaders, moduleTeam } = req.body;
 
     if (originalId !== newId) {
-      // Create the new module
       const updatedModule = await Module.create({
         _id: newId,
         name,
@@ -59,7 +57,7 @@ exports.updateModule = async (req, res) => {
     const updatedModule = await Module.findByIdAndUpdate(
       originalId, 
       { name, moduleLeaders, moduleTeam },
-      { new: true }
+      { returnDocument: 'after' }
     )
     .populate('moduleLeaders', 'name email')
     .populate('moduleTeam', 'name email');
@@ -67,13 +65,12 @@ exports.updateModule = async (req, res) => {
     res.status(200).json({ success: true, module: updatedModule });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: "New Module Code already exists" });
+      return res.status(400).json({ success: false, message: "New Module Code Already Exists" });
     }
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Delete Module function
 exports.deleteModule = async (req, res) => {
   try {
     const moduleId = req.params.id;
@@ -81,7 +78,7 @@ exports.deleteModule = async (req, res) => {
     const deletedModule = await Module.findByIdAndDelete(moduleId);
     
     if (!deletedModule) {
-      return res.status(404).json({ success: false, message: "Module not found" });
+      return res.status(404).json({ success: false, message: "Module Not Found" });
     }
 
     await User.updateMany(
@@ -91,7 +88,7 @@ exports.deleteModule = async (req, res) => {
 
     res.status(200).json({ 
       success: true, 
-      message: "Module removed successfully." 
+      message: "Module Removed Successfully." 
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
