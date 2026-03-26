@@ -52,9 +52,18 @@ function App() {
     localStorage.setItem('user_role', role);
     setIsLoggedIn(true);
     setUserRole(role);
+
+    fetch(`${API_URL}/api/events/my`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(eventData => {
+        if (eventData.success) {
+          const ids = eventData.data.map((item: any) => item.event?._id || item.event);
+          setMyEventsList(ids);
+        }
+      });
     navigate('/'); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [navigate]);
+  }, [navigate, API_URL]);
 
   const handleLogout = useCallback((): void => {
     localStorage.removeItem('is_logged_in');
@@ -82,6 +91,16 @@ function App() {
         const data = await response.json();
         if (data.authenticated) {
           handleLogin(data.user?.role || 'student');
+
+                  fetch(`${API_URL}/api/events/my`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(eventData => {
+              if (eventData.success) {
+                // Converts DB objects back into the string IDs your state expects
+                const ids = eventData.data.map((item: any) => item.event?._id || item.event);
+                setMyEventsList(ids);
+              }
+            });
         } else {
           handleLogout();
         }
@@ -141,7 +160,7 @@ function App() {
           />
 
           {/* Shared Core Routes */}
-          <Route path="/society/:id" element={<SocietyProfilePage />} />
+          <Route path="/society/:id" element={<SocietyProfilePage userRole={userRole} />} />
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/profile/:id" element={<PublicProfile />} />
 
@@ -157,7 +176,7 @@ function App() {
                 <EventDetailsPage
                   onAddEvent={handleAddEvent}
                   onRemoveEvent={handleRemoveEvent}
-                  myEventsList={myEventsList as any}
+                  myEventsList={myEventsList as never}
                 />
               }
             />

@@ -13,11 +13,60 @@ const EventSchema = new mongoose.Schema({
   },
 
   society: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Society',
     required: true
   },
 
   bannerImage: {
+    type: String
+  },
+
+  description: {
+    type: String,
+    required: true
+  },
+
+  instagramLink: {
+    type: String
+  },
+
+  registerLink: {
+    type: String
+  },
+
+  time: {
+    type: String,
+    required: true
+  },
+
+  venue: {
+    type: String,
+    required: true
+  },
+
+  place: {
+    type: String
+  },
+
+  price: {
+    type: String
+  },
+
+  status: {
+    type: String,
+    enum: ['Draft', 'Active', 'Featured', 'Archived'],
+    default: 'Draft'
+  },
+
+  tickets: [
+    {
+      name: String,
+      price: String
+    }
+  ],
+
+  adminLink: {
     type: String
   }
 

@@ -23,14 +23,40 @@
 /* --- EVENT ROW STYLES --- */
 .event-row { margin-top: 40px; }
 .row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.row-header h2 { font-size: 25px; }
+.row-header h2 {
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
+  font-weight: 700;
+  color: var(--topic-heading-blue);
+  margin: 0;
+}
 .row-header button { background: none; border: none; color: #2431e4; cursor: pointer; font-size: 14px; }
-.row-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.empty-state { grid-column: span 3; padding: 40px; background: #ffffff; border: 2px dashed #cbd5e0; border-radius: 20px; text-align: center; color: #718096; }
+/* One full-width row; inner .row-grid handles responsive card columns */
+.row-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+  min-width: 0;
+}
+.empty-state {
+  padding: 40px;
+  background: #ffffff;
+  border: 2px dashed #cbd5e0;
+  border-radius: 20px;
+  text-align: center;
+  color: #718096;
+}
 
 /* --- SIDEBAR SECTION STYLES --- */
 .sidebar-section { margin-bottom: 30px; }
-.sidebar-title { font-size: 20px; font-weight: 600; color: #1b2559; margin-bottom: 15px; }
+.sidebar-title {
+  font-size: var(--topic-heading-font-size);
+  line-height: var(--topic-heading-line-height);
+  font-weight: 700;
+  color: var(--topic-heading-blue);
+  margin-bottom: 15px;
+}
 .sidebar-items { display: flex; flex-direction: column; gap: 15px; }
 .sidebar-event-card { cursor: pointer; transition: transform 0.2s ease; }
 .sidebar-event-card:hover { transform: scale(1.03); }
@@ -64,19 +90,78 @@
 }
 .sidebar-view-more:hover { background: #0a0254; }
 
-/* --- SOCIETY CARD STYLES --- */
-.society-card { display: flex; align-items: center; gap: 12px; background: white; padding: 10px; border-radius: 14px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
-.society-card span { font-size: 14px; font-weight: 500; }
-.society-card-link { text-decoration: none; color: inherit; }
+/* --- SOCIETY CARD STYLES (match Society Leader .leader-card / .leader-card-name) --- */
+.society-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.society-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.society-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.society-card span {
+  font-weight: 600;
+  font-size: 15px;
+  color: #0f172a;
+}
+
 .society-logo {
   width: 40px;
   height: 40px;
-  background: #d9d9d9;
+  flex-shrink: 0;
+  background-color: #e2e8f0;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: #64748b;
+  font-weight: 600;
   object-fit: cover;
+}
+
+.follow-btn {
+  margin-left: auto;
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.follow-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e0;
+  color: #475569;
+}
+
+.follow-btn.following {
+  background: #1a08a5;
+  border-color: #1a08a5;
+  color: #ffffff;
+}
+
+.follow-btn.following:hover {
+  background: #0a0254;
+  border-color: #0a0254;
 }

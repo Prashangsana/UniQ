@@ -1,139 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './Leader.css';
 import { LeaderEventBanner, LeaderEventRow, LeaderSidebar, LeaderSocietyCard } from '../components/LeaderEvent';
 
-
-/* ==========================================
-   1. LEADER DASHBOARD
-========================================== */
-export const LeaderDashboard = () => {
+function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   const navigate = useNavigate();
-  
-  const [societies, setSocieties] = useState([]);
-  const [activeEvents, setActiveEvents] = useState([]);
-  const [draftEvents, setDraftEvents] = useState([]);
-  const [userName, setUserName] = useState('Leader');
-
-  useEffect(() => {
-    // Load User Info
-    fetch("http://localhost:5000/api/auth/me", { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.authenticated) {
-          setUserName(data.user.name);
-        }
-      })
-      .catch(err => console.error("Error loading user info:", err));
-
-    // Load Leader's Societies
-    fetch("http://localhost:5000/api/societies/leader/all", { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setSocieties(data.data);
-        }
-      })
-      .catch(err => console.error("Error loading societies:", err));
-
-    // Load Leader's Events
-    fetch("http://localhost:5000/api/events", { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const allEvents = data.data;
-          setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
-          setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
-        }
-      })
-      .catch(err => console.error("Error loading events:", err));
-  }, []);
-
-  return (
-    <div className="admin-page">
-      <div className="admin-layout">
-        <div className="admin-left">
-          <header className="admin-header">
-            <div>
-              <h1>Society Leader Portal</h1>
-              <p>Welcome back, {userName}</p>
-            </div>
-            <button className="publish-btn" onClick={() => navigate('admin/event/new')}>
-              + Create New Event
-            </button>
-          </header>
-          
-          <section className="admin-main-event">
-            <h3>Featured Society Event</h3>
-            {activeEvents.length > 0 ? (
-              <LeaderEventBanner large id={activeEvents[0]} />
-            ) : (
-              <div className="leader-empty">No featured events yet. Create one!</div>
-            )}
-          </section>
-
-          <LeaderEventRow title="Active Events" events={activeEvents} />
-          <LeaderEventRow title="Drafted/Past Events" events={draftEvents} />
-        </div>
-
-        <div className="admin-right">
-          <LeaderSidebar title="Engagement Overview" />
-          <div className="manage-societies">
-            <h3>Your societies</h3>
-            <div className="societies-list-container">
-              {societies.length > 0 ? (
-                societies.map(s => (
-                  <LeaderSocietyCard key={s._id} id={s._id} name={s.name} />
-                ))
-              ) : (
-                <p>No societies assigned to you yet.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* ==========================================
-   2. LEADER EVENT EDITOR (Handles both Edit & Create)
-========================================== */
-export const LeaderEventEditor = () => {
-  const { eventId } = useParams();
-  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const isNewEvent = eventId === 'new';
 
-  // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState({ dd: '', mm: '', yyyy: '' });
-  const [time, setTime] = useState('');
+  const [time, setTime] = useState({ hh: '09', min: '00', period: 'AM' });
   const [venue, setVenue] = useState('');
   const [adminLink, setAdminLink] = useState('');
+  const [registerLink, setRegisterLink] = useState('');
+  const [instagramLink, setInstagramLink] = useState('');
   const [tickets, setTickets] = useState([{ name: 'Standard Ticket', price: '' }]);
   const [status, setStatus] = useState('Draft');
   const [bannerImage, setBannerImage] = useState('');
   const [societies, setSocieties] = useState([]);
   const [selectedSociety, setSelectedSociety] = useState('');
 
-  // Load societies and existing data if editing
   useEffect(() => {
-    // Load Leader's Societies
-    fetch("http://localhost:5000/api/societies/leader/all", { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
+    const loadData = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        if (!authData.authenticated) return;
+
+        const fetchUrl = `${API_URL}/api/societies`;
+
+        const socRes = await fetch(fetchUrl, { credentials: 'include' });
+        const data = await socRes.json();
         if (data.success) {
-          setSocieties(data.data);
-          if (data.data.length > 0 && !selectedSociety) {
-            setSelectedSociety(data.data[0]._id);
+          setSocieties(data.data || []);
+
+          if (isNewEvent && (data.data || []).length > 0) {
+            if (preselectedSocietyId) {
+              const match = data.data.find(s => s._id === preselectedSocietyId);
+              if (match) setSelectedSociety(preselectedSocietyId);
+            } else if (data.data.length === 1) {
+              setSelectedSociety(data.data[0]._id);
+            }
           }
         }
-      })
-      .catch(err => console.error("Error loading societies:", err));
+      } catch (err) {
+        console.error("Error loading form data:", err);
+      }
+    };
+    loadData();
 
     if (!isNewEvent) {
-      fetch(`http://localhost:5000/api/events/${eventId}`, { 
+      fetch(`${API_URL}/api/events/${eventId}`, {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       })
@@ -144,13 +63,20 @@ export const LeaderEventEditor = () => {
             setTitle(ev.title || '');
             setDescription(ev.description || '');
             setVenue(ev.venue || ev.location || '');
-            setTime(ev.time || '');
             setAdminLink(ev.adminLink || '');
+            setRegisterLink(ev.registerLink || '');
+            setInstagramLink(ev.instagramLink || '');
             setTickets(ev.tickets || ev.ticketTiers || [{ name: 'Standard Ticket', price: '' }]);
             setStatus(ev.status || 'Draft');
             setBannerImage(ev.bannerImage || '');
-            setSelectedSociety(ev.society || '');
-            
+            setSelectedSociety(ev.society?._id || ev.society || '');
+
+            if (ev.time) {
+              const [t, p] = ev.time.split(' ');
+              const [h, m] = t.split(':');
+              setTime({ hh: h, min: m, period: p || 'AM' });
+            }
+
             if (ev.date) {
               const d = new Date(ev.date);
               setDate({
@@ -162,12 +88,30 @@ export const LeaderEventEditor = () => {
           }
         })
         .catch(err => console.error("Error loading event:", err));
+    } else {
+      setTitle('');
+      setDescription('');
+      setVenue('');
+      setTime({ hh: '09', min: '00', period: 'AM' });
+      setAdminLink('');
+      setRegisterLink('');
+      setInstagramLink('');
+      setTickets([{ name: 'Standard Ticket', price: '' }]);
+      setStatus('Draft');
+      setBannerImage('');
+      setDate({ dd: '', mm: '', yyyy: '' });
+      setSelectedSociety('');
     }
-  }, [eventId, isNewEvent]);
+  }, [eventId, isNewEvent, API_URL, preselectedSocietyId]);
 
   const handleSave = async () => {
-    if (!title || !date.dd || !date.mm || !date.yyyy || !selectedSociety) {
-      alert("Please fill in the Event Name, Date, and Society.");
+    if (!title || !date.dd || !date.mm || !date.yyyy) {
+      alert("Please fill in the Event Name and Date.");
+      return;
+    }
+
+    if (!selectedSociety) {
+      alert("Please select a society for this event.");
       return;
     }
 
@@ -175,19 +119,21 @@ export const LeaderEventEditor = () => {
       title,
       description,
       date: `${date.yyyy}-${date.mm}-${date.dd}`,
-      time,
+      time: `${time.hh}:${time.min} ${time.period}`,
       venue,
       adminLink,
+      registerLink,
+      instagramLink,
       tickets,
       status: 'Active',
       bannerImage,
       society: selectedSociety
     };
 
-    const url = isNewEvent 
-      ? 'http://localhost:5000/api/events' 
-      : `http://localhost:5000/api/events/${eventId}`;
-    
+    const url = isNewEvent
+      ? `${API_URL}/api/events`
+      : `${API_URL}/api/events/${eventId}`;
+
     const method = isNewEvent ? 'POST' : 'PUT';
 
     try {
@@ -200,11 +146,77 @@ export const LeaderEventEditor = () => {
       const data = await res.json();
       if (data.success) {
         alert(isNewEvent ? "Event Published Successfully!" : "Changes Saved Successfully!");
-        navigate('/dashboard');
+        // Navigate back to society profile if we came from one or if event belongs to a society
+        const targetSocietyId = selectedSociety;
+        if (targetSocietyId) {
+          navigate(`/admin/society/${targetSocietyId}`, { state: { tab: 'leader' } });
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        alert(`Failed to save: ${data.message || "Unknown error"}`);
       }
     } catch (err) {
       console.error("Save error:", err);
-      alert("Failed to save event");
+      alert("Network error: Failed to connect to server");
+    }
+  };
+
+  const handleSaveAsDraft = async () => {
+    if (!title || !date.dd || !date.mm || !date.yyyy) {
+      alert("Please fill in the Event Name and Date.");
+      return;
+    }
+
+    if (!selectedSociety) {
+      alert("Please select a society for this event.");
+      return;
+    }
+
+    const eventData = {
+      title,
+      description,
+      date: `${date.yyyy}-${date.mm}-${date.dd}`,
+      time: `${time.hh}:${time.min} ${time.period}`,
+      venue,
+      adminLink,
+      registerLink,
+      instagramLink,
+      tickets,
+      status: 'Draft',
+      bannerImage,
+      society: selectedSociety
+    };
+
+    const url = isNewEvent
+      ? `${API_URL}/api/events`
+      : `${API_URL}/api/events/${eventId}`;
+
+    const method = isNewEvent ? 'POST' : 'PUT';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(eventData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(isNewEvent ? "Event Saved as Draft!" : "Draft Updated Successfully!");
+        // Navigate back to society profile if we came from one or if event belongs to a society
+        const targetSocietyId = selectedSociety;
+        if (targetSocietyId) {
+          navigate(`/admin/society/${targetSocietyId}`, { state: { tab: 'leader' } });
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        alert(`Failed to save draft: ${data.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Save draft error:", err);
+      alert("Network error: Failed to connect to server");
     }
   };
 
@@ -212,14 +224,20 @@ export const LeaderEventEditor = () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+      const res = await fetch(`${API_URL}/api/events/${eventId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
       const data = await res.json();
       if (data.success) {
         alert("Event Deleted");
-        navigate('/dashboard');
+        // Navigate back to society profile if we came from one or if event belongs to a society
+        const targetSocietyId = preselectedSocietyId || selectedSociety;
+        if (targetSocietyId) {
+          navigate(`/admin/society/${targetSocietyId}`, { state: { tab: 'leader' } });
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       console.error("Delete error:", err);
@@ -227,13 +245,17 @@ export const LeaderEventEditor = () => {
     }
   };
 
-  // Simulated image upload
   const handleImageUpload = () => {
-    const url = prompt("Enter an image URL for the banner:", "https://via.placeholder.com/1200x400");
-    if (url) setBannerImage(url);
+    const url = prompt("Please paste the image URL for your banner:", bannerImage || "https://via.placeholder.com/1200x400");
+    if (url !== null) {
+      if (url.trim() === "" || url.startsWith("http")) {
+        setBannerImage(url.trim());
+      } else {
+        alert("Please enter a valid image URL (starting with http:// or https://)");
+      }
+    }
   };
 
-  // Function to add a ticket tier (now capped at 5)
   const addTicketTier = () => {
     if (tickets.length < 5) {
       setTickets([...tickets, { name: '', price: '' }]);
@@ -250,29 +272,102 @@ export const LeaderEventEditor = () => {
     setTickets(newTickets);
   };
 
-  return (
-    <div className="editor-page">
-      <div className="admin-nav">
-        <button className="back-link" onClick={() => navigate(-1)}>← Exit Editor</button>
-        <div className="status-pill">Status: {isNewEvent ? 'Draft' : status}</div>
-      </div>
+  return {
+    isNewEvent,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    date,
+    setDate,
+    time,
+    setTime,
+    venue,
+    setVenue,
+    registerLink,
+    setRegisterLink,
+    instagramLink,
+    setInstagramLink,
+    tickets,
+    status,
+    bannerImage,
+    societies,
+    selectedSociety,
+    setSelectedSociety,
+    handleSave,
+    handleSaveAsDraft,
+    handleDelete,
+    handleImageUpload,
+    addTicketTier,
+    removeTicketTier,
+    updateTicket
+  };
+}
 
-      <div className="editor-container">
+function LeaderEventFormBody({
+  isNewEvent,
+  title,
+  setTitle,
+  description,
+  setDescription,
+  date,
+  setDate,
+  time,
+  setTime,
+  venue,
+  setVenue,
+  registerLink,
+  setRegisterLink,
+  instagramLink,
+  setInstagramLink,
+  tickets,
+  bannerImage,
+  societies,
+  selectedSociety,
+  setSelectedSociety,
+  handleSave,
+  handleSaveAsDraft,
+  handleDelete,
+  handleImageUpload,
+  addTicketTier,
+  removeTicketTier,
+  updateTicket
+}) {
+  return (
+    <div className="editor-container leader-event-form-card">
         <div 
           className="editor-hero" 
           style={{ 
-            backgroundImage: bannerImage ? `url(${bannerImage})` : 'none',
-            backgroundColor: bannerImage ? 'transparent' : '#cbd5e1',
+            backgroundImage: bannerImage ? `url("${bannerImage}")` : 'none',
+            backgroundColor: bannerImage ? 'transparent' : '#d8e4f0',
             backgroundSize: 'cover',
-            backgroundPosition: 'center'
+            backgroundPosition: 'center',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <h2 style={{ textShadow: bannerImage ? '0 2px 4px rgba(0,0,0,0.5)' : 'none', color: bannerImage ? 'white' : 'inherit' }}>
-            {title ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT EDITOR')}
+          <h2 style={{ 
+            textShadow: bannerImage ? '0 2px 8px rgba(0,0,0,0.8)' : 'none', 
+            color: bannerImage ? 'white' : 'inherit',
+            zIndex: 2,
+            position: 'relative',
+            fontWeight: '800',
+            letterSpacing: '1px'
+          }}>
+            {title.trim() ? title.toUpperCase() : (isNewEvent ? 'CREATE NEW EVENT' : 'EVENT NAME')}
           </h2>
-          <button className="change-img-btn" onClick={handleImageUpload}>
+          <button className="change-img-btn" onClick={handleImageUpload} style={{ zIndex: 2, position: 'relative' }}>
             📷 {bannerImage ? 'Change Banner' : 'Upload Banner'}
           </button>
+          {bannerImage && <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            zIndex: 1
+          }} />}
         </div>
 
         <div className="editor-grid">
@@ -287,45 +382,55 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
-            <div className="input-group">
-              <label>Managing Society</label>
-              <select 
-                value={selectedSociety} 
-                onChange={(e) => setSelectedSociety(e.target.value)}
-                className="society-select"
-                disabled={!isNewEvent} // Usually society doesn't change after creation
-              >
-                {societies.map(s => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
             <div style={{ display: 'flex', gap: '20px' }}>
               <div className="input-group" style={{ flex: 1.5 }}>
                 <label>Date (Day / Month / Year)</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input 
-                    type="text" placeholder="DD" maxLength="2" style={{ textAlign: 'center' }} 
-                    value={date.dd} onChange={(e) => setDate({...date, dd: e.target.value})}
+                    type="text" placeholder="DD" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.dd} 
+                    onChange={(e) => setDate({...date, dd: e.target.value})}
                   />
                   <input 
-                    type="text" placeholder="MM" maxLength="2" style={{ textAlign: 'center' }} 
-                    value={date.mm} onChange={(e) => setDate({...date, mm: e.target.value})}
+                    type="text" placeholder="MM" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.mm} 
+                    onChange={(e) => setDate({...date, mm: e.target.value})}
                   />
                   <input 
-                    type="text" placeholder="YYYY" maxLength="4" style={{ textAlign: 'center' }} 
-                    value={date.yyyy} onChange={(e) => setDate({...date, yyyy: e.target.value})}
+                    type="text" placeholder="YYYY" maxLength="4" 
+                    style={{ textAlign: 'center', width: '80px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={date.yyyy} 
+                    onChange={(e) => setDate({...date, yyyy: e.target.value})}
                   />
                 </div>
               </div>
-              <div className="input-group" style={{ flex: 1 }}>
+              <div className="input-group" style={{ flex: 1.5 }}>
                 <label>Time</label>
-                <input 
-                  type="time" 
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <input 
+                    type="text" placeholder="HH" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={time.hh} 
+                    onChange={(e) => setTime({...time, hh: e.target.value})}
+                  />
+                  <span>:</span>
+                  <input 
+                    type="text" placeholder="MM" maxLength="2" 
+                    style={{ textAlign: 'center', width: '60px', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }} 
+                    value={time.min} 
+                    onChange={(e) => setTime({...time, min: e.target.value})}
+                  />
+                  <select 
+                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', cursor: 'pointer' }} 
+                    value={time.period} 
+                    onChange={(e) => setTime({...time, period: e.target.value})}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -339,6 +444,22 @@ export const LeaderEventEditor = () => {
               />
             </div>
 
+            <div className="input-group">
+              <label>Select Society</label>
+              <select 
+                value={selectedSociety}
+                onChange={(e) => setSelectedSociety(e.target.value)}
+                style={{ padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', cursor: 'pointer', width: '100%' }}
+              >
+                <option value="">Select a society</option>
+                {societies.map(society => (
+                  <option key={society._id} value={society._id}>
+                    {society.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* DYNAMIC TICKET TIERS SECTION */}
             <div className="input-group">
               <label>Ticket Pricing & Tiers (Max 5)</label>
@@ -347,45 +468,58 @@ export const LeaderEventEditor = () => {
                 <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                   <input 
                     type="text" 
-                    placeholder="Tier Name (e.g., VIP, Balcony)" 
+                    placeholder="Standard" 
                     value={ticket.name}
                     onChange={(e) => updateTicket(index, 'name', e.target.value)}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
                   />
                   <input 
                     type="text" 
                     placeholder="Price (e.g., Rs. 2500, Free)" 
                     value={ticket.price}
                     onChange={(e) => updateTicket(index, 'price', e.target.value)}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1.5, padding: '14px', borderRadius: '15px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
                   />
                   
-                  {/* Only show the Remove button if there is more than 1 row */}
                   {tickets.length > 1 && (
                     <button 
                       onClick={() => removeTicketTier(index)}
                       style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '12px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}
-                      title="Remove Tier"
                     >
-                      X
+                      ✕
                     </button>
                   )}
                 </div>
               ))}
               
-              {/* Only show the Add button if there are less than 5 tiers */}
-              {tickets.length < 5 ? (
+              {tickets.length < 5 && (
                 <button 
                   onClick={addTicketTier}
-                  style={{ background: '#e2e8f0', color: '#0f172a', border: 'none', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', marginTop: '5px' }}
+                  style={{ width: '100%', background: '#d1d5db', color: '#0f172a', border: 'none', padding: '12px', borderRadius: '15px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', marginTop: '5px' }}
                 >
                   + Add Another Ticket Tier
                 </button>
-              ) : (
-                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: '600', marginTop: '5px', display: 'inline-block' }}>
-                  Maximum of 5 ticket tiers reached.
-                </span>
               )}
+            </div>
+
+            <div className="input-group">
+              <label>Participation Link</label>
+              <input 
+                type="url" 
+                placeholder="https://forms.gle/..." 
+                value={registerLink}
+                onChange={(e) => setRegisterLink(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Instagram Link</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/..." 
+                value={instagramLink}
+                onChange={(e) => setInstagramLink(e.target.value)}
+              />
             </div>
 
             <div className="input-group">
@@ -393,34 +527,98 @@ export const LeaderEventEditor = () => {
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows="5" 
+                rows="6" 
                 placeholder="Write all the exciting details about your event here..."
               />
             </div>
             
             <div className="admin-actions">
-              <button className="save-btn" onClick={handleSave}>
-                {isNewEvent ? 'Publish Event' : 'Save Changes'}
+              <button className="save-btn" onClick={handleSave} style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
+                {isNewEvent ? 'Publish Event' : 'Publish Event'}
+              </button>
+              <button className="save-btn" onClick={handleSaveAsDraft} style={{ background: '#64748b', padding: '16px 40px', borderRadius: '12px', marginLeft: '10px' }}>
+                {isNewEvent ? 'Draft Event' : 'Save as Draft'}
               </button>
               {!isNewEvent && <button className="cancel-btn" onClick={handleDelete}>Delete Event</button>}
             </div>
           </div>
+        </div>
+      </div>
+  );
+};
 
-          <div className="editor-sidebar">
-            <div className="admin-stat-box">
-              <span>Total Registrations</span>
-              <strong>{isNewEvent ? '0' : '428'}</strong>
-              <button className="export-btn">Export List (CSV)</button>
+/* ==========================================
+   1. LEADER DASHBOARD
+========================================== */
+export const LeaderDashboard = () => {
+  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const createForm = useLeaderEventForm({ eventId: 'new', preselectedSocietyId: null });
+
+  const [societies, setSocieties] = useState([]);
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [draftEvents, setDraftEvents] = useState([]);
+  const [userName, setUserName] = useState('Leader');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        
+        if (!authData.authenticated) return;
+        setUserName(authData.user.name);
+        
+        const isAdmin = authData.user.role === 'admin';
+        const userId = authData.user.id || authData.user._id;
+
+        const socUrl = `${API_URL}/api/societies`;
+        const socRes = await fetch(socUrl, { credentials: 'include' });
+        const socData = await socRes.json();
+        if (socData.success) {
+           setSocieties(socData.data || []);
+        }
+
+        const evtUrl = isAdmin ? `${API_URL}/api/events` : `${API_URL}/api/events/leader/${userId}`;
+        const evtRes = await fetch(evtUrl, { credentials: 'include' });
+        const evtData = await evtRes.json();
+        if (evtData.success && evtData.data) {
+           const allEvents = evtData.data;
+           setActiveEvents(allEvents.filter(e => e.status === 'Active' || e.status === 'Featured').map(e => e._id));
+           setDraftEvents(allEvents.filter(e => e.status === 'Draft').map(e => e._id));
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      }
+    };
+    fetchData();
+  }, [API_URL]);
+
+  return (
+    <div className="admin-page">
+      <div className="admin-layout">
+        <div className="admin-left">
+          <header className="admin-header admin-header--leader-portal">
+            <div className="admin-header__intro">
+              <h1>Society Leader Portal</h1>
+              <p>Welcome back, {userName}</p>
             </div>
-            
-            <div className="input-group">
-              <label>Administration Link</label>
-              <input 
-                type="url" 
-                placeholder="https://docs.google.com/..." 
-                value={adminLink}
-                onChange={(e) => setAdminLink(e.target.value)}
-              />
+          </header>
+
+          <div className="leader-dashboard-create">
+            <LeaderEventFormBody {...createForm} />
+          </div>
+        </div>
+
+        <div className="admin-right">
+          <div className="societies-section">
+            <div className="societies-section-head">
+              <h3>Your societies</h3>
+            </div>
+            <div className="societies-list">
+              {societies.map(s => (
+                <LeaderSocietyCard key={s._id} id={s._id} name={s.name} logo={s.logo} />
+              ))}
             </div>
           </div>
         </div>
@@ -430,16 +628,262 @@ export const LeaderEventEditor = () => {
 };
 
 /* ==========================================
-   3. LEADER SOCIETY MANAGER (Profile View)
+   2. LEADER EVENT EDITOR (Handles both Edit & Create)
+========================================== */
+export const LeaderEventEditor = () => {
+  const { eventId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const preselectedSocietyId = queryParams.get('societyId');
+  const form = useLeaderEventForm({ eventId, preselectedSocietyId });
+
+  return (
+    <div className="editor-page">
+      <div className="admin-nav">
+        <button className="back-link" onClick={() => navigate(-1)}>← Exit Editor</button>
+        <div className="status-pill">Status: {form.isNewEvent ? 'Draft' : form.status}</div>
+      </div>
+      <LeaderEventFormBody {...form} />
+    </div>
+  );
+};
+
+/* ==========================================
+   3. LEADER SOCIETY — CREATE / EDIT (saved to DB)
+========================================== */
+export const LeaderSocietyEditor = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const isNew = location.pathname.endsWith('/new');
+
+  const [name, setName] = useState('');
+  const [shortName, setShortName] = useState('');
+  const [description, setDescription] = useState('');
+  const [logo, setLogo] = useState('');
+
+  useEffect(() => {
+    if (isNew || !id) return;
+    fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.society) {
+          const s = data.data.society;
+          setName(s.name || '');
+          setShortName(s.shortName || '');
+          setDescription(s.description || '');
+          setLogo(s.logo || '');
+        }
+      })
+      .catch(err => console.error('Error loading society:', err));
+  }, [id, API_URL, isNew]);
+
+  const handleLogoPrompt = () => {
+    const url = prompt('Paste image URL for the club logo:', logo || 'https://');
+    if (url !== null) setLogo(url.trim());
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this society? This action cannot be undone.")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/societies/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Society deleted successfully");
+        navigate('/', { state: { tab: 'leader' } });
+      } else {
+        alert(data.message || "Failed to delete society");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete society");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !shortName.trim() || !description.trim()) {
+      alert('Please fill in full name, short name, and description.');
+      return;
+    }
+    const body = {
+      name: name.trim(),
+      shortName: shortName.trim(),
+      description: description.trim(),
+      logo: logo.trim()
+    };
+    try {
+      const url = isNew ? `${API_URL}/api/societies` : `${API_URL}/api/societies/${id}`;
+      const method = isNew ? 'POST' : 'PUT';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (data.success) {
+        const savedId = data.data?._id || id;
+        alert(isNew ? 'Society published successfully!' : 'Society updated.');
+        navigate(`/admin/society/${savedId}`, { state: { tab: 'leader' } });
+      } else {
+        alert(data.message || 'Could not save society.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error — could not save.');
+    }
+  };
+
+  return (
+    <div className="editor-page society-editor-page">
+      <div className="admin-nav">
+        <button type="button" className="back-link" onClick={() => navigate('/', { state: { tab: 'leader' } })}>← Back</button>
+        <div className="status-pill">{isNew ? 'New club / society' : 'Edit society'}</div>
+      </div>
+
+      <div className="editor-container">
+        <div
+          className="editor-hero society-editor-hero"
+          style={{
+            backgroundImage: logo ? `url("${logo}")` : 'none',
+            backgroundColor: logo ? 'transparent' : '#d8e4f0',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <h2 style={{
+            textShadow: logo ? '0 2px 8px rgba(0,0,0,0.85)' : 'none',
+            color: logo ? '#fff' : '#0f172a',
+            zIndex: 2,
+            position: 'relative',
+            fontWeight: 800,
+            letterSpacing: '0.06em',
+            fontSize: '1.35rem',
+            textAlign: 'center',
+            margin: 0
+          }}>
+            {isNew ? 'ADD NEW SOCIETY OR CLUB' : 'EDIT SOCIETY'}
+          </h2>
+          <button type="button" className="change-img-btn" onClick={handleLogoPrompt} style={{ zIndex: 2, position: 'relative' }}>
+            {logo ? 'Change logo URL' : 'Set logo (image URL)'}
+          </button>
+          {logo && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.25)',
+              zIndex: 1
+            }} />
+          )}
+        </div>
+
+        <form className="editor-grid society-editor-form" onSubmit={handleSubmit}>
+          <div className="editor-main">
+            <div className="input-group">
+              <label>Full name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Rotaract Club of IIT"
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Short name</label>
+              <input
+                type="text"
+                value={shortName}
+                onChange={(e) => setShortName(e.target.value)}
+                placeholder="e.g., ROTARACT"
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                placeholder="What does your club do? Who can join?"
+                required
+              />
+            </div>
+
+            <div className="admin-actions">
+              <button type="submit" className="save-btn" style={{ background: '#0f172a', padding: '16px 40px', borderRadius: '12px' }}>
+                {isNew ? 'Publish society' : 'Save changes'}
+              </button>
+              {!isNew && (
+                <button 
+                  type="button" 
+                  className="cancel-btn" 
+                  onClick={handleDelete}
+                  style={{ background: '#dc2626', padding: '16px 40px', borderRadius: '12px' }}
+                >
+                  Delete society
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ==========================================
+   4. LEADER SOCIETY MANAGER (Profile View)
 ========================================== */
 export const LeaderSocietyManager = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [society, setSociety] = useState(null);
   const [events, setEvents] = useState([]);
+  const [isLeader, setIsLeader] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/societies/${id}`, { credentials: 'include' })
+    const checkAccess = async () => {
+      try {
+        const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        const authData = await authRes.json();
+        if (!authData.authenticated) return;
+        
+        if (authData.user.role === 'admin') {
+          setIsLeader(true);
+        } else {
+          const socRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
+          const socData = await socRes.json();
+          if (socData.success && id) {
+            const leadingThis = socData.data.some(s => s._id === id);
+            setIsLeader(leadingThis);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking leader access:", err);
+      }
+    };
+    checkAccess();
+  }, [id, API_URL]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -447,35 +891,70 @@ export const LeaderSocietyManager = () => {
           setEvents(data.data.events);
         }
       })
-      .catch(err => console.error("Error loading society manager:", err));
-  }, [id]);
-
-  if (!society) return <div className="loading">Loading Admin Space...</div>;
+      .catch(err => {
+        console.error("Backend unreachable:", err);
+      });
+  }, [id, API_URL]);
 
   return (
     <div className="manager-page">
+      <div className="navigation-header">
+        <button
+          type="button"
+          className="back-btn"
+          onClick={() => {
+            const tab = location.state?.tab ?? 'leader';
+            navigate('/', { state: { tab } });
+          }}
+        >
+          ← Back
+        </button>
+      </div>
+
       <header className="manager-header">
-        <button className="back-link" onClick={() => navigate('/')}>← Dashboard</button>
         <div className="manager-profile">
-          <div className="manager-logo" style={{ backgroundImage: `url(${society.logo})`, backgroundSize: 'cover' }}>
-            {!society.logo && "Logo"}
+          <div className="manager-logo" style={{ backgroundImage: society ? `url(${society.logo})` : undefined, backgroundSize: 'cover' }}>
+            {society && !society.logo && 'Logo'}
           </div>
-          <h1>{society.name} Admin Space</h1>
-          <button className="edit-profile-btn">Edit Society Profile</button>
+          <h1>{society ? `${society.name} Admin Space` : 'Admin Space'}</h1>
+          {isLeader && (
+            <button
+              type="button"
+              className="edit-profile-btn"
+              onClick={() => society && navigate(`/admin/society/${id}/edit`, { state: { tab: 'leader' } })}
+            >
+              Edit Society Profile
+            </button>
+          )}
         </div>
       </header>
-
-      <hr className="admin-divider" />
 
       <section className="manager-events">
         <div className="manager-events-header">
           <h3>Managed Events</h3>
-          <button className="small-add-btn" onClick={() => navigate('/event/new')}>+ Add Event</button>
+          {isLeader && <button className="small-add-btn" onClick={() => navigate('/admin/event/new', { state: { preselectedSocietyId: id } })}>+ Add Event</button>}
         </div>
         <div className="manager-grid">
-          {events.map((ev, i) => (
-            <LeaderEventBanner key={i} id={ev._id} />
+          {events.filter(e => e.status === 'Active' || e.status === 'Featured').map((ev, i) => (
+            <LeaderEventBanner key={`managed-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} />
           ))}
+          {events.filter(e => e.status !== 'Active' && e.status !== 'Featured').length === 0 && events.length === 0 && (
+            <div className="leader-empty">No managed events yet.</div>
+          )}
+        </div>
+      </section>
+
+      <section className="manager-events" style={{ marginTop: '20px' }}>
+        <div className="manager-events-header">
+          <h3>Drafted / Past Events</h3>
+        </div>
+        <div className="manager-grid">
+          {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).map((ev, i) => (
+            <LeaderEventBanner key={`draft-${i}`} id={ev._id} title={ev.title} image={ev.bannerImage} />
+          ))}
+          {events.filter(e => e.status === 'Draft' || e.status === 'Archived' || !e.status).length === 0 && (
+            <div className="leader-empty">No drafted or past events.</div>
+          )}
         </div>
       </section>
     </div>
@@ -484,7 +963,7 @@ export const LeaderSocietyManager = () => {
 
 
 /* ==========================================
-   4. LEADER REPORT VIEW
+   4. STUDENT DASHBOARD VIEW (Previously Weekly Report)
 ========================================== */
 export const LeaderReport = () => {
   const navigate = useNavigate();
@@ -501,11 +980,11 @@ export const LeaderReport = () => {
         {/* Report Header */}
         <div className="admin-header" style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '25px', marginBottom: '35px', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontSize: '26px', color: '#0f172a', margin: '0 0 8px 0' }}>Weekly Engagement Report</h1>
-            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Period: Feb 16, 2026 - Feb 23, 2026</p>
+            <h1 style={{ fontSize: '26px', color: '#0f172a', margin: '0 0 8px 0' }}>Student Dashboard View</h1>
+            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Previewing as a Student Member</p>
           </div>
-          <button className="publish-btn" onClick={() => alert("Downloading PDF...")}>
-            ⬇ Download PDF
+          <button className="publish-btn" onClick={() => navigate('/dashboard')}>
+            Student Dashboard {'>'}
           </button>
         </div>
 

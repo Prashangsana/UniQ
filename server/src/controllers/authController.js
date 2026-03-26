@@ -51,7 +51,7 @@ exports.googleCallback = async (req, res) => {
       }
 
       user = await User.create({
-        name,
+        name: name || `${firstName} ${lastName}` || email.split('@')[0],
         firstName,
         lastName,
         email,
@@ -59,6 +59,7 @@ exports.googleCallback = async (req, res) => {
         authProvider: provider,
         providerId,
         photo,
+        username: email.split('@')[0] + Math.floor(Math.random() * 1000),
         lastLogin: Date.now(),
       });
     }

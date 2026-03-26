@@ -6,6 +6,8 @@ const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 // Local Email Login
 router.post('/local', localEmailLogin);
 
@@ -20,8 +22,8 @@ router.get('/google',
 // Google Callback
 router.get('/google/callback', 
   passport.authenticate('google', { 
-    session: false,
-    failureRedirect: process.env.FRONTEND_URL || 'http://localhost:5173'
+    failureRedirect: FRONTEND_URL,
+      session: false 
   }),
   googleCallback
 );

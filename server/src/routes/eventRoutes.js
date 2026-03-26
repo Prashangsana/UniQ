@@ -1,49 +1,38 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 
 const {
-  getMainEvent,
-  getLatestEvents,
-  getTopEvents,
   getEventDetails,
   getSocietyEvents,
   addEventToMyEvents,
   removeEventFromMyEvents,
   getMyEvents,
   getNotifications,
+  cleanupNotifications,
   createEvent,
-  getLeaderEvents,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  getAllEvents,
+  getLeaderEvents
 } = require('../controllers/eventController');
 
-const protect = (req, res, next) => {
-  if (req.isAuthenticated && req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ success: false, message: "Not authorized" });
-};
-
-router.get("/main", getMainEvent);
-router.get("/latest", getLatestEvents);
-router.get("/top-week", getTopEvents);
-
-router.get("/notifications", getNotifications);
-
+// Public routes
+router.get('/', getAllEvents);
 router.get('/society/:societyId', getSocietyEvents);
+router.get('/:id', getEventDetails);
 
-router.get('/my', getMyEvents);
+// Protected routes
+router.post('/my-events', protect, addEventToMyEvents);
+router.delete('/my-events/:eventId', protect, removeEventFromMyEvents);
+router.get('/my-events/list', protect, getMyEvents);
+router.get('/notifications', protect, getNotifications);
+router.delete('/notifications', protect, cleanupNotifications);
 
-router.post('/:id/add', addEventToMyEvents);
-router.delete('/:id/remove', removeEventFromMyEvents);
-
-router.route('/')
-  .post(protect, createEvent)
-  .get(protect, getLeaderEvents);
-
-router.route('/:id')
-  .get(getEventDetails)
-  .put(protect, updateEvent)
-  .delete(protect, deleteEvent);
+// Leader/Admin routes
+router.post('/', protect, createEvent);
+router.put('/:id', protect, updateEvent);
+router.delete('/:id', protect, deleteEvent);
+router.get('/leader/:leaderId', protect, getLeaderEvents);
 
 module.exports = router;

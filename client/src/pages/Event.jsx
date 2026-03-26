@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { EventBanner, EventRow, SidebarSection, SocietyCard } from "../components/EventsComponents";
 import "./Event.css";
 
@@ -15,10 +15,14 @@ export const EventsPage = ({ myEventsList = [] }) => {
   const [latestEvents, setLatestEvents] = useState([]);
   const [topEvents, setTopEvents] = useState([]);
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   /* LOAD SOCIETIES */
   useEffect(() => {
-
-    fetch("http://localhost:5000/api/societies")
+    // Load ALL societies
+    fetch(`${API_URL}/api/societies`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -26,13 +30,14 @@ export const EventsPage = ({ myEventsList = [] }) => {
         }
       })
       .catch(err => console.error("Error loading societies:", err));
-
-  }, []);
+  }, [API_URL]);
 
   /* LOAD NOTIFICATIONS */
   useEffect(() => {
 
-    fetch("http://localhost:5000/api/events/notifications")
+    fetch(`${API_URL}/api/events/notifications`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
 
@@ -43,33 +48,44 @@ export const EventsPage = ({ myEventsList = [] }) => {
       })
       .catch(err => console.log(err));
 
-  }, []);
+  }, [API_URL]);
 
   /* LOAD STAGE 4 EVENT DISCOVERY DATA */
   useEffect(() => {
 
     /* MAIN EVENT */
-    fetch("http://localhost:5000/api/events/main")
+    fetch(`${API_URL}/api/events/main`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setMainEvent(data.data);
+          // Only show published events in main event (no drafts)
+          if (data.data && data.data.status !== 'Draft') {
+            setMainEvent(data.data);
+          }
         }
       })
       .catch(err => console.log("Main event error:", err));
 
     /* MORE EVENTS FOR YOU */
-    fetch("http://localhost:5000/api/events/latest")
+    fetch(`${API_URL}/api/events/latest`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setLatestEvents(data.data);
+          // Filter out draft events from latest events
+          const filteredEvents = data.data.filter(event => event.status !== 'Draft');
+          setLatestEvents(filteredEvents);
         }
       })
       .catch(err => console.log("Latest events error:", err));
 
     /* TOP EVENTS THIS WEEK */
-    fetch("http://localhost:5000/api/events/top-week")
+    fetch(`${API_URL}/api/events/top-week`, {
+      credentials: "include"
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -78,7 +94,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
       })
       .catch(err => console.log("Top events error:", err));
 
-  }, []);
+  }, [API_URL]);
 
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
 
@@ -132,7 +148,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
           <div className="societies-section">
 
-            <h3>Your societies</h3>
+            <h3>Explore societies</h3>
 
             <div className="societies-list">
 
@@ -149,12 +165,14 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
             </div>
 
-            <button
-              className="sidebar-view-more"
-              onClick={() => setShowAllSocieties(!showAllSocieties)}
-            >
-              {showAllSocieties ? "Show less" : "More >"}
-            </button>
+            {societies.length > 5 && (
+              <button
+                className="sidebar-view-more"
+                onClick={() => setShowAllSocieties(!showAllSocieties)}
+              >
+                {showAllSocieties ? "Show less" : "More >"}
+              </button>
+            )}
 
           </div>
 
@@ -173,31 +191,36 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
   const params = useParams();
   const eventId = params.eventId || params.id;
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const [eventData, setEventData] = useState(null);
+  const [fetchDone, setFetchDone] = useState(false);
 
   const isAdded = (myEventsList || []).some(
-    e => (typeof e === "string" ? e === eventId : e.event === eventId)
+    e => {
+      const savedEventId = e.event?._id || e.event || e;
+      return savedEventId.toString() === eventId?.toString();
+    }
   );
 
-  const displayTitle = eventId ? eventId.replace(/-/g, " ") : "";
-
-  const getHeroImage = (id) => {
-
-    if (!id) return "/images-e/default.jpg";
-
-    if (id === "main-hackathon-2026") {
-      return "/images-e/events/main-event.jpg";
+  useEffect(() => {
+    if (!eventId || eventId === 'new') {
+      setFetchDone(true);
+      return;
     }
 
-    if (id.includes("-event-")) {
-      const [clubName, eventPart] = id.split("-event-");
-      return `/images-e/club-events/${clubName}/event${eventPart}.jpg`;
-    }
-
-    return `/images-e/events/${id}.jpg`;
-
-  };
-
-  const heroImagePath = getHeroImage(eventId);
+    fetch(`${API_URL}/api/events/${eventId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setEventData(data.data);
+        }
+      })
+      .catch(err => console.error("Error loading event details:", err))
+      .finally(() => setFetchDone(true));
+  }, [eventId, API_URL]);
 
   const handleAddEvent = async () => {
 
@@ -206,12 +229,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     try {
 
       const res = await fetch(
-        `http://localhost:5000/api/events/${eventId}/add`,
+        `${API_URL}/api/events/${eventId}/add`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          credentials: "include"
         }
       );
 
@@ -219,10 +243,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       if (data.success) {
         onAddEvent(eventId);
+      } else {
+        alert(data.message || "Failed to add event");
       }
 
     } catch (error) {
       console.error("Error adding event:", error);
+      alert("Error adding event. Make sure you are logged in.");
     }
 
   };
@@ -234,12 +261,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     try {
 
       const res = await fetch(
-        `http://localhost:5000/api/events/${eventId}/remove`,
+        `${API_URL}/api/events/${eventId}/remove`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          credentials: "include"
         }
       );
 
@@ -247,13 +275,23 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
       if (data.success) {
         onRemoveEvent(eventId);
+      } else {
+        alert(data.message || "Failed to remove event");
       }
 
     } catch (error) {
       console.error("Error removing event:", error);
+      alert("Error removing event.");
     }
 
   };
+
+  if (fetchDone && !eventData && eventId && eventId !== 'new') {
+    return <div className="error">Event not found</div>;
+  }
+
+  const displayTitle = eventData?.title || "";
+  const heroImagePath = eventData?.bannerImage || "/images-e/default.jpg";
 
   return (
     <div className="event-details-page">
@@ -261,7 +299,15 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
       <div className="navigation-header">
         <button
           className="back-btn"
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            // Check if we came from Society & Events page (tab: 'societies')
+            const tab = location.state?.tab;
+            if (tab === 'societies') {
+              navigate('/', { state: { tab: 'societies' } });
+            } else {
+              navigate(-1);
+            }
+          }}
         >
           ← Back
         </button>
@@ -288,28 +334,32 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <p className="event-description-text">
               <strong>Description:</strong>
-              {" "}This is a unique event detail page for {displayTitle}.
+              {" "}{eventData?.description ?? ""}
             </p>
 
             <div className="event-links">
 
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn insta"
-              >
-                Instagram
-              </a>
+              {eventData?.instagramLink && (
+                <a
+                  href={eventData?.instagramLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-btn insta"
+                >
+                  Instagram
+                </a>
+              )}
 
-              <a
-                href="https://forms.google.com"
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn register"
-              >
-                Participate
-              </a>
+              {eventData?.registerLink && (
+                <a
+                  href={eventData?.registerLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-btn register"
+                >
+                  Participate
+                </a>
+              )}
 
             </div>
 
@@ -319,23 +369,38 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 
             <div className="meta-item">
               <span>📅 Date:</span>
-              <p>Oct 25, 2026</p>
+              <p>
+                {eventData?.date
+                  ? new Date(eventData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : '—'}
+              </p>
             </div>
 
             <div className="meta-item">
               <span>⏰ Time:</span>
-              <p>09:00 AM</p>
+              <p>{eventData?.time ?? '—'}</p>
             </div>
 
             <div className="meta-item">
               <span>📍 Place:</span>
-              <p>IIT Auditorium</p>
+              <p>{eventData?.venue || eventData?.place || '—'}</p>
             </div>
 
-            <div className="meta-item">
-              <span>💰 Price:</span>
-              <p>LKR 1000</p>
-            </div>
+            {eventData?.tickets && eventData.tickets.length > 0 ? (
+              <div className="meta-item">
+                <span>💰 Tickets:</span>
+                {eventData.tickets.map((t, i) => (
+                  <p key={i} style={{ fontSize: '14px', marginBottom: '4px' }}>
+                    {t.name}: {t.price}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <div className="meta-item">
+                <span>💰 Price:</span>
+                <p>{eventData?.price || "Free"}</p>
+              </div>
+            )}
 
           </div>
 
@@ -372,13 +437,17 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
 };
 
 /* ================= SOCIETY PROFILE PAGE ================= */
-export const SocietyProfilePage = () => {
+export const SocietyProfilePage = ({ userRole }) => {
 
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchDone, setFetchDone] = useState(false);
+  const [error, setError] = useState(null);
 
   /* 🧩 STEP 6 — FOLLOW STATE */
   const [following, setFollowing] = useState(false);
@@ -387,16 +456,18 @@ export const SocietyProfilePage = () => {
 
     if (following) {
 
-      await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
-        method: "DELETE"
+      await fetch(`${API_URL}/api/societies/${id}/follow`, {
+        method: "DELETE",
+        credentials: "include"
       });
 
       setFollowing(false);
 
     } else {
 
-      await fetch(`http://localhost:5000/api/societies/${id}/follow`, {
-        method: "POST"
+      await fetch(`${API_URL}/api/societies/${id}/follow`, {
+        method: "POST",
+        credentials: "include"
       });
 
       setFollowing(true);
@@ -406,38 +477,132 @@ export const SocietyProfilePage = () => {
   };
 
   useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        setError(null);
+        
+        console.log("Loading society profile for ID:", id); // Debug log
+        
+        /* LOAD SOCIETY PROFILE */
+        const profileRes = await fetch(`${API_URL}/api/societies/${id}`, {
+          credentials: "include"
+        });
+        
+        const profileData = await profileRes.json();
+        console.log("Society profile response:", profileData); // Debug log
+        
+        if (!profileData.success) {
+          setError(profileData.message || "Failed to load society profile");
+          return;
+        }
+        
+        setProfileData(profileData.data);
 
-  /* LOAD SOCIETY PROFILE */
-  fetch(`http://localhost:5000/api/societies/${id}`)
-    .then(res => res.json())
-    .then(data => {
-
-      if (data.success) {
-        setProfileData(data.data);
+        /* LOAD FOLLOW STATUS */
+        const followRes = await fetch(`${API_URL}/api/societies/${id}/follow-status`, {
+          credentials: "include"
+        });
+        
+        const followData = await followRes.json();
+        
+        if (followData.success) {
+          setFollowing(followData.following);
+        }
+        
+      } catch (err) {
+        console.error("Error loading society profile:", err);
+        setError("Failed to load society profile");
+      } finally {
+        setFetchDone(true);
       }
+    };
 
-    })
-    .catch(err => console.error("Error loading profile:", err))
-    .finally(() => setLoading(false));
+    if (id) {
+      loadProfileData();
+    } else {
+      setError("No society ID provided");
+      setFetchDone(true);
+    }
+  }, [id, API_URL]);
 
+  if (fetchDone && !profileData && !error) return (
+  <div className="society-profile-page">
+    <div className="navigation-header">
+      <button
+        className="back-btn"
+        type="button"
+        onClick={() => {
+          const tab = location.state?.tab;
+          if (tab) {
+            navigate('/', { state: { tab } });
+          } else {
+            navigate(-1);
+          }
+        }}
+      >
+        ← Back
+      </button>
+    </div>
+    <div className="error" style={{ textAlign: 'center', padding: '40px' }}>
+      <h3>Society not found</h3>
+      <p>The society with ID "{id}" was not found.</p>
+      <p>Please check if societies exist in the database.</p>
+    </div>
+  </div>
+);
+  
+  if (error) {
+    return (
+      <div className="society-profile-page">
+        <div className="navigation-header">
+          <button
+            className="back-btn"
+            type="button"
+            onClick={() => {
+              const tab = location.state?.tab;
+              if (tab) {
+                navigate('/', { state: { tab } });
+              } else {
+                navigate(-1);
+              }
+            }}
+          >
+            ← Back
+          </button>
+        </div>
+        <div className="error" style={{ textAlign: 'center', padding: '40px' }}>
+          <h3>Error: {error}</h3>
+          <p>Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
-  /* LOAD FOLLOW STATUS */
-  fetch(`http://localhost:5000/api/societies/${id}/follow-status`)
-    .then(res => res.json())
-    .then(data => {
-
-      if (data.success) {
-        setFollowing(data.following);
-      }
-
-    })
-    .catch(err => console.error("Follow status error:", err));
-
-}, [id]);
-
-
-  if (loading) return <div className="loading">Loading Profile...</div>;
-  if (!profileData) return <div className="error">Society not found</div>;
+  if (!profileData) {
+    return (
+      <div className="society-profile-page">
+        <div className="navigation-header">
+          <button
+            className="back-btn"
+            type="button"
+            onClick={() => {
+              const tab = location.state?.tab;
+              if (tab) {
+                navigate('/', { state: { tab } });
+              } else {
+                navigate(-1);
+              }
+            }}
+          >
+            ← Back
+          </button>
+        </div>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <h3>Loading society profile...</h3>
+        </div>
+      </div>
+    );
+  }
 
   const { society, events } = profileData;
 
@@ -447,12 +612,19 @@ export const SocietyProfilePage = () => {
       <div className="navigation-header">
         <button
           className="back-btn"
-          onClick={() => navigate(-1)}
+          type="button"
+          onClick={() => {
+            const tab = location.state?.tab;
+            if (tab) {
+              navigate('/', { state: { tab } });
+            } else {
+              navigate(-1);
+            }
+          }}
         >
           ← Back
         </button>
       </div>
-
 
       <header className="society-header">
 
@@ -475,23 +647,30 @@ export const SocietyProfilePage = () => {
 
       <hr className="divider" />
 
-
       <section className="society-events-section">
 
-        <div className="section-header">
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Our Events</h2>
+          {userRole === 'society_leader' && (
+            <button 
+              className="publish-btn" 
+              onClick={() => navigate(`/admin/event/new?societyId=${id}`)}
+              style={{ padding: '8px 20px', fontSize: '13px' }}
+            >
+              + Add Event
+            </button>
+          )}
         </div>
 
         <div className="events-grid-profile">
 
-          {events.map((event) => (
-
+          {events.filter(event => event.status !== 'Draft').map((event) => (
             <EventBanner
               key={event._id}
               id={event._id}
+              title={event.title}
               image={event.bannerImage}
             />
-
           ))}
 
         </div>
