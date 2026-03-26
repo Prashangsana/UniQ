@@ -3,13 +3,16 @@ import { useParams } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Profile.css';
 
-const PublicProfile = () => {
-  const { id } = useParams(); // Extracts the ID from the URL 
+const PublicProfile = ({ id: propId }) => {
+  const { id: urlId } = useParams(); // Extracts the ID from the URL 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const id = propId || urlId;
+
   useEffect(() => {
+    if (!id) return;
     const fetchPublicProfile = async () => {
       try {
         const response = await fetch(`http://localhost:5000/api/users/public-profile/${id}`);
