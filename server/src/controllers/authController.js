@@ -1,4 +1,5 @@
 const User=require("../models/User");
+const Society = require("../models/Society");
 const jwt = require("jsonwebtoken");
 
 const getAdminEmails = () => {
@@ -93,6 +94,20 @@ exports.getMe = async (req, res) => {
     
     if (!user) {
       return res.status(401).json({ authenticated: false, message: "User not found" });
+    }
+
+    // Auto-promote to society_leader if they lead a society
+    if (user.role !== 'admin' && user.role !== 'society_leader') {
+      const leadingSocieties = await Society.find({
+        $or: [
+          { leader: user._id },
+          { leader: user._id.toString() }
+        ]
+      });
+      if (leadingSocieties.length > 0) {
+        user.role = 'society_leader';
+        await user.save();
+      }
     }
 
     res.status(200).json({

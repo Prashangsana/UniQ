@@ -64,8 +64,13 @@ API: GET /api/societies/leader/all
 */
 exports.getLeaderSocieties = async (req, res) => {
   try {
-    // Get societies where the user is the leader
-    const societies = await Society.find({ leader: req.user.id });
+    // Get societies where the user is the leader, checking both ObjectId and String formats
+    const societies = await Society.find({
+      $or: [
+        { leader: req.user._id },
+        { leader: req.user.id }
+      ]
+    });
 
     res.status(200).json({
       success: true,
@@ -157,7 +162,7 @@ exports.updateSociety = async (req, res) => {
 
     // Check if user is admin or the leader of this society
     const isAdmin = req.user.role === 'admin';
-    const isLeader = society.leader && society.leader.toString() === req.user.id;
+    const isLeader = society.leader && (society.leader.toString() === req.user.id || society.leader === req.user.id);
 
     if (!isAdmin && !isLeader) {
       return res.status(403).json({
@@ -312,6 +317,12 @@ exports.assignLeader = async (req, res) => {
     // Update society leader
     society.leader = leaderId;
     await society.save();
+
+    // Promote the user to society_leader if they are currently a student
+    if (leader.role !== 'admin' && leader.role !== 'society_leader') {
+      leader.role = 'society_leader';
+      await leader.save();
+    }
 
     res.status(200).json({
       success: true,
