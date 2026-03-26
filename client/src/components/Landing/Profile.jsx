@@ -7,6 +7,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const [user, setUser] = useState(null);
   const [availableModules, setAvailableModules] = useState([]);
@@ -115,6 +116,7 @@ const Profile = () => {
   };
 
   const handleImageChange = async (e) => {
+    setShowPhotoMenu(false);
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -142,6 +144,32 @@ const Profile = () => {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Removing the pfp
+  const handleRemoveImage = async () => {
+    setShowPhotoMenu(false);
+    
+    const updatedUser = { ...user, profileImage: "", photo: "" };
+    setUser(updatedUser);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        credentials: 'include',
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        localStorage.removeItem('user_photo');
+        window.dispatchEvent(new Event("storage"));
+        console.log("Avatar removed successfully");
+      }
+    } catch (err) {
+      console.error("Remove avatar failed:", err);
     }
   };
 
@@ -185,11 +213,34 @@ const Profile = () => {
   return (
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
-        <div className="avatar-wrapper-lg" onClick={() => fileInputRef.current.click()}>
+        <div className="avatar-wrapper-lg">
           <img src={userAvatar} alt="Profile" className="large-avatar" />
-          <div className="status-emoji">
-            <Icon icon="lucide:camera" />
+          
+          <div className="status-emoji" onClick={() => setShowPhotoMenu(!showPhotoMenu)}>
+            <Icon icon="lucide:pencil" />
           </div>
+
+          {/* The Dropdown Menu */}
+          {showPhotoMenu && (
+            <div className="photo-edit-menu">
+              <button 
+                className="menu-btn" 
+                onClick={() => {
+                  setShowPhotoMenu(false);
+                  fileInputRef.current.click();
+                }}
+              >
+                Change Picture
+              </button>
+              <button 
+                className="menu-btn remove-btn" 
+                onClick={handleRemoveImage}
+              >
+                Remove Picture
+              </button>
+            </div>
+          )}
+
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -201,8 +252,6 @@ const Profile = () => {
 
         <div className="sidebar-names">
           <h1>{user.name}</h1>
-
-          {/* ADD DYNAMIC ROLE TAG */}
 
           <p className="username">@{user.username || 'username'}</p>
           <p className="user-email">{user.email}</p>
@@ -247,7 +296,6 @@ const Profile = () => {
         <section className="intro-card">
           <div className="intro-body">
             {!isEditing ? (
-              // VIEW MODE
               <div className="content-wrapper">
                 <div className="greeting-section">
                   <h2>Hi there 👋, I'm {user.name}</h2>
