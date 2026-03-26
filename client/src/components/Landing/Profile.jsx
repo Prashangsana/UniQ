@@ -4,8 +4,8 @@ import './Profile.css';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true); //
-  const [error, setError] = useState(null); //
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   const [user, setUser] = useState(null);
