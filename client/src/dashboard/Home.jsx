@@ -25,23 +25,22 @@ const SkillsView = () => (
     </div>
 );
 
-const Home = ({ myEventsList, onLogout, userRole }) => {
+const Home = ({ myEventsList, onLogout, userRole: propRole }) => {
     const location = useLocation();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    /* 1. FRIEND'S CHANGES: Profile State Syncing */
+
     const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
     const [userPhoto, setUserPhoto] = useState(localStorage.getItem('user_photo') || '');
-    // const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'student');
+    const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'student');
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showContactModal, setShowContactModal] = useState(false);
 
-    /* 2. FRIEND'S CHANGES: Syncing with Profile.jsx */
     useEffect(() => {
         const syncUserData = () => {
             setUserName(localStorage.getItem('user_name') || 'User');
             setUserPhoto(localStorage.getItem('user_photo') || '');
-            // setUserRole(localStorage.getItem('user_role') || 'student');
+            setUserRole(localStorage.getItem('user_role') || 'student');
         };
 
         if (location.state && location.state.tab) {
@@ -141,6 +140,11 @@ const Home = ({ myEventsList, onLogout, userRole }) => {
                         <li className={activeTab === 'society' ? 'active' : ''}>
                             <a href="#society" onClick={(e) => { e.preventDefault(); setActiveTab('society'); }}>
                                 <Icon icon="lucide:party-popper" width="20" /> <span>Society & Events</span>
+                            </a>
+                        </li>
+                        <li className={activeTab === 'groups' ? 'active' : ''}>
+                            <a href="#groups" onClick={(e) => { e.preventDefault(); setActiveTab('groups'); }}>
+                                <Icon icon="lucide:users" width="20" /> <span>Groups</span>
                             </a>
                         </li>
                         <li className={['mentoring-hub', 'peer-mentoring', 'lecturer-mentoring'].includes(activeTab) ? 'active' : ''}>

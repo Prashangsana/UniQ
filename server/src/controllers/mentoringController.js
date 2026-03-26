@@ -1,4 +1,4 @@
-// server/src/controllers/mentoringController.js
+const User = require('../models/user');
 
 const { 
     mentoringCategories, 
@@ -14,9 +14,10 @@ let appointments = [...initialAppointments];
  * 1. GET ALL MENTORS
  * Returns the full list of 20 mentors.
  */
-exports.getMentors = (req, res) => {
+exports.getMentors = async (req, res) => {
     try {
-        res.json(mentors);
+        const facultyMentors = await User.find({ role: 'lecturer' });
+        res.json(facultyMentors);
     } catch (error) {
         res.status(500).json({ message: "Error fetching mentors", error });
     }

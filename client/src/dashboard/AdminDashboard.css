@@ -1,387 +1,212 @@
+/* --- ADMIN LAYOUT --- */
 .admin-container {
   display: flex;
   min-height: 100vh;
   background-color: var(--main-bg-off-white);
-  font-family: inherit;
+  font-family: var(--font-family), sans-serif;
+  color: var(--text-color);
+  overflow-x: hidden;
 }
 
-/* Sidebar Styling */
+/* --- STABLE VERTICAL SIDEBAR --- */
 .admin-sidebar {
-  width: 250px;
-  background-color: var(--deep-banner-blue);
-  color: var(--white);
+  width: 280px; 
+  background-color: var(--white);
+  border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
+  padding: 2.5rem 1.5rem;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-logo {
-  padding: 24px;
   font-size: 1.5rem;
-  font-weight: bold;
-  border-bottom: 1px solid var(--medium-ui-blue-purple);
-  color: var(--accent-gold);
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: 3rem;
+  padding-left: 0.85rem;
+  font-family: inherit;
 }
 
 .admin-nav {
   display: flex;
   flex-direction: column;
-  padding-top: 20px;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .admin-nav button {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 0.75rem;
+  color: var(--body-text-gray);
   background: none;
   border: none;
-  color: var(--white);
-  padding: 16px 24px;
-  text-align: left;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.admin-nav button:hover {
-  background-color: var(--medium-ui-blue-purple);
+  width: 100%;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s;
+  text-align: left;
 }
 
 .admin-nav button.active {
-  background-color: var(--medium-ui-blue-purple);
-  border-left: 4px solid var(--accent-cyan);
+  background-color: rgba(59, 78, 122, 0.08);
+  color: var(--primary-color);
 }
 
-/* Main Content */
+.logout-btn { color: #ef4444 !important; margin-top: auto; }
+
+/* --- MAIN CONTENT --- */
 .admin-main {
+  margin-left: 280px;
   flex: 1;
-  padding: 40px;
-  overflow-y: auto;
+  padding: 3rem;
+  width: calc(100% - 280px);
 }
 
-.admin-section h2 {
-  color: var(--dark-heading-text);
-  margin-bottom: 24px;
-}
+.admin-section h2 { font-weight: 700; margin-bottom: 2rem; font-family: inherit; }
 
-/* Sub Tabs (Students / Lecturers) */
-.sub-tabs {
-  margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
+/* --- STUDENT/LECTURER TOGGLE (Sub-Tabs) --- */
+.sub-tabs { 
+  display: flex; 
+  gap: 1rem; 
+  margin-bottom: 2rem; 
 }
 
 .sub-tabs button {
-  padding: 10px 20px;
-  background-color: var(--card-bg-gray);
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.7rem 1.5rem;
+  border-radius: 2rem;
+  border: 1px solid #e5e7eb;
+  background: var(--white);
+  font-weight: 700;
   cursor: pointer;
-  color: var(--body-text-gray);
-  font-weight: bold;
+  font-family: inherit;
+  transition: all 0.2s;
 }
 
 .sub-tabs button.active-sub {
-  background-color: var(--deep-banner-blue);
+  background: var(--primary-color);
   color: var(--white);
-  border-color: var(--deep-banner-blue);
+  border-color: var(--primary-color);
 }
 
-/* Tables */
-.data-table-container {
-  background: var(--white);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  overflow: hidden;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th, .data-table td {
-  padding: 16px;
-  text-align: left;
-  border-bottom: 1px solid var(--card-bg-gray);
-}
-
-.data-table th {
-  background-color: var(--card-bg-gray);
-  color: var(--dark-heading-text);
-  font-weight: 600;
-}
-
-.data-table td {
-  color: var(--body-text-gray);
-}
-
-/* Cards */
+/* --- ADD MODULE/SOCIETY BARS --- */
 .add-module-card {
   background: var(--white);
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  margin-bottom: 30px;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
-.add-module-card h3 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  color: var(--dark-heading-text);
-}
+.add-module-card h3 { margin-bottom: 1.25rem; font-size: 1.1rem; }
 
-.add-module-form {
-  display: grid;
-  grid-template-columns: 1fr 2fr 2fr auto;
-  gap: 16px;
+.add-form-bar {
+  display: flex;
+  gap: 1.25rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-.add-module-form input, .add-module-form select {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.add-form-bar input, .add-form-bar select {
+  padding: 0.85rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.6rem;
+  flex: 1;
+  font-family: inherit;
   font-size: 0.95rem;
-}
-
-.add-module-form select {
-  background-color: var(--white);
+  background: #f9fafb;
 }
 
 .submit-btn {
-  background-color: var(--accent-cyan);
-  color: var(--dark-heading-text);
-  border: none;
-  padding: 12px 24px;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-
-.submit-btn:hover {
-  opacity: 0.8;
-}
-
-.placeholder-card {
-  background: var(--white);
-  padding: 40px;
-  text-align: center;
-  border-radius: 8px;
-  color: var(--body-text-gray);
-}
-
-.nav-spacer {
-  flex-grow: 1;
-  min-height: 50px;
-}
-
-.admin-nav .logout-btn {
-  margin-top: auto;
-  border-top: 1px solid var(--medium-ui-blue-purple);
-  color: #ffb3b3;
-  transition: all 0.3s ease;
-}
-
-.admin-nav .logout-btn:hover {
-  background-color: rgba(255, 0, 0, 0.1);
-  color: #ff6666;
-  border-left: 4px solid #ff6666;
-}
-
-/* Edit Button */
-.edit-btn {
-  background-color: var(--soft-gradient-blue);
+  background: var(--primary-color);
   color: var(--white);
+  padding: 0.85rem 1.75rem;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 0.6rem;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: opacity 0.3s;
+  font-family: inherit;
 }
 
-.edit-btn:hover {
-  opacity: 0.8;
+/* --- DATA TABLE --- */
+.data-table-container {
+  background: var(--white);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
 }
 
-/* Modal Overlay */
-.admin-modal-overlay {
+.data-table { width: 100%; border-collapse: collapse; font-family: inherit; min-width: 700px; }
+.data-table th { text-align: left; padding: 1.25rem 1rem; background: var(--card-bg-gray); font-size: 0.85rem; text-transform: uppercase; font-weight: 800; }
+.data-table td { padding: 1.25rem 1rem; border-bottom: 1px solid #f9fafb; }
+
+.edit-btn { background: #eff6ff; color: #3b82f6; border: none; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; }
+.delete-btn { background: #fef2f2; color: #ef4444; border: none; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; }
+
+/* --- EDIT DRAWER (FIXED FONTS & SPACING) --- */
+.admin-drawer-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
   z-index: 1000;
 }
 
-/* Modal Content Box */
-.admin-modal-content {
-  background-color: var(--white);
-  padding: 30px;
-  border-radius: 8px;
-  width: 400px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-
-.admin-modal-content h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: var(--dark-heading-text);
-}
-
-.edit-module-form {
+.admin-drawer-content {
+  background: var(--white);
+  width: 500px;
+  height: 100vh;
+  padding: 2.5rem;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.edit-module-form label {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: var(--body-text-gray);
-  margin-bottom: -6px;
+.drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+.close-drawer { background: none; border: none; cursor: pointer; color: #9ca3af; }
+
+.drawer-tabs { 
+  display: flex; 
+  gap: 2rem; /* Fixes "Basic InfoModule Team" clumping */
+  margin-bottom: 2rem; 
+  border-bottom: 1px solid #eee; 
 }
 
-.edit-module-form input, .edit-module-form select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.drawer-tabs button { background: none; border: none; padding: 0.5rem 0; cursor: pointer; font-weight: 700; font-family: inherit; color: #9ca3af; position: relative; }
+.drawer-tabs button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
+
+.form-stack { display: flex; flex-direction: column; gap: 1.5rem; }
+.input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.input-group label { font-weight: 700; font-size: 0.9rem; color: #374151; }
+.input-group input, .input-group select, .input-group textarea { padding: 0.85rem; border: 1px solid #e5e7eb; border-radius: 0.6rem; font-family: inherit; font-size: 1rem; }
+
+.drawer-footer { margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-top: 2rem; }
+.save-btn { background: var(--primary-color); color: white; padding: 1rem; border: none; border-radius: 0.75rem; font-weight: 700; cursor: pointer; }
+.cancel-btn { background: #f3f4f6; color: #4b5563; padding: 1rem; border: none; border-radius: 0.75rem; font-weight: 700; cursor: pointer; }
+
+/* --- RESPONSIVE MEDIA QUERIES --- */
+@media (max-width: 1024px) {
+  .admin-sidebar { width: 80px; align-items: center; padding: 2rem 0.5rem; }
+  .admin-sidebar .admin-logo, .admin-sidebar button span { display: none; }
+  .admin-main { margin-left: 80px; width: calc(100% - 80px); padding: 2rem; }
+  .admin-drawer-content { width: 420px; }
 }
 
-/* Modal Buttons */
-.admin-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.cancel-btn {
-  background-color: transparent;
-  border: 1px solid #ccc;
-  padding: 10px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.save-btn {
-  background-color: var(--accent-cyan);
-  border: none;
-  font-weight: bold;
-  padding: 10px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Delete Button */
-.delete-btn {
-  background-color: #ff6b6b;
-  color: var(--white);
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: opacity 0.3s;
-}
-
-.delete-btn:hover {
-  background-color: #ff4c4c;
-  opacity: 0.9;
-}
-
-/* Modal Tabs */
-.admin-modal-tabs {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  border-bottom: 2px solid var(--card-bg-gray);
-  padding-bottom: 10px;
-}
-
-.admin-modal-tabs button {
-  background: none;
-  border: none;
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: var(--body-text-gray);
-  cursor: pointer;
-  padding: 5px 10px;
-  position: relative;
-  transition: color 0.3s;
-}
-
-.admin-modal-tabs button:hover {
-  color: var(--accent-cyan);
-}
-
-.admin-modal-tabs button.active-tab {
-  color: var(--deep-banner-blue);
-}
-
-.admin-modal-tabs button.active-tab::after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: var(--deep-banner-blue);
-  border-radius: 3px 3px 0 0;
-}
-
-/* Module Team */
-.team-selection-list {
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background-color: #fafafa;
-}
-
-.team-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-  font-weight: normal;
-  cursor: pointer;
-  color: var(--dark-heading-text);
-  margin-bottom: 0 !important;
-}
-
-.team-email {
-  color: var(--body-text-gray);
-  font-size: 0.8rem;
-}
-
-.team-selection-list input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-/* Society Specific Forms */
-.add-society-form {
-  display: grid;
-  grid-template-columns: 1fr 2fr 2fr 2fr auto;
-  gap: 16px;
-  align-items: center;
-}
-
-.add-society-form input, .add-society-form select {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.95rem;
-}
-
-.add-society-form select {
-  background-color: var(--white);
+@media (max-width: 768px) {
+  .admin-sidebar { transform: translateX(-100%); }
+  .admin-sidebar:hover { transform: translateX(0); width: 260px; }
+  .admin-sidebar:hover button span { display: inline; }
+  .admin-main { margin-left: 0; width: 100%; }
+  .admin-drawer-content { width: 100%; }
 }

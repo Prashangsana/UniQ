@@ -37,7 +37,16 @@ const mockUser =[ {
     modules: ["Software Engineering"],
     skills: ["Java", "System Design"],
     profileImage: "https://i.pravatar.cc/150?img=8"
-  }
+  },
+  {
+  name: "Ms. Nilaskshi",
+  email: "nilaskshi.n@iit.ac.lk",
+  role: "lecturer", 
+  expertise: ["Machine Learning", "Neural Networks"],
+  department: "Computer Science",
+  bio: "AI Researcher and Assistant Lecturer.",
+  //profileImage: "/images-d/machine.png"
+}
 ];
 
 module.exports = mockUser;
