@@ -18,8 +18,8 @@ app.set('trust proxy', 1);
 
 
 // 2. Middleware
-app.use(express.json({limit:'10mb'}));
-app.use(express.urlencoded({ limit: '10mb', extended: true})); // Good practice for form-encoded data
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 app.use(cors({
@@ -67,10 +67,10 @@ app.use('/api/mentoring', mentoringRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/modules', moduleRoutes);
 
-// Mount Grouping & Lecturer APIs
-app.use('/api', groupRoutes);
-app.use('/api', require('./src/routes/requestRoutes'));
-app.use('/api', require('./src/routes/inviteRoutes'));
+// 6. Mount Grouping & Lecturer APIs
+app.use('/api/groups', groupRoutes);
+app.use('/api/requests', require('./src/routes/requestRoutes'));
+app.use('/api/invites', require('./src/routes/inviteRoutes'));
 app.use('/api/lecturer', require('./src/routes/lecturerRoutes'));
 
 // Global Error Handler

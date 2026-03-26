@@ -10,9 +10,11 @@ import LecturerDashboard from '../components/groups/LecturerDashboard';
 import FinalisationFormView from '../components/groups/FinalisationFormView';
 
 const GroupsPage = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   // --- ROLE STATE ---
-  // Defaulting to 'student'. In the future, you will fetch this from your auth context/backend!
-  const [userRole, setUserRole] = useState('student'); 
+  const [userRole, setUserRole] = useState(null);
 
   // State: 'dashboard', 'module', 'group', 'invite', 'profile'
   const [view, setView] = useState('dashboard');
@@ -30,6 +32,36 @@ const GroupsPage = () => {
 
   const [rosterModuleId, setRosterModuleId] = useState(null);
   const [rosterGroupId, setRosterGroupId] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/auth/me', {
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user) {
+            setCurrentUser({
+              ...data.user,
+              _id: data.user._id || data.user.id
+            });
+          }
+        } else {
+          // If auth fails, we still want to stop loading so the page shows something
+          console.warn("User not authenticated");
+        }
+      } catch (err) {
+        console.error("Auth error", err);
+      } finally {
+        setLoading(false); 
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  if (loading) return <div className="loading-screen">Loading Profile...</div>;
 
   // --- Handlers ---
   const handleProfileClick = (user) => {
@@ -51,6 +83,7 @@ const GroupsPage = () => {
   };
 
   const handleCreateGroupClick = (module) => {
+    console.log("Selected Module:", module);
     setSelectedModule(module);
     setView('create-group');
   };
@@ -60,6 +93,7 @@ const GroupsPage = () => {
       // Data here is { selectedPrefix, tutorialGroup, memberExtraInfo }
       const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/submit-finalisation`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data) // Sends the structured object
       });
@@ -82,14 +116,6 @@ const GroupsPage = () => {
   if (userRole === 'lecturer') {
     return (
       <div style={{ position: 'relative' }}>
-        {/* DEV TOGGLE: Remove this button later when real Auth is connected */}
-        <button 
-          onClick={() => setUserRole('student')} 
-          style={{ position: 'absolute', top: '10px', right: '10px', background: '#334155', color: 'white', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', cursor: 'pointer', zIndex: 100 }}
-        >
-          Switch to Student View
-        </button>
-
         <LecturerDashboard />
       </div>
     );
@@ -98,26 +124,25 @@ const GroupsPage = () => {
   // --- STUDENT VIEWS ---
   return (
     <div style={{ position: 'relative' }}>
-      {/* DEV TOGGLE: Remove this button later when real Auth is connected */}
-      <button 
-        onClick={() => setUserRole('lecturer')} 
-        style={{ position: 'absolute', top: '10px', right: '10px', background: '#334155', color: 'white', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', cursor: 'pointer', zIndex: 100 }}
-      >
-        Switch to Lecturer View
-      </button>
-
       {view === 'module' && (
         <ModuleGroupsView
           module={selectedModule}
+          currentUser={currentUser}
           onBack={() => setView('dashboard')}
           onSelectGroup={(group) => handleGroupClick(group, 'module')}
           onCreateGroup={() => handleCreateGroupClick(selectedModule)}
+          onViewProfile={handleProfileClick}
+          onSelectInvite={(invite) => {
+            setSelectedInvite(invite);
+            setView('invite');
+          }}
         />
       )}
 
       {view === 'group' && (
         <GroupDetailsView
           group={selectedGroup}
+          currentUser={currentUser}
           onBack={() => setView(originView)}
           onViewProfile={handleProfileClick}
           onFindMembers={handleFindMembers}
@@ -136,7 +161,11 @@ const GroupsPage = () => {
 
       {view === 'create-group' && (
         <CreateGroupView 
-          module={selectedModule} 
+          module={selectedModule}
+          onSuccess={() => {
+            setView('module');
+            setSelectedModule({...selectedModule}); 
+          }} 
           onBack={() => setView('module')} 
         />
       )}
@@ -167,6 +196,7 @@ const GroupsPage = () => {
       {view === 'dashboard' && (
         <GroupsDashboard
           onSelectModule={(m) => {
+            if (!m) return;
             setSelectedModule(m);
             setView('module');
           }}

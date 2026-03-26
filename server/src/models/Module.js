@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
 const moduleSchema = new mongoose.Schema({
+
+  // We use String for _id so it matches your current IDs like '5COSC019C'
   _id: { 
     type: String, 
-    required: true
+    required: true 
   },
   name: { 
     type: String, 
     required: true 
   },
+  // Array of User ObjectIds who can manage this module
   moduleLeaders: [{ 
-    type: mongoose.Schema.Types.ObjectId, 
+    type: String, 
     ref: 'User' 
   }],
   moduleTeam: [{ 
@@ -19,4 +22,5 @@ const moduleSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-module.exports = mongoose.model('Module', moduleSchema);
+module.exports = mongoose.models.Module || mongoose.model('Module', moduleSchema);
+

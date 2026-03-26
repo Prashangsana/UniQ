@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './groups.css';
+import GroupsSidebar from './GroupsSidebar';
 
-const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
+const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, currentUser, onViewProfile, onSelectInvite }) => {
   const [moduleGroups, setModuleGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // MATCH THIS TO IMASHA'S ID
-  const CURRENT_USER_ID = "user_id_student_1";
+  const [invites, setInvites] = useState([]);
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/modules/${module._id}/groups`);
+        const response = await fetch(`http://localhost:5000/api/groups/modules/${module._id}/groups`, {
+          credentials: 'include'
+        });
         const data = await response.json();
-        
+
         if (data.success) {
           setModuleGroups(data.data);
         }
@@ -29,77 +30,137 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup }) => {
     } else {
       setLoading(false); // Failsafe
     }
-  }, [module]);
+  }, [module._id]);
 
-  if (loading) return <div className="gf-main" style={{textAlign: 'center', padding: '3rem'}}>Loading groups...</div>;
+  useEffect(() => {
+    const fetchInvites = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/invites/my', { credentials: 'include' });
+        const data = await res.json();
+        if (data.success) setInvites(data.data);
+      } catch (err) { console.error(err); }
+    };
+    fetchInvites();
+  }, []);
 
-  // SAFEGUARD: Prevents the blank page crash!
-  if (!module) return <div className="gf-main">Error: Module not found <button onClick={onBack}>Go Back</button></div>;
+  if (!module || !module._id) {
+    return <div className="gf-main" style={{ textAlign: 'center', padding: '3rem' }}>Loading module...</div>;
+  }
 
   // Smart check to see if you are already in a group here
-  const isAlreadyInGroup = moduleGroups.some(g => 
-    g.members && g.members.some(m => (m._id || m) === CURRENT_USER_ID)
+  const isAlreadyInGroup = moduleGroups.some(g =>
+    g.members && g.members.some(m => (m._id || m) === currentUser?._id)
   );
 
-  return (
-    <div className="gf-main">
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <button className="gf-btn-back" onClick={onBack}>&larr; Back to Modules</button>
+  if (loading) return <div className="gf-main" style={{ textAlign: 'center', padding: '3rem' }}>Loading groups...</div>;
 
-        <div className="gf-header">
-          <h2>{module._id} Groups</h2>
-          <p>Showing all available project groups for {module.name}</p>
+  // Find if the current user is a member of any group in this module
+  const myGroupInThisModule = moduleGroups.find(group =>
+    group.members && group.members.some(m => (m._id || m) === currentUser?._id)
+  );
+
+  const myGroupId = myGroupInThisModule ? myGroupInThisModule._id : null;
+
+  return (
+    <div className="gf-layout">
+      <div className="gf-main">
+        <div style={{ marginBottom: '1rem' }}>
+          <button className="gf-btn-back" onClick={onBack}>&larr; Back to Modules</button>
         </div>
-        
-        {!isAlreadyInGroup && (
-          <button className="gf-btn-primary" style={{width:'auto'}} onClick={onCreateGroup}>
-            + Create New Group
-          </button>
+
+        {/* --- Header and Create Button row --- */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start', // Align items to the top
+          marginBottom: '2rem'
+        }}>
+          <div className="gf-header" style={{ textAlign: 'left' }}>
+            <h2 style={{ margin: 0 }}>{module._id} Groups</h2>
+            <p style={{ margin: '5px 0 0 0' }}>Showing all available project groups for {module.name}</p>
+          </div>
+
+          {!isAlreadyInGroup && (
+            <button className="gf-btn-primary" style={{ width: 'auto' }} onClick={onCreateGroup}>
+              + Create New Group
+            </button>
+          )}
+        </div>
+
+        {moduleGroups.length === 0 ? (
+          <div className="gf-card-simple" style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: '#64748b' }}>No groups have been created for this module yet.</p>
+            <button className="gf-btn-primary" style={{ width: 'auto' }} onClick={onCreateGroup}>
+              + Create First Group
+            </button>
+          </div>
+        ) : (
+          <div className="gf-grid">
+            {moduleGroups.map(group => {
+              if (!group) return null; // Failsafe
+
+              // Checks if Imasha is in this specific card
+              const isMyGroup = group.members && group.members.some(m => (m._id || m) === currentUser?._id);
+
+              let statusBadge = null;
+              if (isMyGroup) {
+                statusBadge = <span className="gf-badge-joined">Your Group</span>;
+              } else if (group.status === 'finalised') {
+                statusBadge = <span className="gf-badge-joined" style={{ background: '#16a34a' }}>Finalised</span>;
+              } else if (group.status === 'pending_review') {
+                statusBadge = <span className="gf-badge-joined" style={{ background: '#ca8a04' }}>In Review</span>;
+              } else if (group.memberCount >= group.maxMembers) {
+                statusBadge = <span className="gf-badge-joined" style={{ background: '#64748b' }}>Full</span>;
+              } else {
+                statusBadge = <span className="gf-badge-open">Open</span>;
+              }
+
+              return (
+                <div
+                  key={group._id}
+                  className="gf-card-visual"
+                  onClick={() => onSelectGroup(group)}
+                >
+                  <img
+                    src={group.img || 'https://varthana.com/school/wp-content/uploads/2023/08/B512.jpg'}
+                    alt={group.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+
+                  <div className="gf-card-gradient">
+                    {/* TOP RIGHT BADGE */}
+                    <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+                      {statusBadge}
+                    </div>
+
+                    {/* TITLE: Show Finalised Code if available, otherwise just name */}
+                    <div className="gf-card-title">
+                      {group.status === 'finalised' && group.finalisedCode
+                        ? `[${group.finalisedCode}] ${group.name}`
+                        : group.name}
+                    </div>
+
+                    <div className="gf-card-sub">
+                      {group.memberCount}/{group.maxMembers} Members • {group.domain}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {moduleGroups.length === 0 ? (
-        <div className="gf-card-simple" style={{textAlign: 'center', padding: '3rem'}}>
-          <p style={{color: '#64748b'}}>No groups have been created for this module yet.</p>
-          <button className="gf-btn-primary" style={{width: 'auto'}} onClick={onCreateGroup}>
-            + Create First Group
-          </button>
-        </div>
-      ) : (
-        <div className="gf-grid">
-          {moduleGroups.map(group => {
-            if (!group) return null; // Failsafe
-            
-            // Checks if Imasha is in this specific card
-            const isMyGroup = group.members && group.members.some(m => (m._id || m) === CURRENT_USER_ID);
 
-            return (
-              <div 
-                key={group._id} 
-                className="gf-card-visual"
-                onClick={() => onSelectGroup(group)}
-              >
-                <img src={group.img || `https://via.placeholder.com/300x200?text=${group.name}`} alt={group.name} />
-                
-                <div className="gf-card-gradient">
-                  <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
-                    {isMyGroup ? (
-                      <span className="gf-badge-joined">Your Group</span>
-                    ) : (
-                      <span className="gf-badge-open">Open</span>
-                    )}
-                  </div>
-
-                  <div className="gf-card-title">{group.name}</div>
-                  <div className="gf-card-sub">
-                    {group.memberCount}/{group.maxMembers} Members • {group.domain}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <GroupsSidebar
+        type="module"
+        moduleId={module?._id}
+        groupId={myGroupId}
+        deadlines={myGroupInThisModule?.deadlines || []}
+        onViewProfile={onViewProfile}
+        invites={invites}
+        onSelectInvite={onSelectInvite}
+      />
     </div>
   );
 };

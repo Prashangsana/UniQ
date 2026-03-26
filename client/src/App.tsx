@@ -15,7 +15,6 @@ import PublicProfile from './components/Landing/PublicProfile';
 
 // Dashboard & Core Pages
 import Home from './dashboard/Home';
-import DashboardView from './dashboard/DashboardView';
 import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor } from './components/events/Leader/pages/Leader';
@@ -43,6 +42,7 @@ function App() {
   });
   
   const [isLoading, setIsLoading] = useState<boolean>(true); 
+
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
@@ -115,6 +115,7 @@ function App() {
   }
 
   return (
+
     <Routes>
       {isLoggedIn ? (
         /* --- AUTHENTICATED VIEW --- */
@@ -128,13 +129,14 @@ function App() {
               <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
             } 
           />
+
           
           <Route 
             path="/dashboard" 
             element={
               userRole === 'admin' ? <AdminDashboard /> : 
               userRole === 'society_leader' ? <LeaderDashboard /> : 
-              <DashboardView onSeeAll={() => { }} onSeeEvents={() => { }}  />
+              <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
             } 
           />
 
