@@ -21,7 +21,7 @@ const FullProfileWrapper = ({ user, onBack, onInvite, onAccept, onDeny, processi
         
         <div style={{ display: 'flex', gap: '10px' }}>
           {/* Show Invite Button if in Roster View */}
-          {user.isRosterView && (
+          {user.isRosterView && !user.hideInvite && (
             <button 
               className="gf-btn-primary" 
               onClick={onInvite} 

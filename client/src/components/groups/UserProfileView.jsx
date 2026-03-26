@@ -82,10 +82,11 @@ const UserProfileView = ({ user: initialUser, type, onBack }) => {
       <FullProfileWrapper
         user={user}
         onBack={() => setShowFullProfile(false)}
-        onInvite={handleSendInvite}
+        onInvite={user.hideInvite ? null : handleSendInvite}
         onAccept={() => handleRequestAction('approve')}
         onDeny={() => handleRequestAction('reject')}
         processing={processing}
+        hideInvite={user.hideInvite}
       />
     );
   }
@@ -159,14 +160,16 @@ const UserProfileView = ({ user: initialUser, type, onBack }) => {
         {user.isRosterView && (
           // --- Changed to flex-direction: 'column' to stack the buttons ---
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <button
-              className="gf-btn-primary"
-              style={{ width: '100%' }}
-              onClick={handleSendInvite}
-              disabled={processing}
-            >
-              {processing ? 'Sending Invite...' : 'Send Invite'}
-            </button>
+            {!user.hideInvite && (
+              <button
+                className="gf-btn-primary"
+                style={{ width: '100%' }}
+                onClick={handleSendInvite}
+                disabled={processing}
+              >
+                {processing ? 'Sending Invite...' : 'Send Invite'}
+              </button>
+            )}
 
             <button
               className="gf-btn-outline"

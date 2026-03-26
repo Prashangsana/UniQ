@@ -338,18 +338,45 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
         <h3 className="gf-section-title">Members</h3>
         <div className="gf-grid">
           {group.members.map(member => (
-            <div key={member._id} className="gf-card-simple" onClick={() => onViewProfile(member)}>
+            <div
+              key={member._id}
+              className="gf-card-simple"
+              /* UPDATED: We pass the member with the roster flag so UserProfileView knows what to show */
+              onClick={() => onViewProfile({
+                ...member,
+                isRosterView: true,
+                hideInvite: true
+              })}
+              style={{ cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#cbd5e1' }}></div>
+                {/* UPDATED: Dynamic Profile Image with fallback initials */}
+                <img
+                  src={member.profileImage || member.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${member.name}`}
+                  alt={member.name}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    backgroundColor: '#cbd5e1'
+                  }}
+                />
                 <div>
                   <strong style={{ display: 'block' }}>{member.name}</strong>
-                  <small style={{ color: '#64748b' }}>{member._id === (group.leader._id || group.leader) ? 'Leader' : 'Member'}</small>
+                  <small style={{ color: '#64748b' }}>
+                    {member._id === (group.leader._id || group.leader) ? 'Leader' : 'Member'}
+                  </small>
                 </div>
               </div>
               <div>
-                {(member.skills || ['Student']).map(skill => (
-                  <span key={skill} className="gf-skill-chip">{skill}</span>
-                ))}
+                {member.skills && member.skills.length > 0 ? (
+                  member.skills.map(skill => (
+                    <span key={skill} className="gf-skill-chip">{skill}</span>
+                  ))
+                ) : (
+                  <span className="gf-skill-chip" style={{ opacity: 0.6 }}>No Skills Listed</span>
+                )}
               </div>
             </div>
           ))}
