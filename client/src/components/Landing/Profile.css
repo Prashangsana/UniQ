@@ -484,6 +484,40 @@
   box-shadow: none !important;
 }
 
+
+/* Ensure the "About Me" and "Skills" sections have space even when empty */
+.about-section, .skills-section {
+  margin-top: 2rem;
+  padding-bottom: 1rem;
+}
+
+.about-section p {
+  min-height: 80px; /* Gives "About Me" vertical space if it's empty */
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.02); /* Very subtle background to define the area */
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+.skills-grid {
+  min-height: 50px; /* Prevents the section from collapsing */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+/* Style for the placeholder text you might add */
+.empty-placeholder {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/*
+   5. ANIMATIONS & RESPONSIVE
+   */
+
 .fade-in {
   animation: fadeIn 0.5s ease-out;
 }
