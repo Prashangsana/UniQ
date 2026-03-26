@@ -12,7 +12,8 @@ const Profile = () => {
 
   // Initialize with null - data will come from your userMock.js via the Controller
   const [user, setUser] = useState(null);
-  const [modulesInput, setModulesInput] = useState('');
+  const [availableModules, setAvailableModules] = useState([]);
+  const [selectedModule, setSelectedModule] = useState('');
 
   // select skills 
   const PREDEFINED_SKILLS = ["React", "Node.js", "Java", "Python", "UI/UX Design", "SQL", "Figma", "TypeScript", "JavaScript", "C++", "Other"];
@@ -36,35 +37,41 @@ const Profile = () => {
 
   // --- STAGE 1 & 3: FETCH DATA FROM BACKEND ---
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/users/profile',{credentials:'include'});
-        const result = await response.json();
+  const fetchProfileAndModules = async () => {
+    try {
+      // 1. Fetch Profile
+      const response = await fetch('http://localhost:5000/api/users/profile', {credentials:'include'});
+      const result = await response.json();
 
-        if (result.success) {
-          const data =result.data;
-          setUser({
-            ...data,
+      if (result.success) {
+        const data = result.data;
+        setUser({
+          ...data,
           skills: data.skills || [],
           modules: data.modules || [],
           education: data.education || '',
           department: data.department || '',
           socials: data.socials || { instagram: '', github: '', linkedin: '' }
-          });
-         
-          setModulesInput(result.data.modules ? result.data.modules.join(', ') : '');
-        } else {
-          setError(result.message);
-        }
-      } catch (err) {
-        setError("Could not connect to the server. Make sure your Node backend is running on port 5000.");
-      } finally {
-        setLoading(false);
+        });
+      } else {
+        setError(result.message);
       }
-    };
 
-    fetchProfile();
-  }, []);
+      const moduleRes = await fetch('http://localhost:5000/api/modules', {credentials:'include'});
+      const moduleResult = await moduleRes.json();
+      if (moduleResult.success) {
+        setAvailableModules(moduleResult.modules);
+      }
+
+    } catch (err) {
+      setError("Could not connect to the server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProfileAndModules();
+}, []);
 
   const handleChange = (e) => {
   const { name, value } = e.target;
@@ -98,6 +105,18 @@ const handleSocialChange = (e) => {
 
   const removeSkill = (skillToRemove) => {
     setUser({ ...user, skills: user.skills.filter(s => s !== skillToRemove) });
+  };
+
+    // --- NEW MODULE SELECTOR METHODS ---
+  const addModule = () => {
+    if (selectedModule && !(user.modules || []).includes(selectedModule)) {
+      setUser({ ...user, modules: [...(user.modules || []), selectedModule] });
+      setSelectedModule(''); 
+    }
+  };
+
+  const removeModule = (moduleToRemove) => {
+    setUser({ ...user, modules: user.modules.filter(m => m !== moduleToRemove) });
   };
 
   const handleImageChange = async (e) => {
@@ -138,15 +157,9 @@ const handleSocialChange = (e) => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    // Convert strings back to arrays
     
-    const updatedModules = modulesInput.split(',').map(m => m.trim()).filter(m => m !== "");
-    
-    const updatedData = { 
-      ...user, 
-      
-      modules: updatedModules 
-    };
+    // No need to split string anymore, user.modules is already an array
+    const updatedData = { ...user };
 
     try {
       const response = await fetch('http://localhost:5000/api/users/profile', {
@@ -316,8 +329,34 @@ const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>{config.modulesLabel} (comma separated)</label>
-                      <input value={modulesInput} onChange={(e) => setModulesInput(e.target.value)} />
+                      <label>{config.modulesLabel}</label>
+                      
+                      {/* Display selected modules as tags */}
+                      <div className="skills-tag-editor">
+                        {user.modules?.map((mod, index) => (
+                          <div key={index} className="skill-tag">
+                            {mod}
+                            <Icon icon="lucide:x" onClick={() => removeModule(mod)} className="remove-tag-icon" />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Dropdown to add new modules */}
+                      <div className="skill-input-row">
+                        <select 
+                          value={selectedModule} 
+                          onChange={(e) => setSelectedModule(e.target.value)} 
+                          className="skill-select"
+                        >
+                          <option value="">Choose a module...</option>
+                          {availableModules.map(mod => (
+                            <option key={mod._id} value={mod.name}>
+                              {mod.name} ({mod._id})
+                            </option>
+                          ))}
+                        </select>
+                        <button type="button" onClick={addModule} className="btn-add-skill">Add</button>
+                      </div>
                     </div>
                     {/* --- NEW SKILLS SELECTOR UI --- */}
                   <div className="form-group">
