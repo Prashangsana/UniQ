@@ -25,7 +25,7 @@ const SkillsView = () => (
     </div>
 );
 
-const Home = ({ myEventsList, onLogout, userRole: propRole }) => {
+const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: propRole }) => {
     const location = useLocation();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -85,7 +85,7 @@ const Home = ({ myEventsList, onLogout, userRole: propRole }) => {
                     onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
                 />;
             case 'profile':   return <Profile />;
-            case 'society':   return <EventsPage myEventsList={myEventsList} />;
+            case 'society':   return <EventsPage myEventsList={myEventsList} onAddEvent={onAddEvent} onRemoveEvent={onRemoveEvent} />;
             case 'leader':    return <LeaderDashboard />;
             case 'groups':    return <GroupsPage userRole={userRole}/>;
             case 'skills':    return <SkillsView />;

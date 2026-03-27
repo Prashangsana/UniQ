@@ -14,12 +14,18 @@ const {
   updateEvent,
   deleteEvent,
   getAllEvents,
-  getLeaderEvents
+  getLeaderEvents,
+  getLatestEvents,
+  getTopEvents,
+  getMainEvent
 } = require('../controllers/eventController');
 
 // Public routes
 router.get('/', getAllEvents);
 router.get('/society/:societyId', getSocietyEvents);
+router.get('/main', getMainEvent);
+router.get('/latest', getLatestEvents);
+router.get('/top-week', getTopEvents);
 router.get('/:id', getEventDetails);
 
 // Protected routes

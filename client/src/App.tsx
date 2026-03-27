@@ -131,7 +131,7 @@ function App() {
             element={
               userRole === 'admin' ? <AdminDashboard /> : 
               userRole === 'society_leader' ? <LeaderDashboard /> : 
-              <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
+              <Home myEventsList={myEventsList} onAddEvent={handleAddEvent} onRemoveEvent={handleRemoveEvent} onLogout={handleLogout} userRole={userRole} />
             } 
           />
 
@@ -140,7 +140,7 @@ function App() {
             element={
               userRole === 'admin' ? <AdminDashboard /> : 
               userRole === 'society_leader' ? <LeaderDashboard /> : 
-              <Home myEventsList={myEventsList} onLogout={handleLogout} userRole={userRole} />
+              <Home myEventsList={myEventsList} onAddEvent={handleAddEvent} onRemoveEvent={handleRemoveEvent} onLogout={handleLogout} userRole={userRole} />
             } 
           />
 

@@ -20,20 +20,6 @@ export const EventBanner = ({ large, id = "sample-event", title, image }) => {
         overflow: 'hidden'
       }}
     >
-      <div className="event-banner-text" style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: '12px 16px',
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: '15px',
-        textAlign: 'left',
-        background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.9))',
-      }}>
-        {displayTitle}
-      </div>
     </div>
   );
 };

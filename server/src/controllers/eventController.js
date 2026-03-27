@@ -28,6 +28,19 @@ const resolveSocietyByIdentifier = async (identifier) => {
   });
 };
 
+// GET MAIN EVENT (Single latest happening event)
+exports.getMainEvent = async (req, res) => {
+  try {
+    const mainEvent = await Event.find({ status: { $ne: 'Draft' } })
+      .populate('society', 'name logo')
+      .sort({ date: 1 })
+      .limit(1);
+    res.json({ success: true, data: mainEvent[0] || null });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching main event" });
+  }
+};
+
 // GET ALL EVENTS (Renamed from getMainEvent to maintain consistency)
 exports.getAllEvents = async (req, res) => {
   try {
@@ -38,10 +51,10 @@ exports.getAllEvents = async (req, res) => {
   }
 };
 
-// GET LATEST EVENTS
+// GET LATEST EVENTS (Last published 6 events)
 exports.getLatestEvents = async (req, res) => {
   try {
-    const latest = await Event.find()
+    const latest = await Event.find({ status: { $ne: 'Draft' } })
       .populate('society', 'name logo')
       .sort({ createdAt: -1 })
       .limit(6);
@@ -51,10 +64,10 @@ exports.getLatestEvents = async (req, res) => {
   }
 };
 
-// GET TOP EVENTS (Sorted by upcoming date)
+// GET TOP EVENTS (Latest happening 6 events)
 exports.getTopEvents = async (req, res) => {
   try {
-    const topEvents = await Event.find()
+    const topEvents = await Event.find({ status: { $ne: 'Draft' } })
       .populate('society', 'name logo')
       .sort({ date: 1 })
       .limit(6);

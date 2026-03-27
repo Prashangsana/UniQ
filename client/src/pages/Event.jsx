@@ -4,7 +4,7 @@ import { EventBanner, EventRow, SidebarSection, SocietyCard } from "../component
 import "./Event.css";
 
 /* ================= EVENTS PAGE (Dashboard View) ================= */
-export const EventsPage = ({ myEventsList = [] }) => {
+export const EventsPage = ({ myEventsList = [], onAddEvent, onRemoveEvent }) => {
 
   const [societies, setSocieties] = useState([]);
   const [showAllSocieties, setShowAllSocieties] = useState(false);
@@ -14,6 +14,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
   const [mainEvent, setMainEvent] = useState(null);
   const [latestEvents, setLatestEvents] = useState([]);
   const [topEvents, setTopEvents] = useState([]);
+  const [myEventsDetails, setMyEventsDetails] = useState([]);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -96,6 +97,35 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
   }, [API_URL]);
 
+  /* LOAD MY EVENTS DETAILS */
+  useEffect(() => {
+    if (myEventsList.length === 0) {
+      setMyEventsDetails([]);
+      return;
+    }
+
+    const fetchEventDetails = async () => {
+      try {
+        const eventPromises = myEventsList.map(eventId => 
+          fetch(`${API_URL}/api/events/${eventId}`, {
+            credentials: "include"
+          }).then(res => res.json())
+        );
+
+        const eventResponses = await Promise.all(eventPromises);
+        const validEvents = eventResponses
+          .filter(response => response.success)
+          .map(response => response.data);
+
+        setMyEventsDetails(validEvents);
+      } catch (error) {
+        console.error("Error fetching my events details:", error);
+      }
+    };
+
+    fetchEventDetails();
+  }, [myEventsList, API_URL]);
+
   const displayedSocieties = showAllSocieties ? societies : societies.slice(0, 5);
 
   return (
@@ -129,7 +159,7 @@ export const EventsPage = ({ myEventsList = [] }) => {
 
           <EventRow
             title="My events"
-            addedEvents={myEventsList}
+            addedEvents={myEventsDetails}
           />
 
           <EventRow
@@ -230,12 +260,13 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     try {
 
       const res = await fetch(
-        `${API_URL}/api/events/${eventId}/add`,
+        `${API_URL}/api/events/my-events`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
+          body: JSON.stringify({ eventId }),
           credentials: "include"
         }
       );
@@ -262,7 +293,7 @@ export const EventDetailsPage = ({ onAddEvent, onRemoveEvent, myEventsList = [] 
     try {
 
       const res = await fetch(
-        `${API_URL}/api/events/${eventId}/remove`,
+        `${API_URL}/api/events/my-events/${eventId}`,
         {
           method: "DELETE",
           headers: {
