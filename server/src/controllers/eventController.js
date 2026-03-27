@@ -3,6 +3,31 @@ const SavedEvent = require("../models/SavedEvent");
 const Society = require("../models/Society");
 const mongoose = require("mongoose");
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const resolveSocietyByIdentifier = async (identifier) => {
+  const raw = String(identifier || '').trim();
+  if (!raw || raw === 'undefined' || raw === 'null') return null;
+
+  if (mongoose.Types.ObjectId.isValid(raw)) {
+    return Society.findById(raw);
+  }
+
+  const normalized = raw.toLowerCase();
+  const fromSlug = normalized.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+  const exact = new RegExp(`^${escapeRegex(normalized)}$`, 'i');
+  const slugExact = new RegExp(`^${escapeRegex(fromSlug)}$`, 'i');
+
+  return Society.findOne({
+    $or: [
+      { shortName: exact },
+      { shortName: slugExact },
+      { name: exact },
+      { name: slugExact }
+    ]
+  });
+};
+
 // GET ALL EVENTS (Renamed from getMainEvent to maintain consistency)
 exports.getAllEvents = async (req, res) => {
   try {
@@ -86,12 +111,12 @@ exports.getLeaderEvents = async (req, res) => {
 // CREATE EVENT
 exports.createEvent = async (req, res) => {
   try {
-    const societyId = req.body.society;
-    if (!societyId) {
+    const societyIdentifier = req.body.society;
+    if (!societyIdentifier) {
       return res.status(400).json({ success: false, message: "Society ID is required" });
     }
 
-    const society = await Society.findById(societyId);
+    const society = await resolveSocietyByIdentifier(societyIdentifier);
     if (!society) {
       return res.status(404).json({ success: false, message: "Society not found" });
     }
@@ -103,7 +128,7 @@ exports.createEvent = async (req, res) => {
       return res.status(403).json({ success: false, message: "Unauthorized to create events for this society" });
     }
 
-    const eventData = { ...req.body, society: societyId };
+    const eventData = { ...req.body, society: society._id };
     const event = await Event.create(eventData);
     const populatedEvent = await Event.findById(event._id).populate('society', 'name logo');
     
@@ -121,7 +146,7 @@ exports.updateEvent = async (req, res) => {
       return res.status(404).json({ success: false, message: "Event not found" });
     }
 
-    const society = await Society.findById(event.society);
+    const society = await resolveSocietyByIdentifier(event.society);
     const isAdmin = req.user.role === 'admin';
     const isLeader = society && society.leader && society.leader.toString() === req.user.id;
 
@@ -149,7 +174,7 @@ exports.deleteEvent = async (req, res) => {
       return res.status(404).json({ success: false, message: "Event not found" });
     }
 
-    const society = await Society.findById(event.society);
+    const society = await resolveSocietyByIdentifier(event.society);
     const isAdmin = req.user.role === 'admin';
     const isLeader = society && society.leader && society.leader.toString() === req.user.id;
 

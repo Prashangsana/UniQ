@@ -13,7 +13,7 @@ const EventSchema = new mongoose.Schema({
   },
 
   society: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'Society',
     required: true
   },

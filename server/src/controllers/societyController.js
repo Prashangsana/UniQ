@@ -131,6 +131,7 @@ exports.createSociety = async (req, res) => {
     }
 
     const society = await Society.create({
+      _id: shortName,
       name,
       shortName,
       description,
