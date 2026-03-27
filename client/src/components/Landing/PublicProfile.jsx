@@ -114,17 +114,18 @@ const PublicProfile = ({ id: propId }) => {
                 <p>{user.aboutMe}</p>
               </div>
 
-              {user.skills && user.skills.length > 0 && (
-                <div className="skills-section">
-                  <h3>✨{config.skillsLabel}</h3>
+               <div className="skills-section">
+                <h3>✨{config.skillsLabel}</h3>
+
+                {user.skills && user.skills.length > 0 && (
                   <div className="skills-grid">
                     {user.skills?.map((s, i) => (
                       <div key={i} className="skill-pill-light">{s}</div>
-                    ))}
-                  </div>
+                    ))} 
                 </div>
               )}
             </div>
+          </div>
           </div>
         </section>
       </main>
