@@ -184,7 +184,9 @@ const Profile = () => {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    const updatedData = { ...user };
+    const updatedData = { ...user,
+      username: user.username
+     };
 
     try {
       const response = await fetch('http://localhost:5000/api/users/profile', {

@@ -15,7 +15,7 @@ const PublicProfile = ({ id: propId }) => {
     if (!id) return;
     const fetchPublicProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/public-profile/${id}`);
+        const response = await fetch(`http://localhost:5000/api/users/public-profile/${id}?t=${new Date().getTime()}`);
         const result = await response.json();
 
         if (result.success) {

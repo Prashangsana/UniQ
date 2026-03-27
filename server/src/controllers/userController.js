@@ -24,7 +24,7 @@ exports.getPublicProfile = async (req, res) => {
     const { id } = req.params;
 
     const user = await User.findById(id)
-      .select("name firstName lastName photo bio skills course group profileImage")
+      .select("name username email firstName lastName photo bio skills course group profileImage")
       .lean();
       
     if (!user) {
