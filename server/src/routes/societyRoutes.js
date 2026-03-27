@@ -16,6 +16,13 @@ const {
 // GET LEADER'S SOCIETIES
 router.get('/leader/all', protect, getLeaderSocieties);
 
+// ADMIN ROUTES
+// GET USERS BY ROLE (admin only)
+router.get('/admin/users', protect, getUsersByRole);
+
+// ASSIGN LEADER TO SOCIETY (admin only)
+router.put('/admin/societies/:id/assign-leader', protect, assignLeader);
+
 // CREATE SOCIETY / CLUB (admin only)
 router.post('/', protect, createSociety);
 
@@ -30,13 +37,6 @@ router.put('/:id', protect, updateSociety);
 
 // DELETE SOCIETY / CLUB (admin only)
 router.delete('/:id', protect, deleteSociety);
-
-// ADMIN ROUTES
-// GET USERS BY ROLE (admin only)
-router.get('/admin/users', protect, getUsersByRole);
-
-// ASSIGN LEADER TO SOCIETY (admin only)
-router.put('/admin/societies/:id/assign-leader', protect, assignLeader);
 
 // FOLLOW/UNFOLLOW SOCIETY
 router.post("/:id/follow", protect, followSociety);

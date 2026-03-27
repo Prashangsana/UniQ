@@ -2,6 +2,32 @@ const Society = require('../models/Society');
 const Event = require('../models/Event');
 const SavedEvent = require('../models/SavedEvent');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const resolveSocietyByIdentifier = async (identifier) => {
+  const raw = String(identifier || '').trim();
+  if (!raw || raw === 'undefined' || raw === 'null') return null;
+
+  if (mongoose.Types.ObjectId.isValid(raw)) {
+    return Society.findById(raw);
+  }
+
+  const normalized = raw.toLowerCase();
+  const fromSlug = normalized.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+  const shortExact = new RegExp(`^${escapeRegex(normalized)}$`, 'i');
+  const shortSlugExact = new RegExp(`^${escapeRegex(fromSlug)}$`, 'i');
+
+  return Society.findOne({
+    $or: [
+      { shortName: shortExact },
+      { shortName: shortSlugExact },
+      { name: shortExact },
+      { name: shortSlugExact }
+    ]
+  });
+};
 
 /**
  * GET ALL SOCIETIES
@@ -28,15 +54,14 @@ exports.getAllSocieties = async (req, res) => {
  */
 exports.getSocietyProfile = async (req, res) => {
   try {
-    const societyId = req.params.id;
-    const society = await Society.findById(societyId);
+    const society = await resolveSocietyByIdentifier(req.params.id);
     
     if (!society) {
       return res.status(404).json({ success: false, message: "Society Not Found" });
     }
 
     // Get events for this society, sorted by most recent
-    const events = await Event.find({ society: societyId }).sort({ createdAt: -1 });
+    const events = await Event.find({ society: society._id }).sort({ createdAt: -1 });
     
     res.status(200).json({
       success: true,

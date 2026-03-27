@@ -38,12 +38,32 @@ export const EventBanner = ({ large, id = "sample-event", title, image }) => {
 };
 
 // --- SOCIETY CARD ---
-export const SocietyCard = ({ name, id, logo }) => {
+export const SocietyCard = ({ name, id, shortName, logo }) => {
   const slug = name ? name.toLowerCase().replace(/\s+/g, '-') : '';
   const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'S')}&background=e2e8f0&color=64748b&bold=true`;
+  const pathParam = id || shortName || slug;
+
+  if (!pathParam) {
+    return (
+      <div className="society-card-link">
+        <div className="society-card">
+          <img
+            src={logo || `/images-e/societies/${slug}.png`}
+            alt={name}
+            className="society-logo"
+            onError={(e) => { 
+              e.target.onerror = null; 
+              e.target.src = avatarFallback;
+            }}
+          />
+          <span>{name}</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Link to={`/society/${id}`} state={{ tab: 'society' }} className="society-card-link">
+    <Link to={`/society/${pathParam}`} state={{ tab: 'society' }} className="society-card-link">
       <div className="society-card">
         <img
           src={logo || `/images-e/societies/${slug}.png`}

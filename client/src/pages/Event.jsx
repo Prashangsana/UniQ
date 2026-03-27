@@ -155,8 +155,9 @@ export const EventsPage = ({ myEventsList = [] }) => {
               {displayedSocieties.map((club) => (
 
                 <SocietyCard
-                  key={club._id}
-                  id={club._id}
+                  key={club._id || club.id || club.shortName || club.name}
+                  id={club._id || club.id || club.societyId}
+                  shortName={club.shortName}
                   name={club.name}
                   logo={club.logo}
                 />
@@ -480,16 +481,29 @@ export const SocietyProfilePage = ({ userRole }) => {
     const loadProfileData = async () => {
       try {
         setError(null);
-        
-        console.log("Loading society profile for ID:", id); // Debug log
-        
+        let resolvedId = id;
+
+        // If the param isn't a Mongo ObjectId, try to resolve by slug/shortName/name
+        if (!/^[a-f0-9]{24}$/i.test(resolvedId || '')) {
+          const listRes = await fetch(`${API_URL}/api/societies`, { credentials: "include" });
+          const listData = await listRes.json();
+          if (listData.success) {
+            const lower = (resolvedId || '').toLowerCase();
+            const match = (listData.data || []).find(s => {
+              const byShort = s.shortName && s.shortName.toLowerCase() === lower;
+              const bySlug = s.name && s.name.toLowerCase().replace(/\s+/g, '-') === lower;
+              return byShort || bySlug;
+            });
+            if (match?._id) resolvedId = match._id;
+          }
+        }
+
         /* LOAD SOCIETY PROFILE */
-        const profileRes = await fetch(`${API_URL}/api/societies/${id}`, {
+        const profileRes = await fetch(`${API_URL}/api/societies/${resolvedId}`, {
           credentials: "include"
         });
         
         const profileData = await profileRes.json();
-        console.log("Society profile response:", profileData); // Debug log
         
         if (!profileData.success) {
           setError(profileData.message || "Failed to load society profile");
@@ -499,7 +513,7 @@ export const SocietyProfilePage = ({ userRole }) => {
         setProfileData(profileData.data);
 
         /* LOAD FOLLOW STATUS */
-        const followRes = await fetch(`${API_URL}/api/societies/${id}/follow-status`, {
+        const followRes = await fetch(`${API_URL}/api/societies/${resolvedId}/follow-status`, {
           credentials: "include"
         });
         
@@ -629,7 +643,7 @@ export const SocietyProfilePage = ({ userRole }) => {
       <header className="society-header">
 
         <img
-          src={society.logo}
+          src={society.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(society.name || 'S')}&background=e2e8f0&color=64748b&bold=true`}
           alt={society.name}
           className="society-logo-large"
         />
