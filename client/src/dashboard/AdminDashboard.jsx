@@ -140,7 +140,7 @@ const AdminDashboard = () => {
             <Icon icon="lucide:party-popper" width="20" /> <span>Societies</span>
           </button>
           <div className="nav-spacer"></div>
-          <button className="logout-btn" onClick={() => window.location.href = `${API_URL}/auth/logout`}>
+          <button className="logout-btn" onClick={() => { localStorage.clear(); window.location.href = `${API_URL}/auth/logout`; }}>
             <Icon icon="lucide:log-out" width="20" /> <span>Logout</span>
           </button>
         </nav>

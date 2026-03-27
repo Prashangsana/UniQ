@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Profile.css';
 
-const PublicProfile = ({ id: propId }) => {
+const PublicProfile = ({ id: propId } = {}) => {
   const { id: urlId } = useParams(); // Extracts the ID from the URL 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

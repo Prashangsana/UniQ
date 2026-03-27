@@ -6,22 +6,27 @@ const getAdminEmails = () => {
   return process.env.ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase());
 };
 
-const sendTokenResponse = (user, statusCode, res) => {
+const buildCookieOptions = (req) => {
+  const isSecure = process.env.NODE_ENV === "production" && req.secure;
+  return {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: isSecure ? "none" : "lax",
+  };
+};
+
+const sendTokenResponse = (user, statusCode, req, res) => {
   const token = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "30d" }
   );
 
-  const options = {
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  };
+  const options = buildCookieOptions(req);
 
   const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-  res.status(statusCode).cookie("token", token, options).redirect(FRONTEND_URL);
+  res.status(statusCode).cookie("token", token, options).redirect(`${FRONTEND_URL}/dashboard`);
 };
 
 exports.googleCallback = async (req, res) => {
@@ -64,7 +69,7 @@ exports.googleCallback = async (req, res) => {
       });
     }
 
-    sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 200, req, res);
   } catch (error) {
     console.error("Auth Error:", error);
     res.status(500).json({ success: false, message: "OAuth login failed" });
@@ -72,10 +77,11 @@ exports.googleCallback = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
+  const options = buildCookieOptions(req);
   res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    httpOnly: options.httpOnly,
+    secure: options.secure,
+    sameSite: options.sameSite,
   });
 
   const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -109,7 +115,7 @@ exports.getMe = async (req, res) => {
 
 exports.localEmailLogin = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = String(req.body?.email || '').trim().toLowerCase();
 
     if (!email || !email.endsWith('@iit.ac.lk')) {
       return res.status(400).json({ success: false, message: 'Invalid email. Please log in with university email.' });
@@ -173,12 +179,7 @@ exports.localEmailLogin = async (req, res) => {
       { expiresIn: "30d" }
     );
 
-    const options = {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    };
+    const options = buildCookieOptions(req);
 
     res.status(200).cookie("token", token, options).json({
       success: true,
