@@ -39,10 +39,12 @@ const Profile = () => {
         const response = await fetch('http://localhost:5000/api/users/profile', { credentials: 'include' });
         const result = await response.json();
 
+
         if (result.success) {
           const data = result.data;
           setUser({
             ...data,
+             name: data.name || "New User",
             skills: data.skills || [],
             modules: data.modules || [],
             education: data.education || '',
@@ -63,11 +65,17 @@ const Profile = () => {
         setError("Could not connect to the server.");
       } finally {
         setLoading(false);
+        setLoading(false);
       }
     };
 
     fetchProfileAndModules();
   }, []);
+
+      
+     
+
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -208,9 +216,14 @@ const Profile = () => {
   if (error) return <div className="error-screen">{error}</div>;
   if (!user) return null;
 
-  const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
+  ///const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
 
-  return (
+
+// This ensures that if the name is missing, it uses 'User', and encodes spaces correctly
+const avatarSeed = user?.name || user?.email || 'User';
+const userAvatar = user?.profileImage || user?.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(avatarSeed)}`;
+return(
+
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
         <div className="avatar-wrapper-lg">
