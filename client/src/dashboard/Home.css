@@ -326,24 +326,17 @@
 }
 
 .dashboard-footer {
-  position: fixed;
-  left: calc(80px + 2rem);
-  right: 2rem;
-  bottom: 1.5rem; 
-  z-index: 80; 
   background-color: rgba(255, 255, 255, 0.6); 
   backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
   border-radius: 30px; 
   border: 1px solid rgba(255, 255, 255, 0.4); 
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  margin-top: 3rem; 
+  margin-top: auto; 
   margin-bottom: 0; 
-  padding: 1rem 2rem; 
-  
-  /* Existing Layout Styles */
+  padding: 1rem 2rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Change to center if you want text centered on desktop too */
   align-items: center;
   font-size: 0.85rem;
   color: var(--footer-text-muted);
