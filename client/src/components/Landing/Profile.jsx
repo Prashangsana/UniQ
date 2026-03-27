@@ -47,6 +47,7 @@ const Profile = () => {
         const data = result.data;
         setUser({
           ...data,
+          name: data.name || "New User",
           skills: data.skills || [],
           modules: data.modules || [],
           education: data.education || '',
@@ -194,9 +195,10 @@ if (loading) return <div className="loading-screen">Loading Profile...</div>;
 if (error) return <div className="error-screen">{error}</div>;
 if (!user) return null;
 
-const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
- 
-  return (
+// This ensures that if the name is missing, it uses 'User', and encodes spaces correctly
+const avatarSeed = user?.name || user?.email || 'User';
+const userAvatar = user?.profileImage || user?.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(avatarSeed)}`;
+return(
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
         <div className="avatar-wrapper-lg" onClick={() => fileInputRef.current.click()}>
