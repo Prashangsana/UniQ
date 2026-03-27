@@ -12,7 +12,8 @@ export const EventBanner = ({ large, id = "sample-event", title, image }) => {
       className={`event-banner ${large ? "large" : ""}`}
       onClick={() => navigate(`/event/${id}`)}
       style={{ 
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url(${image || "/logo.png"})`,
+        backgroundImage: image ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url(${image})` : 'none',
+        backgroundColor: image ? 'transparent' : '#d1d5db',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         position: 'relative',
@@ -151,7 +152,8 @@ export const SidebarSection = ({ title, events = [] }) => {
             <div
               className="sidebar-card-banner"
               style={{ 
-                backgroundImage: `url(${event.bannerImage || "/logo.png"})`,
+                backgroundImage: event.bannerImage ? `url(${event.bannerImage})` : 'none',
+                backgroundColor: event.bannerImage ? 'transparent' : '#d1d5db',
                 backgroundSize: 'cover'
               }}
             />

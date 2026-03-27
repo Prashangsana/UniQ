@@ -17,7 +17,8 @@ export const LeaderEventBanner = ({ large, id = "sample-event", title, image, ed
       style={{ 
         cursor: editable ? 'pointer' : 'default', 
         position: 'relative',
-        backgroundImage: `url(${image || "/logo.png"})`,
+        backgroundImage: image ? `url(${image})` : 'none',
+        backgroundColor: image ? 'transparent' : '#d1d5db',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
