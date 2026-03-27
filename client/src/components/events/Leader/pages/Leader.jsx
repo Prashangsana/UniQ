@@ -24,6 +24,7 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
   const [canEdit, setCanEdit] = useState(true);
   const [manageableSocietyIds, setManageableSocietyIds] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -35,7 +36,9 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
         if (!authData.authenticated) return;
 
         const admin = authData.user.role === 'admin';
+        const userId = (authData.user?.id || authData.user?._id || '').toString();
         setIsAdmin(admin);
+        setCurrentUserId(userId);
 
         const socRes = await fetch(`${API_URL}/api/societies`, { credentials: 'include' });
         const socData = await socRes.json();
@@ -44,29 +47,49 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
         if (cancelled) return;
 
         setSocieties(list);
-        let allowedSocietyIds = list.map(s => s._id?.toString()).filter(Boolean);
-        if (!admin) {
-          const leaderSocRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
-          const leaderSocData = await leaderSocRes.json();
-          allowedSocietyIds = leaderSocData.success
-            ? (leaderSocData.data || []).map(s => s._id?.toString()).filter(Boolean)
-            : [];
-        }
+
+        const getSocietyKey = (s) => (s._id || s.id || s.shortName || '').toString();
+
+        const allSocietyIds = list.map(getSocietyKey).filter(Boolean);
+        const leaderSocietyIds = list
+          .filter(s => {
+            const leaderRaw = s.leader;
+            const leaderId = (typeof leaderRaw === 'object' && leaderRaw?._id)
+              ? leaderRaw._id.toString()
+              : (leaderRaw || '').toString();
+            return leaderId && userId && leaderId === userId;
+          })
+          .map(getSocietyKey)
+          .filter(Boolean);
+
+        const allowedSocietyIds = admin ? allSocietyIds : leaderSocietyIds;
         setManageableSocietyIds(allowedSocietyIds);
 
         if (isNewEvent) {
           setCanEdit(true);
           if (preselectedSocietyId) {
-            if (allowedSocietyIds.includes(preselectedSocietyId.toString())) {
-              setSelectedSociety(preselectedSocietyId);
+            const normalized = preselectedSocietyId.toString().toLowerCase();
+            const match = list.find(s => {
+              const societyId = getSocietyKey(s).toLowerCase();
+              const shortName = (s.shortName || '').toString().toLowerCase();
+              const slug = (s.name || '').toString().toLowerCase().replace(/\s+/g, '-');
+              return societyId === normalized || shortName === normalized || slug === normalized;
+            });
+            const matchId = match ? getSocietyKey(match) : '';
+            const matchLeaderRaw = match?.leader;
+            const matchLeaderId = (typeof matchLeaderRaw === 'object' && matchLeaderRaw?._id)
+              ? matchLeaderRaw._id.toString()
+              : (matchLeaderRaw || '').toString();
+            const canManageMatch = admin || (matchLeaderId && userId && matchLeaderId === userId);
+
+            if (matchId && canManageMatch) {
+              setSelectedSociety(matchId);
             } else {
-              if (!admin) {
-                alert("You can't add an event to another society.");
-              }
               setSelectedSociety('');
             }
           } else if (list.length === 1) {
-            setSelectedSociety(list[0]._id);
+            const onlyId = getSocietyKey(list[0]);
+            if (onlyId) setSelectedSociety(onlyId);
           }
 
           setTitle('');
@@ -136,12 +159,24 @@ function useLeaderEventForm({ eventId, preselectedSocietyId }) {
       setSelectedSociety('');
       return;
     }
-    if (!isAdmin && !manageableSocietyIds.includes(value.toString())) {
-      alert("You can't add an event to another society.");
-      setSelectedSociety('');
+    if (isAdmin) {
+      setSelectedSociety(value);
       return;
     }
-    setSelectedSociety(value);
+
+    const selected = societies.find(s => (s._id || s.id || s.shortName || '').toString() === value.toString());
+    const leaderRaw = selected?.leader;
+    const leaderId = (typeof leaderRaw === 'object' && leaderRaw?._id)
+      ? leaderRaw._id.toString()
+      : (leaderRaw || '').toString();
+
+    if (leaderId && currentUserId && leaderId === currentUserId) {
+      setSelectedSociety(value);
+      return;
+    }
+
+    alert("You can't add an event to another society.");
+    setSelectedSociety('');
   };
 
   const handleSave = async () => {
@@ -523,11 +558,14 @@ function LeaderEventFormBody({
                 disabled={!canEdit}
               >
                 <option value="">Select a society</option>
-                {societies.map(society => (
-                  <option key={society._id} value={society._id}>
+                {societies.map(society => {
+                  const societyKey = (society._id || society.id || society.shortName || '').toString();
+                  return (
+                  <option key={societyKey || society.name} value={societyKey}>
                     {society.name}
                   </option>
-                ))}
+                  );
+                })}
               </select>
             </div>
 
