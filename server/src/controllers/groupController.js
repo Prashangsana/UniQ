@@ -3,15 +3,10 @@ const GroupProject = require('../models/GroupProject');
 const Module = require('../models/Module');
 const User = require('../models/User');
 
-/**
- * @desc    Create a new group for a module
- * @route   POST /api/groups
- * @access  Private (Requires JWT)
- */
 exports.createGroup = async (req, res) => {
   try {
     const { name, moduleId, domain } = req.body;
-    const userId = req.user._id || req.user.id; // Extracted from JWT auth middleware
+    const userId = req.user._id || req.user.id;
 
     const project = await GroupProject.findOne({ moduleId: moduleId });
     if (!project) {
@@ -21,11 +16,8 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    // Use the maxMembers defined by the lecturer in the GroupProject
     const allowedMaxMembers = project.maxMembers;
 
-    // Constraint Check: Prevent a user from being in more than one group per module.
-    // We check if a group exists for this module where the members array includes this userId.
     const existingGroup = await Group.findOne({ 
       moduleId: moduleId, 
       members: userId 
@@ -38,7 +30,6 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    // Constraint Check: Ensure group name is unique within the module (optional but recommended)
     const nameExists = await Group.findOne({ moduleId, name });
     if (nameExists) {
       return res.status(400).json({
@@ -47,14 +38,13 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    // Create the group. Creator automatically becomes the leader and first member.
     const newGroup = await Group.create({
       name,
       moduleId,
       domain,
       maxMembers: allowedMaxMembers,
       leader: userId,
-      members: [userId] // Add creator to members array
+      members: [userId]
     });
 
     res.status(201).json({ success: true, data: newGroup });
@@ -63,21 +53,14 @@ exports.createGroup = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get all groups for a given module
- * @route   GET /api/modules/:moduleId/groups
- * @access  Private
- */
 exports.getModuleGroups = async (req, res) => {
   try {
     const { moduleId } = req.params;
 
-    // Fetch groups for the specific module
     const groups = await Group.find({ moduleId })
       .populate('members', 'name email') 
       .select('name domain members maxMembers isFinalised leader img deadlines finalisedCode');
 
-    // Format the response to explicitly include member count for the frontend
     const formattedGroups = groups.map(group => ({
       _id: group._id,
       name: group.name,
@@ -97,19 +80,12 @@ exports.getModuleGroups = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get full group details with populated members
- * @route   GET /api/groups/:groupId
- * @access  Private
- */
 exports.getGroupDetails = async (req, res) => {
   try {
     const { groupId } = req.params;
 
-    // Find the group and populate the references.
-    // Populate replaces the User ObjectIds with actual User documents (filtering fields to send).
     const group = await Group.findById(groupId)
-      .populate('leader', 'name email role') // Assuming User model has name, email, role
+      .populate('leader', 'name email role')
       .populate('members', 'name email skills bio student role'); 
 
     if (!group) {
@@ -118,7 +94,6 @@ exports.getGroupDetails = async (req, res) => {
 
     res.status(200).json({ success: true, data: group });
   } catch (error) {
-    // Check if error is due to an invalid Mongoose ObjectId format
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
@@ -126,10 +101,8 @@ exports.getGroupDetails = async (req, res) => {
   }
 };
 
-// GET /api/modules/open
 exports.getOpenModules = async (req, res) => {
   try {
-    // This finds all modules that have a GroupProject created by a lecturer
     const projects = await GroupProject.find({ isOpen: true }).select('moduleId');
     const moduleIds = projects.map(p => p.moduleId);
     
@@ -140,7 +113,6 @@ exports.getOpenModules = async (req, res) => {
   }
 };
 
-// GET /api/groups/my
 exports.getMyAllGroups = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -151,32 +123,27 @@ exports.getMyAllGroups = async (req, res) => {
   }
 };
 
-// GET /api/modules/:moduleId/my-group
 exports.getMyGroup = async (req, res) => {
   try {
     const { moduleId } = req.params;
     const userId = req.user.id;
 
-    // Find the group in this module where the current student is a member
     const myGroup = await Group.findOne({ 
       moduleId: moduleId, 
       members: userId 
     }).populate('members', 'name email skills bio');
 
-    // If no group found, returning success:true with null data is expected by the frontend
     res.status(200).json({ success: true, data: myGroup || null });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error fetching your group' });
   }
 };
 
-// GET /api/modules/:moduleId/available-students
 exports.getAvailableStudents = async (req, res) => {
   try {
     const { moduleId } = req.params;
     const currentUserId = req.user._id || req.user.id;
 
-    // 1. Get IDs of all students already in a group for this module
     const groups = await Group.find({ moduleId }).select('members').lean();
     const studentIdsInGroups = groups.reduce((acc, group) => {
       return acc.concat(group.members.map(m => m.toString()));
@@ -185,7 +152,6 @@ exports.getAvailableStudents = async (req, res) => {
     console.log("Searching for module:", moduleId);
     console.log("Students already in groups:", studentIdsInGroups);
 
-    // 2. Find students who are NOT in that list
     const availableStudents = await User.find({
       role: { $regex: /^student$/i },
       _id: { 
@@ -204,14 +170,12 @@ exports.getAvailableStudents = async (req, res) => {
 
 exports.leaveGroup = async (req, res) => {
   try {
-    // /api/groups/:groupId/leave, use req.params.groupId
     const group = await Group.findById(req.params.groupId);
     
     if (!group) {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
 
-    // Identify the user leaving (using normalized ID from auth middleware)
     const userId = (req.user._id || req.user.id).toString();
 
     group.members = group.members.filter(m => m.toString() !== userId);
@@ -236,11 +200,6 @@ exports.leaveGroup = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update group details (like image)
- * @route   PUT /api/groups/groups/:groupId/update
- * @access  Private (Leader only)
- */
 exports.updateGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -253,7 +212,6 @@ exports.updateGroup = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
 
-    // Security Check: Only the leader can change the group image
     if (group.leader.toString() !== userId) {
       return res.status(403).json({ 
         success: false, 
@@ -261,7 +219,6 @@ exports.updateGroup = async (req, res) => {
       });
     }
 
-    // Update the image field
     group.img = img;
     if (name) group.name = name;
 
@@ -277,15 +234,12 @@ exports.updateGroup = async (req, res) => {
   }
 };
 
-// GET /api/groups/my-deadlines
 exports.getAllMyDeadlines = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     
-    // Find all groups where the user is a member
     const groups = await Group.find({ members: userId }).select('name deadlines');
     
-    // Flatten all deadlines into one array and add the group name for context
     const allDeadlines = groups.flatMap(g => 
       (g.deadlines || []).map(d => ({ 
         ...d.toObject(), 
@@ -300,7 +254,6 @@ exports.getAllMyDeadlines = async (req, res) => {
   }
 };
 
-// Update the existing updateDeadlines to be more robust
 exports.updateDeadlines = async (req, res) => {
   try {
     const { groupId } = req.params;

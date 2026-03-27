@@ -3,45 +3,40 @@ const Event = require('../models/Event');
 const SavedEvent = require('../models/SavedEvent');
 const User = require('../models/User');
 
-/*
-GET ALL SOCIETIES
-API: GET /api/societies
-Used for:
-- "Your Societies" sidebar
-*/
+/**
+ * GET ALL SOCIETIES
+ * Used for: Sidebar, Society Discovery
+ */
 exports.getAllSocieties = async (req, res) => {
   try {
     const societies = await Society.find();
-    
     res.status(200).json({
       success: true,
       data: societies
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching societies"
+    res.status(500).json({ 
+      success: false, 
+      message: "Error Fetching Societies: " + error.message 
     });
   }
 };
 
-/*
-GET SOCIETY PROFILE
-API: GET /api/societies/:id
-*/
+/**
+ * GET SOCIETY PROFILE
+ * Returns society details along with their events
+ */
 exports.getSocietyProfile = async (req, res) => {
   try {
-    const society = await Society.findById(req.params.id);
+    const societyId = req.params.id;
+    const society = await Society.findById(societyId);
     
     if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found"
-      });
+      return res.status(404).json({ success: false, message: "Society Not Found" });
     }
 
-    // Get events for this society
-    const events = await Event.find({ society: req.params.id });
+    // Get events for this society, sorted by most recent
+    const events = await Event.find({ society: societyId }).sort({ createdAt: -1 });
     
     res.status(200).json({
       success: true,
@@ -51,22 +46,19 @@ exports.getSocietyProfile = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching society profile"
+    res.status(500).json({ 
+      success: false, 
+      message: "Error Fetching Society Profile: " + error.message 
     });
   }
 };
 
-/*
-GET LEADER'S SOCIETIES
-API: GET /api/societies/leader/all
-*/
+/**
+ * GET LEADER'S SOCIETIES
+ */
 exports.getLeaderSocieties = async (req, res) => {
   try {
-    // Get societies where the user is the leader
     const societies = await Society.find({ leader: req.user.id });
-
     res.status(200).json({
       success: true,
       data: societies
@@ -79,10 +71,9 @@ exports.getLeaderSocieties = async (req, res) => {
   }
 };
 
-/*
-CREATE SOCIETY (Admin only)
-API: POST /api/societies
-*/
+/**
+ * CREATE SOCIETY (Admin only)
+ */
 exports.createSociety = async (req, res) => {
   try {
     const { name, shortName, description, logo, leaderId } = req.body;
@@ -106,14 +97,10 @@ exports.createSociety = async (req, res) => {
     // Check if leader exists
     const leader = await User.findById(leaderId);
     if (!leader) {
-      return res.status(404).json({
-        success: false,
-        message: "Leader not found"
-      });
+      return res.status(404).json({ success: false, message: "Assigned leader not found" });
     }
 
-    // Create society
-    const society = new Society({
+    const society = await Society.create({
       name,
       shortName,
       description,
@@ -121,41 +108,32 @@ exports.createSociety = async (req, res) => {
       leader: leaderId
     });
 
-    await society.save();
-
     res.status(201).json({
       success: true,
       data: society,
       message: "Society created successfully"
     });
   } catch (error) {
-    console.error("Create Society Error:", error);
     res.status(500).json({
       success: false,
-      message: "Error creating society"
+      message: "Error creating society: " + error.message
     });
   }
 };
 
-/*
-UPDATE SOCIETY (Leader only)
-API: PUT /api/societies/:id
-*/
+/**
+ * UPDATE SOCIETY (Admin or assigned Leader)
+ */
 exports.updateSociety = async (req, res) => {
   try {
-    const { name, shortName, description, logo } = req.body;
     const societyId = req.params.id;
-
-    // Find the society
     const society = await Society.findById(societyId);
+
     if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found"
-      });
+      return res.status(404).json({ success: false, message: "Society Not Found" });
     }
 
-    // Check if user is admin or the leader of this society
+    // Authorization check
     const isAdmin = req.user.role === 'admin';
     const isLeader = society.leader && society.leader.toString() === req.user.id;
 
@@ -166,10 +144,9 @@ exports.updateSociety = async (req, res) => {
       });
     }
 
-    // Update society
     const updatedSociety = await Society.findByIdAndUpdate(
       societyId,
-      { name, shortName, description, logo },
+      req.body,
       { new: true, runValidators: true }
     );
 
@@ -179,23 +156,21 @@ exports.updateSociety = async (req, res) => {
       message: "Society updated successfully"
     });
   } catch (error) {
-    console.error("Update Society Error:", error);
     res.status(500).json({
       success: false,
-      message: "Error updating society"
+      message: "Error updating society: " + error.message
     });
   }
 };
 
-/*
-DELETE SOCIETY (Admin only)
-API: DELETE /api/societies/:id
-*/
+/**
+ * DELETE SOCIETY (Admin only)
+ * Performs cascading delete of associated events
+ */
 exports.deleteSociety = async (req, res) => {
   try {
     const societyId = req.params.id;
 
-    // Check if user is admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -203,126 +178,80 @@ exports.deleteSociety = async (req, res) => {
       });
     }
 
-    // Find the society
     const society = await Society.findById(societyId);
     if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found"
-      });
+      return res.status(404).json({ success: false, message: "Society Not Found" });
     }
 
-    // Delete all events associated with this society
+    // Cascade delete: Remove all events and saved references
     await Event.deleteMany({ society: societyId });
-
-    // Remove society from users' saved events
     await SavedEvent.deleteMany({ society: societyId });
-
-    // Delete the society
     await Society.findByIdAndDelete(societyId);
 
     res.status(200).json({
       success: true,
-      message: "Society and all associated events deleted successfully"
+      message: "Society and all associated data deleted successfully"
     });
   } catch (error) {
-    console.error("Delete Society Error:", error);
     res.status(500).json({
       success: false,
-      message: "Error deleting society"
+      message: "Error deleting society: " + error.message
     });
   }
 };
 
-/*
-GET ALL USERS BY ROLE (Admin only)
-API: GET /api/admin/users?role=student|admin|society_leader
-*/
+/**
+ * GET ALL USERS BY ROLE (Admin only)
+ */
 exports.getUsersByRole = async (req, res) => {
   try {
-    // Check if user is admin
     if (req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: "Only admins can view users by role"
-      });
+      return res.status(403).json({ success: false, message: "Unauthorized access" });
     }
 
     const { role } = req.query;
     const query = role ? { role } : {};
-    
     const users = await User.find(query).select('-password');
     
-    res.status(200).json({ 
-      success: true, 
-      data: users 
-    });
+    res.status(200).json({ success: true, data: users });
   } catch (error) {
-    console.error("Fetch Users Error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server Error" 
-    });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
-/*
-ASSIGN LEADER TO SOCIETY (Admin only)
-API: PUT /api/admin/societies/:id/assign-leader
-*/
+/**
+ * ASSIGN LEADER TO SOCIETY (Admin only)
+ */
 exports.assignLeader = async (req, res) => {
   try {
     const { leaderId } = req.body;
     const societyId = req.params.id;
 
-    // Check if user is admin
     if (req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: "Only admins can assign leaders"
-      });
+      return res.status(403).json({ success: false, message: "Only admins can assign leaders" });
     }
 
-    // Validate inputs
-    if (!leaderId) {
-      return res.status(400).json({
-        success: false,
-        message: "Leader ID is required"
-      });
-    }
-
-    // Check if society exists
-    const society = await Society.findById(societyId);
-    if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found"
-      });
-    }
-
-    // Check if leader exists
     const leader = await User.findById(leaderId);
     if (!leader) {
-      return res.status(404).json({
-        success: false,
-        message: "Leader not found"
-      });
+      return res.status(404).json({ success: false, message: "Leader not found" });
     }
 
-    // Update society leader
-    society.leader = leaderId;
-    await society.save();
+    const updatedSociety = await Society.findByIdAndUpdate(
+      societyId,
+      { leader: leaderId },
+      { new: true }
+    );
+
+    if (!updatedSociety) {
+      return res.status(404).json({ success: false, message: "Society not found" });
+    }
 
     res.status(200).json({
       success: true,
-      data: society,
+      data: updatedSociety,
       message: "Leader assigned successfully"
     });
   } catch (error) {
-    console.error("Assign Leader Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error assigning leader"
-    });
+    res.status(500).json({ success: false, message: "Error assigning leader" });
   }
 };

@@ -7,6 +7,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const [user, setUser] = useState(null);
   const [availableModules, setAvailableModules] = useState([]);
@@ -38,10 +39,12 @@ const Profile = () => {
         const response = await fetch('http://localhost:5000/api/users/profile', { credentials: 'include' });
         const result = await response.json();
 
+
         if (result.success) {
           const data = result.data;
           setUser({
             ...data,
+             name: data.name || "New User",
             skills: data.skills || [],
             modules: data.modules || [],
             education: data.education || '',
@@ -62,11 +65,17 @@ const Profile = () => {
         setError("Could not connect to the server.");
       } finally {
         setLoading(false);
+        setLoading(false);
       }
     };
 
     fetchProfileAndModules();
   }, []);
+
+      
+     
+
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -115,6 +124,7 @@ const Profile = () => {
   };
 
   const handleImageChange = async (e) => {
+    setShowPhotoMenu(false);
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -145,10 +155,38 @@ const Profile = () => {
     }
   };
 
+  // Removing the pfp
+  const handleRemoveImage = async () => {
+    setShowPhotoMenu(false);
+    
+    const updatedUser = { ...user, profileImage: "", photo: "" };
+    setUser(updatedUser);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        credentials: 'include',
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        localStorage.removeItem('user_photo');
+        window.dispatchEvent(new Event("storage"));
+        console.log("Avatar removed successfully");
+      }
+    } catch (err) {
+      console.error("Remove avatar failed:", err);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
 
-    const updatedData = { ...user };
+    const updatedData = { ...user,
+      username: user.username
+     };
 
     try {
       const response = await fetch('http://localhost:5000/api/users/profile', {
@@ -180,16 +218,44 @@ const Profile = () => {
   if (error) return <div className="error-screen">{error}</div>;
   if (!user) return null;
 
-  const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
+  ///const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`;
 
-  return (
+
+// This ensures that if the name is missing, it uses 'User', and encodes spaces correctly
+const avatarSeed = user?.name || user?.email || 'User';
+const userAvatar = user?.profileImage || user?.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(avatarSeed)}`;
+return(
+
     <div className="profile-container fade-in">
       <aside className="profile-sidebar">
-        <div className="avatar-wrapper-lg" onClick={() => fileInputRef.current.click()}>
+        <div className="avatar-wrapper-lg">
           <img src={userAvatar} alt="Profile" className="large-avatar" />
-          <div className="status-emoji">
-            <Icon icon="lucide:camera" />
+          
+          <div className="status-emoji" onClick={() => setShowPhotoMenu(!showPhotoMenu)}>
+            <Icon icon="lucide:pencil" />
           </div>
+
+          {/* The Dropdown Menu */}
+          {showPhotoMenu && (
+            <div className="photo-edit-menu">
+              <button 
+                className="menu-btn" 
+                onClick={() => {
+                  setShowPhotoMenu(false);
+                  fileInputRef.current.click();
+                }}
+              >
+                Change Picture
+              </button>
+              <button 
+                className="menu-btn remove-btn" 
+                onClick={handleRemoveImage}
+              >
+                Remove Picture
+              </button>
+            </div>
+          )}
+
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -201,8 +267,6 @@ const Profile = () => {
 
         <div className="sidebar-names">
           <h1>{user.name}</h1>
-
-          {/* ADD DYNAMIC ROLE TAG */}
 
           <p className="username">@{user.username || 'username'}</p>
           <p className="user-email">{user.email}</p>
@@ -247,7 +311,6 @@ const Profile = () => {
         <section className="intro-card">
           <div className="intro-body">
             {!isEditing ? (
-              // VIEW MODE
               <div className="content-wrapper">
                 <div className="greeting-section">
                   <h2>Hi there 👋, I'm {user.name}</h2>
@@ -268,12 +331,12 @@ const Profile = () => {
                 <div className="content-divider"></div>
                 
                 <div className="about-section">
-                  <h3>🌸 About Me</h3>
+                  <h3>🌸About Me</h3>
                   <p>{user.aboutMe}</p>
                 </div>
                 
                 <div className="skills-section">
-                  <h3>✨ {config.skillsLabel}</h3>
+                  <h3>✨{config.skillsLabel}</h3>
                   <div className="skills-grid">
                     {user.skills.map((s, i) => <div key={i} className="skill-pill-light">{s}</div>)}
                   </div>
@@ -282,7 +345,7 @@ const Profile = () => {
             ) : (
               // FULL EDIT MODE
               <div className="content-wrapper">
-                <h2 className="edit-header">Update {isLecturer ? 'Lecturer' : 'Student'} Profile ✨</h2>
+                <h2 className="edit-header">Update {isLecturer ? 'Lecturer' : 'Student'} Profile</h2>
                 <form className="edit-form" onSubmit={handleSave}>
                   <div className="form-row">
                     <div className="form-group">
@@ -355,7 +418,7 @@ const Profile = () => {
                           onChange={(e) => setSelectedModule(e.target.value)}
                           className="skill-select"
                         >
-                          <option value="">Choose a module...</option>
+                          <option value="">Select a module...</option>
                           {availableModules.map(mod => (
                             <option key={mod._id} value={mod.name}>
                               {mod.name} ({mod._id})
@@ -379,7 +442,7 @@ const Profile = () => {
                       </div>
                       <div className="skill-input-row">
                         <select value={selectedSkill} onChange={handleSkillSelectChange} className="skill-select">
-                          <option value="">Choose a skill...</option>
+                          <option value="">Select a skill...</option>
                           {config.predefinedList.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         {showOtherInput && (

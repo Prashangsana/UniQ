@@ -9,25 +9,18 @@ import ModuleStudentsView from '../components/groups/ModuleStudentsView';
 import LecturerDashboard from '../components/groups/LecturerDashboard';
 import FinalisationFormView from '../components/groups/FinalisationFormView';
 
-const GroupsPage = () => {
+const GroupsPage = ({ userRole, initialSelectedGroup = null, onClearSelection = () => {} }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- ROLE STATE ---
-  const [userRole, setUserRole] = useState(null);
-
-  // State: 'dashboard', 'module', 'group', 'invite', 'profile'
   const [view, setView] = useState('dashboard');
   
-  // Data States
   const [selectedModule, setSelectedModule] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedInvite, setSelectedInvite] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   
-  // This tracks where to return to when closing GroupDetails (Module or Dashboard)
   const [originView, setOriginView] = useState('dashboard');
-  // This tracks where to return to when closing a Profile (Group or Dashboard)
   const [profileReturnView, setProfileReturnView] = useState('dashboard');
 
   const [rosterModuleId, setRosterModuleId] = useState(null);
@@ -45,11 +38,11 @@ const GroupsPage = () => {
           if (data.authenticated && data.user) {
             setCurrentUser({
               ...data.user,
-              _id: data.user._id || data.user.id
+              _id: data.user._id || data.user.id,
+              role: data.user.role
             });
           }
         } else {
-          // If auth fails, we still want to stop loading so the page shows something
           console.warn("User not authenticated");
         }
       } catch (err) {
@@ -63,7 +56,6 @@ const GroupsPage = () => {
 
   if (loading) return <div className="loading-screen">Loading Profile...</div>;
 
-  // --- Handlers ---
   const handleProfileClick = (user) => {
     setSelectedUser(user);
     setProfileReturnView(view);
@@ -90,18 +82,16 @@ const GroupsPage = () => {
 
   const handleFinalisationSubmit = async (groupId, data) => {
     try {
-      // Data here is { selectedPrefix, tutorialGroup, memberExtraInfo }
       const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/submit-finalisation`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data) // Sends the structured object
+        body: JSON.stringify(data)
       });
       const result = await response.json();
       
       if (result.success) {
         alert(`Successfully submitted for review!`);
-        // Update local state and go back to details
         setSelectedGroup(result.data); 
         setView('group'); 
       } else {
@@ -110,9 +100,8 @@ const GroupsPage = () => {
     } catch (error) {
       alert("Failed to submit finalisation.");
     } 
-};
+  };
 
-  // --- LECTURER VIEW OVERRIDE ---
   if (userRole === 'lecturer') {
     return (
       <div style={{ position: 'relative' }}>
@@ -121,7 +110,6 @@ const GroupsPage = () => {
     );
   }
 
-  // --- STUDENT VIEWS ---
   return (
     <div style={{ position: 'relative' }}>
       {view === 'module' && (
@@ -192,7 +180,6 @@ const GroupsPage = () => {
         />
       )}
 
-      {/* Default View: Dashboard */}
       {view === 'dashboard' && (
         <GroupsDashboard
           onSelectModule={(m) => {

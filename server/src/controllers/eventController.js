@@ -3,13 +3,39 @@ const SavedEvent = require("../models/SavedEvent");
 const Society = require("../models/Society");
 const mongoose = require("mongoose");
 
-// GET ALL EVENTS
+// GET ALL EVENTS (Renamed from getMainEvent to maintain consistency)
 exports.getAllEvents = async (req, res) => {
   try {
     const events = await Event.find().populate('society', 'name logo').sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: events });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching events" });
+  }
+};
+
+// GET LATEST EVENTS
+exports.getLatestEvents = async (req, res) => {
+  try {
+    const latest = await Event.find()
+      .populate('society', 'name logo')
+      .sort({ createdAt: -1 })
+      .limit(6);
+    res.json({ success: true, data: latest });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching latest events" });
+  }
+};
+
+// GET TOP EVENTS (Sorted by upcoming date)
+exports.getTopEvents = async (req, res) => {
+  try {
+    const topEvents = await Event.find()
+      .populate('society', 'name logo')
+      .sort({ date: 1 })
+      .limit(6);
+    res.json({ success: true, data: topEvents });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching top events" });
   }
 };
 
@@ -39,11 +65,9 @@ exports.getSocietyEvents = async (req, res) => {
 // GET LEADER EVENTS
 exports.getLeaderEvents = async (req, res) => {
   try {
-    // Get all societies led by this user
     const societies = await Society.find({ leader: req.params.leaderId });
     const societyIds = societies.map(s => s._id);
     
-    // Get events for those societies
     const events = await Event.find({ society: { $in: societyIds } })
       .populate('society', 'name logo')
       .sort({ createdAt: -1 });
@@ -71,20 +95,16 @@ exports.createEvent = async (req, res) => {
     const isLeader = society.leader && society.leader.toString() === req.user.id;
 
     if (!isAdmin && !isLeader) {
-      return res.status(403).json({ success: false, message: "Only an admin or the society leader can create events" });
+      return res.status(403).json({ success: false, message: "Unauthorized to create events for this society" });
     }
 
-    const eventData = {
-      ...req.body,
-      society: societyId
-    };
-
+    const eventData = { ...req.body, society: societyId };
     const event = await Event.create(eventData);
     const populatedEvent = await Event.findById(event._id).populate('society', 'name logo');
     
     res.status(201).json({ success: true, data: populatedEvent });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error creating event" });
+    res.status(500).json({ success: false, message: error.message || "Error creating event" });
   }
 };
 
@@ -101,7 +121,7 @@ exports.updateEvent = async (req, res) => {
     const isLeader = society && society.leader && society.leader.toString() === req.user.id;
 
     if (!isAdmin && !isLeader) {
-      return res.status(403).json({ success: false, message: "Only an admin or the society leader can update this event" });
+      return res.status(403).json({ success: false, message: "Unauthorized to update this event" });
     }
 
     const updatedEvent = await Event.findByIdAndUpdate(
@@ -129,12 +149,10 @@ exports.deleteEvent = async (req, res) => {
     const isLeader = society && society.leader && society.leader.toString() === req.user.id;
 
     if (!isAdmin && !isLeader) {
-      return res.status(403).json({ success: false, message: "Only an admin or the society leader can delete this event" });
+      return res.status(403).json({ success: false, message: "Unauthorized to delete this event" });
     }
 
     await Event.findByIdAndDelete(req.params.id);
-    
-    // Remove from saved events
     await SavedEvent.deleteMany({ event: req.params.id });
     
     res.status(200).json({ success: true, message: "Event deleted successfully" });
@@ -143,16 +161,15 @@ exports.deleteEvent = async (req, res) => {
   }
 };
 
-// ADD EVENT TO MY EVENTS
+// SAVED EVENTS LOGIC
 exports.addEventToMyEvents = async (req, res) => {
   try {
-    const { eventId } = req.body;
     const userId = req.user.id;
+    const eventId = req.params.id || req.body.eventId;
 
-    // Check if already saved
     const existing = await SavedEvent.findOne({ user: userId, event: eventId });
     if (existing) {
-      return res.status(400).json({ success: false, message: "Event already saved" });
+      return res.status(400).json({ success: true, message: "Event already saved" });
     }
 
     const savedEvent = await SavedEvent.create({ user: userId, event: eventId });
@@ -162,52 +179,45 @@ exports.addEventToMyEvents = async (req, res) => {
   }
 };
 
-// REMOVE EVENT FROM MY EVENTS
 exports.removeEventFromMyEvents = async (req, res) => {
   try {
-    const { eventId } = req.params;
     const userId = req.user.id;
+    const eventId = req.params.id;
 
     const result = await SavedEvent.findOneAndDelete({ user: userId, event: eventId });
-    
     if (!result) {
       return res.status(404).json({ success: false, message: "Saved event not found" });
     }
-    
-    res.status(200).json({ success: true, message: "Event removed from saved events" });
+    res.status(200).json({ success: true, message: "Event removed" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error removing saved event" });
+    res.status(500).json({ success: false, message: "Error removing event" });
   }
 };
 
-// GET MY EVENTS
 exports.getMyEvents = async (req, res) => {
   try {
     const userId = req.user.id;
     const savedEvents = await SavedEvent.find({ user: userId })
       .populate('event')
       .sort({ createdAt: -1 });
-    
     res.status(200).json({ success: true, data: savedEvents });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching saved events" });
   }
 };
 
-// GET NOTIFICATIONS (placeholder)
+// NOTIFICATIONS
 exports.getNotifications = async (req, res) => {
   try {
-    // Placeholder implementation
+    // Placeholder logic for future notification model
     res.status(200).json({ success: true, data: [] });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching notifications" });
   }
 };
 
-// CLEANUP NOTIFICATIONS (placeholder)
 exports.cleanupNotifications = async (req, res) => {
   try {
-    // Placeholder implementation
     res.status(200).json({ success: true, message: "Notifications cleaned up" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error cleaning up notifications" });

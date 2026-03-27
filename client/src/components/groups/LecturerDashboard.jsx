@@ -198,7 +198,7 @@ const LecturerDashboard = () => {
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Module</label>
                 <select
-                  className="gf-input"
+                  className="gf-form-input"
                   value={moduleId}
                   onChange={(e) => setModuleId(e.target.value)}
                   required
@@ -214,23 +214,23 @@ const LecturerDashboard = () => {
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Min Members</label>
-                  <input type="number" className="gf-input" value={minMembers} onChange={(e) => setMinMembers(e.target.value)} />
+                  <input type="number" className="gf-form-input" value={minMembers} onChange={(e) => setMinMembers(e.target.value)} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Max Members</label>
-                  <input type="number" className="gf-input" value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} />
+                  <input type="number" className="gf-form-input" value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} />
                 </div>
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Deadline</label>
-                <input type="date" className="gf-input" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+                <input type="date" className="gf-form-input" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
               </div>
 
               <div style={{ marginBottom: '2rem' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Allowed Prefixes (Comma separated)</label>
                 <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px' }}>Students will choose one of these when finalising.</p>
-                <input type="text" className="gf-input" value={prefixes} onChange={(e) => setPrefixes(e.target.value)} placeholder="SE, CS, DS" required />
+                <input type="text" className="gf-form-input" value={prefixes} onChange={(e) => setPrefixes(e.target.value)} placeholder="SE, CS, DS" required />
               </div>
 
               <button type="submit" className="gf-btn-primary">Open Group Formation</button>
@@ -478,7 +478,7 @@ const LecturerDashboard = () => {
             <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Explain to the students what needs to be changed.</p>
 
             <textarea
-              className="gf-input"
+              className="gf-form-input"
               style={{ width: '100%', height: '100px', marginBottom: '1.5rem', padding: '10px', boxSizing: 'border-box' }}
               placeholder="e.g. Member IIT-001 has the wrong phone number..."
               value={rejectFeedback}

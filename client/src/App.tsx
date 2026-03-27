@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-/* EDITED: Removed 'BrowserRouter' from here; it must only be in main.tsx */
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 
-// Landing Page Components
 import Navbar from './components/Landing/Navbar';
 import Hero from './components/Landing/Hero';
 import Features from './components/Landing/Features';
@@ -13,14 +11,12 @@ import Team from './components/Landing/Team';
 import Footer from './components/Landing/Footer';
 import PublicProfile from './components/Landing/PublicProfile';
 
-// Dashboard & Core Pages
 import Home from './dashboard/Home';
 import GroupsPage from './pages/GroupsPage';
 import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor, LeaderSocietyEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
 import AdminDashboard from './dashboard/AdminDashboard';
 
-// Mentoring Components
 import LecturerMentoring from './pages/LecturerMentoring';
 import PeerMentoring from './pages/PeerMentoring';
 import MentorLogin from './pages/MentorLogin';
@@ -33,7 +29,6 @@ const MentoringWrapper = ({ Component }: { Component: any }) => {
 function App() {
   const navigate = useNavigate();
 
-  // State Management
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('is_logged_in') === 'true';
   });
@@ -46,7 +41,7 @@ function App() {
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
-  // Auth Handlers
+  // Auth Handlers - Merged Logic
   const handleLogin = useCallback((role: string = 'student', options: { redirect?: boolean } = {}): void => {
     localStorage.setItem('is_logged_in', 'true');
     localStorage.setItem('user_role', role);
@@ -61,10 +56,13 @@ function App() {
           setMyEventsList(ids);
         }
       });
-    // Only redirect to landing page if user is explicitly on root or login page
-    if (window.location.pathname === '/' || window.location.pathname === '/login' || window.location.pathname === '') {
-      navigate('/'); 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Only redirect if options.redirect isn't explicitly false and user is on a landing path
+    if (options.redirect !== false) {
+      if (window.location.pathname === '/' || window.location.pathname === '/login' || window.location.pathname === '') {
+        navigate('/'); 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   }, [navigate, API_URL]);
 
@@ -86,7 +84,6 @@ function App() {
     setMyEventsList(prev => prev.filter(id => id !== eventId));
   };
 
-  // Authentication Check on Load
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -106,7 +103,6 @@ function App() {
     checkAuth();
   }, [API_URL, handleLogin, handleLogout]);
 
-  // Scroll animations for Landing Page
   useEffect(() => {
     if (isLoggedIn || isLoading) return;
     const observerOptions = { root: null, threshold: 0.1 };
@@ -127,12 +123,9 @@ function App() {
   }
 
   return (
-
     <Routes>
       {isLoggedIn ? (
-        /* --- AUTHENTICATED VIEW --- */
         <>
-          {/* Default Dashboards based on role */}
           <Route 
             path="/" 
             element={
@@ -142,7 +135,6 @@ function App() {
             } 
           />
 
-          
           <Route 
             path="/dashboard" 
             element={
@@ -152,17 +144,14 @@ function App() {
             } 
           />
 
-          {/* Shared Core Routes */}
+          {/* Core Routes with userRole passed to both */}
           <Route path="/society/:id" element={<SocietyProfilePage userRole={userRole} />} />
-          <Route path="/groups" element={<GroupsPage />} />
+          <Route path="/groups" element={<GroupsPage userRole={userRole} />} />
           <Route path="/profile/:id" element={<PublicProfile />} />
 
-          {/* Role-Based Event Logic */}
           {userRole === 'society_leader' ? (
-            /* Leader sees Editor for CRUD operations */
             <Route path="/event/:eventId" element={<LeaderEventEditor />} />
           ) : (
-            /* Students see Event Details */
             <Route
               path="/event/:eventId"
               element={
@@ -175,13 +164,11 @@ function App() {
             />
           )}
 
-          {/* Admin Path Fallback */}
           <Route path="/admin/event/:eventId" element={<LeaderEventEditor />} />
           <Route path="/admin/society/new" element={<LeaderSocietyEditor />} />
           <Route path="/admin/society/:id/edit" element={<LeaderSocietyEditor />} />
           <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
 
-          {/* Mentoring Routes */}
           <Route path="/mentoring/lecturers" element={<MentoringWrapper Component={LecturerMentoring} />} />
           <Route path="/mentoring/peers" element={<MentoringWrapper Component={PeerMentoring} />} />
           <Route path="/mentor-auth/:role" element={<MentorLogin />} />
@@ -189,7 +176,6 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </>      
       ) : (
-        /* --- PUBLIC / LANDING PAGE VIEW --- */
         <>
           <Route path="/" element={
             <div className="app-container">

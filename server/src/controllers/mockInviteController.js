@@ -1,14 +1,12 @@
 const { groupsDb } = require('./mockGroupController');
 
-// Temporary in-memory DB for invites
 let invitesDb = [
-  // Let's add a fake invite so you can see it in your UI immediately!
   {
     _id: "inv_123",
     group: "test_group_123",
-    groupId: "CS-105-Alpha", // Helper for UI
-    domain: "Web Development", // Helper for UI
-    members: 3, // Helper for UI
+    groupId: "CS-105-Alpha",
+    domain: "Web Development",
+    members: 3,
     invitedUser: "user_id_student_1",
     message: "Hey! Join our React project.",
     status: 'pending',
@@ -16,7 +14,6 @@ let invitesDb = [
   }
 ];
 
-// POST /api/groups/:groupId/invite
 exports.inviteUser = async (req, res) => {
   const { groupId } = req.params;
   const { invitedUserId, message } = req.body;
@@ -24,7 +21,6 @@ exports.inviteUser = async (req, res) => {
   const group = groupsDb.find(g => g._id === groupId);
   if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-  // Rule: Cannot invite new people if the group is locked/finalised
   if (group && group.status !== 'open') {
     return res.status(400).json({ success: false, message: 'Group is locked for finalisation.' });
   }
@@ -42,14 +38,11 @@ exports.inviteUser = async (req, res) => {
   res.status(201).json({ success: true, data: newInvite });
 };
 
-// GET /api/invites/my
 exports.getMyInvites = async (req, res) => {
-  // Find invites where the logged-in user is the invitedUser
   const myInvites = invitesDb.filter(i => i.invitedUser === req.user.id && i.status === 'pending');
   res.status(200).json({ success: true, data: myInvites });
 };
 
-// POST /api/invites/:inviteId/accept
 exports.acceptInvite = async (req, res) => {
   try {
     const { inviteId } = req.params;
@@ -60,7 +53,6 @@ exports.acceptInvite = async (req, res) => {
 
     let group = groupsDb.find(g => g._id === invite.group);
 
-    // --- FIX: Actually create the group in the database! ---
     if (!group && invite._id === "inv_123") {
       group = {
         _id: "test_group_123",
@@ -73,13 +65,11 @@ exports.acceptInvite = async (req, res) => {
         isFinalised: false,
         status: 'open'
       };
-      groupsDb.push(group); // Push the new group into our mock database
+      groupsDb.push(group);
     }
-    // --------------------------------------------------------
 
     if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-    // Validation Checks
     if (group.members.length >= group.maxMembers) {
       invite.status = 'rejected';
       return res.status(400).json({ success: false, message: 'Sorry, this group is now full' });
@@ -94,7 +84,6 @@ exports.acceptInvite = async (req, res) => {
       return res.status(400).json({ success: false, message: 'You are already in a group for this module' });
     }
 
-    // Add user to the group!
     group.members.push(req.user);
     invite.status = 'accepted';
     
@@ -104,7 +93,6 @@ exports.acceptInvite = async (req, res) => {
   }
 };
 
-// POST /api/invites/:inviteId/reject
 exports.rejectInvite = async (req, res) => {
   const { inviteId } = req.params;
   const invite = invitesDb.find(i => i._id === inviteId);
@@ -115,12 +103,10 @@ exports.rejectInvite = async (req, res) => {
   res.status(200).json({ success: true, message: 'Invite rejected.' });
 };
 
-// POST /api/groups/:groupId/leave
 exports.leaveGroup = async (req, res) => {
   const { groupId } = req.params;
   const userId = req.user.id;
 
-  // 1. Find the group in our mock database
   const groupIndex = groupsDb.findIndex(g => g._id === groupId);
   if (groupIndex === -1) {
     return res.status(404).json({ success: false, message: 'Group not found' });
@@ -128,7 +114,6 @@ exports.leaveGroup = async (req, res) => {
 
   const group = groupsDb[groupIndex];
 
-  // Rule: Students cannot leave once the group is sent for finalization
   if (group.status !== 'open') {
     return res.status(400).json({ 
       success: false, 
@@ -136,7 +121,6 @@ exports.leaveGroup = async (req, res) => {
     });
   }
 
-  // 2. Logic: Leader can only leave if they are the last person
   const isLeader = (group.leader._id === userId || group.leader === userId);
   
   if (isLeader) {
@@ -146,14 +130,11 @@ exports.leaveGroup = async (req, res) => {
         message: 'Leader cannot leave while there are other members. Please transfer leadership first.' 
       });
     } else {
-      // User is the leader AND the only member. Delete the entire group!
       groupsDb.splice(groupIndex, 1);
       return res.status(200).json({ success: true, message: 'You left, and the empty group was deleted.' });
     }
   }
 
-  // 3. Logic: Standard member leaving
-  // Filter out the user from the members array
   group.members = group.members.filter(m => (m._id || m) !== userId);
 
   res.status(200).json({ success: true, message: 'Successfully left the group.' });

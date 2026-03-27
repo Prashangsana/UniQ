@@ -7,6 +7,7 @@ exports.followSociety = async (req, res) => {
     const userId = req.user.id;
     const societyId = req.params.id;
 
+    // Check if already following
     const already = await Follow.findOne({ user: userId, society: societyId });
 
     if (already) {
@@ -16,10 +17,11 @@ exports.followSociety = async (req, res) => {
       });
     }
 
+    // Create follow record
     const follow = new Follow({ user: userId, society: societyId });
     await follow.save();
 
-    // Increment followers count
+    // Increment followers count in the Society model
     await Society.findByIdAndUpdate(societyId, { $inc: { followersCount: 1 } });
 
     res.json({
@@ -34,7 +36,6 @@ exports.followSociety = async (req, res) => {
   }
 };
 
-
 // UNFOLLOW SOCIETY
 exports.unfollowSociety = async (req, res) => {
   try {
@@ -44,7 +45,7 @@ exports.unfollowSociety = async (req, res) => {
     const deletedFollow = await Follow.findOneAndDelete({ user: userId, society: societyId });
 
     if (deletedFollow) {
-      // Decrement followers count
+      // Decrement followers count in the Society model
       await Society.findByIdAndUpdate(societyId, { $inc: { followersCount: -1 } });
     }
 
@@ -60,12 +61,12 @@ exports.unfollowSociety = async (req, res) => {
   }
 };
 
-
 // GET FOLLOWED SOCIETIES
 exports.getFollowedSocieties = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Fetch follows and populate society details (name, logo, etc.)
     const userFollows = await Follow.find({ user: userId }).populate('society');
 
     res.json({
@@ -80,12 +81,13 @@ exports.getFollowedSocieties = async (req, res) => {
   }
 };
 
-
+// CHECK FOLLOW STATUS
 exports.checkFollowStatus = async (req, res) => {
   try {
     const userId = req.user.id;
     const societyId = req.params.id;
 
+    // Efficiently check if document exists
     const isFollowing = await Follow.exists({ user: userId, society: societyId });
 
     res.json({

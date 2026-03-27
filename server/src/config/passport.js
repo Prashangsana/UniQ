@@ -25,7 +25,7 @@ module.exports = function(passport) {
     const photo = profile.photos ? profile.photos[0].value : null;
 
     const oauthProfile = {
-      name: profile.displayName,
+      name: profile.displayName || profile.emails[0].value.split('@')[0],
       firstName: firstName,
       lastName: lastName,
       email: userEmail,

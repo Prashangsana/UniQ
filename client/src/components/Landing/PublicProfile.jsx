@@ -3,16 +3,19 @@ import { useParams } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './Profile.css';
 
-const PublicProfile = () => {
-  const { id } = useParams(); // Extracts the ID from the URL 
+const PublicProfile = ({ id: propId }) => {
+  const { id: urlId } = useParams(); // Extracts the ID from the URL 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const id = propId || urlId;
+
   useEffect(() => {
+    if (!id) return;
     const fetchPublicProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/public-profile/${id}`);
+        const response = await fetch(`http://localhost:5000/api/users/public-profile/${id}?t=${new Date().getTime()}`);
         const result = await response.json();
 
         if (result.success) {
@@ -111,17 +114,18 @@ const PublicProfile = () => {
                 <p>{user.aboutMe}</p>
               </div>
 
-              {user.skills && user.skills.length > 0 && (
-                <div className="skills-section">
-                  <h3>✨{config.skillsLabel}</h3>
+               <div className="skills-section">
+                <h3>✨{config.skillsLabel}</h3>
+
+                {user.skills && user.skills.length > 0 && (
                   <div className="skills-grid">
                     {user.skills?.map((s, i) => (
                       <div key={i} className="skill-pill-light">{s}</div>
-                    ))}
-                  </div>
+                    ))} 
                 </div>
               )}
             </div>
+          </div>
           </div>
         </section>
       </main>

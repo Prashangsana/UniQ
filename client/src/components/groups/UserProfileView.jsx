@@ -1,9 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './groups.css';
+import FullProfileWrapper from './FullProfileWrapper';
 
-const UserProfileView = ({ user, type, onBack }) => {
+const UserProfileView = ({ user: initialUser, type, onBack }) => {
+  const [user, setUser] = useState(initialUser);
   // 'type' can be 'member' or 'requester' to determine buttons
   const [processing, setProcessing] = useState(false);
+  const [showFullProfile, setShowFullProfile] = useState(false);
+
+  useEffect(() => {
+    const fetchFullUser = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/users/public-profile/${initialUser._id || initialUser.id}`);
+        const result = await response.json();
+        if (result.success) {
+          // Merge the existing data (like requestId) with the new profile data
+          setUser(prev => ({ ...prev, ...result.data }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile image:", err);
+      }
+    };
+    fetchFullUser();
+  }, [initialUser]);
+
+  const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name || user.student}`;
 
   const handleRequestAction = async (action) => {
     try {
@@ -18,7 +39,7 @@ const UserProfileView = ({ user, type, onBack }) => {
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Server did not return JSON. Check your backend console.");
       }
-      
+
       const data = await response.json();
       if (data.success) {
         alert(data.message);
@@ -41,7 +62,7 @@ const UserProfileView = ({ user, type, onBack }) => {
         credentials: 'include',
         body: JSON.stringify({ invitedUserId: user._id }) // Match your controller's req.body.invitedUserId
       });
-      
+
       const data = await response.json();
       if (data.success) {
         alert("Invite sent successfully!");
@@ -56,16 +77,46 @@ const UserProfileView = ({ user, type, onBack }) => {
     }
   };
 
+  if (showFullProfile) {
+    return (
+      <FullProfileWrapper
+        user={user}
+        onBack={() => setShowFullProfile(false)}
+        onInvite={user.hideInvite ? null : handleSendInvite}
+        onAccept={() => handleRequestAction('approve')}
+        onDeny={() => handleRequestAction('reject')}
+        processing={processing}
+        hideInvite={user.hideInvite}
+      />
+    );
+  }
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '2rem' }}>
       <button className="gf-btn-back" onClick={onBack}>&larr; Back</button>
-      
+
       <div className="gf-card-simple" style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#5b7cbd' }}></div>
+          <img
+            src={userAvatar}
+            alt="Profile"
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid #e2e8f0',
+              backgroundColor: '#f8fafc'
+            }}
+          />
           <div>
             <h2 style={{ margin: 0 }}>{user.name || user.student}</h2>
-            <p style={{ margin: '5px 0 0', color: '#64748b' }}>Computer Science Undergraduate</p>
+
+            <p style={{ margin: '5px 0 0', color: '#64748b' }}>
+              {user.role === 'lecturer'
+                ? (user.education || user.department || 'Lecturer')
+                : (user.course || 'Undergraduate Student')}
+            </p>
           </div>
         </div>
 
@@ -87,51 +138,47 @@ const UserProfileView = ({ user, type, onBack }) => {
 
         {/* Logic for Join Request Actions */}
         {user.isJoinRequest && (
-           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-             <button 
-               className="gf-btn-outline" 
-               style={{flex:1}} 
-               onClick={() => handleRequestAction('reject')}
-             >
-               Deny Request
-             </button>
-             <button 
-               className="gf-btn-primary" 
-               style={{flex:1}} 
-               onClick={() => handleRequestAction('approve')}
-             >
-               Accept to Group
-             </button>
-           </div>
+          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', gap: '1rem' }}>
+            <button
+              className="gf-btn-outline"
+              style={{ flex: 1 }}
+              onClick={() => handleRequestAction('reject')}
+            >
+              Deny Request
+            </button>
+            <button
+              className="gf-btn-primary"
+              style={{ flex: 1 }}
+              onClick={() => handleRequestAction('approve')}
+            >
+              Accept to Group
+            </button>
+          </div>
         )}
 
         {/* Logic for Outbound Invites from Roster */}
         {user.isRosterView && (
-           // --- Changed to flex-direction: 'column' to stack the buttons ---
-           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-             <button 
-               className="gf-btn-primary" 
-               style={{width: '100%'}} 
-               onClick={handleSendInvite}
-               disabled={processing}
-             >
-               {processing ? 'Sending Invite...' : 'Send Invite'}
-             </button>
+          // --- Changed to flex-direction: 'column' to stack the buttons ---
+          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {!user.hideInvite && (
+              <button
+                className="gf-btn-primary"
+                style={{ width: '100%' }}
+                onClick={handleSendInvite}
+                disabled={processing}
+              >
+                {processing ? 'Sending Invite...' : 'Send Invite'}
+              </button>
+            )}
 
-             <button 
-               className="gf-btn-outline" 
-               style={{width: '100%'}} 
-               onClick={() => {
-                 // TODO: Teammate Integration
-                 // Replace this alert with your routing logic when profile is done.
-                 // Example: window.location.href = `/profile/${user._id}`;
-                 // Or if using React Router: navigate(`/profile/${user._id}`);
-                 alert(`Navigating to Full Public Profile for ${user.name}... (Teammate's component goes here!)`);
-               }}
-             >
-               View Full Profile
-             </button>
-           </div>
+            <button
+              className="gf-btn-outline"
+              style={{ width: '100%' }}
+              onClick={() => setShowFullProfile(true)} // Toggle the new view
+            >
+              View Full Profile
+            </button>
+          </div>
         )}
       </div>
     </div>

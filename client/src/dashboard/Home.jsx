@@ -87,7 +87,7 @@ const Home = ({ myEventsList, onLogout, userRole: propRole }) => {
             case 'profile':   return <Profile />;
             case 'society':   return <EventsPage myEventsList={myEventsList} />;
             case 'leader':    return <LeaderDashboard />;
-            case 'groups':    return <GroupsPage />;
+            case 'groups':    return <GroupsPage userRole={userRole}/>;
             case 'skills':    return <SkillsView />;
             case 'settings':  return <SettingsView />;
             

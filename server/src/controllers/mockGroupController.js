@@ -4,14 +4,12 @@ const mockGroups = require('../data/mockGroups.json');
 
 let groupsDb = [...mockGroups];
 
-// This stores the modules that lecturers have opened for group formation.
 let openModulesDb = [
   { _id: '5COSC019C', name: 'Software Engineering' }
 ];
-exports.openModulesDb = openModulesDb; // Export it so LecturerController can push to it
-// This array acts as our temporary MongoDB
 
-// GET /api/modules/open
+exports.openModulesDb = openModulesDb;
+
 exports.getOpenModules = async (req, res) => {
   try {
     res.status(200).json({ success: true, data: openModulesDb });
@@ -31,7 +29,6 @@ exports.createGroup = async (req, res) => {
 
     const allowedMax = projectSettings ? projectSettings.maxMembers : 5;
 
-    // Constraint Check: Prevent multiple groups per module
     const existingGroup = groupsDb.find(g => 
       g.moduleId === moduleId && g.members.some(m => m._id === userId)
     );
@@ -43,9 +40,8 @@ exports.createGroup = async (req, res) => {
       });
     }
 
-    // Create the group and push to our array
     const newGroup = {
-      _id: "grp_" + Date.now(), // Generate a fake MongoDB _id
+      _id: "grp_" + Date.now(),
       name,
       moduleId,
       domain,
@@ -68,10 +64,8 @@ exports.getModuleGroups = async (req, res) => {
   try {
     const { moduleId } = req.params;
 
-    // Filter array by module
     const moduleGroups = groupsDb.filter(g => g.moduleId === moduleId);
 
-    // Format response exactly how the real controller does
     const formattedGroups = moduleGroups.map(group => ({
       _id: group._id,
       name: group.name,
@@ -93,7 +87,6 @@ exports.getGroupDetails = async (req, res) => {
     const { groupId } = req.params;
     const { groupProjectsDb } = require('./mockLecturerController');
 
-    // Find specific group in array
     const group = groupsDb.find(g => g._id === groupId);
 
     if (!group) {
@@ -116,10 +109,8 @@ exports.getGroupDetails = async (req, res) => {
   }
 };
 
-// GET /api/modules/:moduleId/available-students
 exports.getAvailableStudents = async (req, res) => {
   try {
-    // Simply return the mock students we created!
     res.status(200).json({ 
       success: true, 
       count: mockStudents.length, 
@@ -130,21 +121,18 @@ exports.getAvailableStudents = async (req, res) => {
   }
 };
 
-// GET /api/modules/:moduleId/my-group
 exports.getMyGroup = async (req, res) => {
   try {
     const { moduleId } = req.params;
     const userId = req.user.id; 
     const { groupProjectsDb } = require('./mockLecturerController');
 
-    // Find a group for this module where the members array includes our mock user
     const myGroup = groupsDb.find(g => 
       g.moduleId === moduleId && 
       g.members.some(m => m._id === userId || m === userId)
     );
 
     if (!myGroup) {
-      // User is not in a group, send back null
       return res.status(200).json({ success: true, data: null });
     }
 
@@ -153,18 +141,16 @@ exports.getMyGroup = async (req, res) => {
       myGroup.maxMembers = project.maxMembers;
     }
 
-    // User is in a group, send the group data
     res.status(200).json({ success: true, data: myGroup });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
-// GET /api/groups/my
 exports.getMyAllGroups = async (req, res) => {
   try {
     const userId = req.user.id;
-    // Find all groups where you are a member
+
     const myGroups = groupsDb.filter(g => 
       g.members.some(m => m._id === userId || m === userId)
     );
