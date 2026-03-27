@@ -65,7 +65,12 @@ exports.getSocietyEvents = async (req, res) => {
 // GET LEADER EVENTS
 exports.getLeaderEvents = async (req, res) => {
   try {
-    const societies = await Society.find({ leader: req.params.leaderId });
+    const leaderId = String(req.params.leaderId || '').trim();
+    const leaderQuery = mongoose.Types.ObjectId.isValid(leaderId)
+      ? { $in: [leaderId, new mongoose.Types.ObjectId(leaderId)] }
+      : leaderId;
+
+    const societies = await Society.find({ leader: leaderQuery });
     const societyIds = societies.map(s => s._id);
     
     const events = await Event.find({ society: { $in: societyIds } })

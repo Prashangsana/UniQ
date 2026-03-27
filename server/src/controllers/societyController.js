@@ -83,7 +83,12 @@ exports.getSocietyProfile = async (req, res) => {
  */
 exports.getLeaderSocieties = async (req, res) => {
   try {
-    const societies = await Society.find({ leader: req.user.id });
+    const leaderId = (req.user?._id || req.user?.id)?.toString();
+    const leaderQuery = mongoose.Types.ObjectId.isValid(leaderId)
+      ? { $in: [leaderId, new mongoose.Types.ObjectId(leaderId)] }
+      : leaderId;
+
+    const societies = await Society.find({ leader: leaderQuery });
     res.status(200).json({
       success: true,
       data: societies

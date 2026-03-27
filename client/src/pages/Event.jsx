@@ -665,15 +665,6 @@ export const SocietyProfilePage = ({ userRole }) => {
 
         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Our Events</h2>
-          {userRole === 'society_leader' && (
-            <button 
-              className="publish-btn" 
-              onClick={() => navigate(`/admin/event/new?societyId=${id}`)}
-              style={{ padding: '8px 20px', fontSize: '13px' }}
-            >
-              + Add Event
-            </button>
-          )}
         </div>
 
         <div className="events-grid-profile">

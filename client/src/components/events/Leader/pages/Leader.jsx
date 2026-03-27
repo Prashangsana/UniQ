@@ -709,11 +709,12 @@ export const LeaderDashboard = () => {
             <div className="societies-list">
               {societies.map(s => (
                 <LeaderSocietyCard
-                  key={s._id}
-                  id={s._id}
+                  key={s._id || s.shortName || s.name}
+                  id={s._id || s.id}
+                  shortName={s.shortName}
                   name={s.name}
                   logo={s.logo}
-                  canManage={manageableSocietyIds.includes(s._id?.toString())}
+                  canManage={manageableSocietyIds.includes((s._id || s.id)?.toString())}
                 />
               ))}
             </div>
@@ -1003,6 +1004,9 @@ export const LeaderSocietyManager = () => {
   const [society, setSociety] = useState(null);
   const [events, setEvents] = useState([]);
   const [isLeader, setIsLeader] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -1010,37 +1014,48 @@ export const LeaderSocietyManager = () => {
         const authRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const authData = await authRes.json();
         if (!authData.authenticated) return;
+        setCurrentUserId((authData.user?.id || authData.user?._id || '').toString());
         
         if (authData.user.role === 'admin') {
+          setIsAdmin(true);
           setIsLeader(true);
-        } else {
-          const socRes = await fetch(`${API_URL}/api/societies/leader/all`, { credentials: 'include' });
-          const socData = await socRes.json();
-          if (socData.success && id) {
-            const leadingThis = socData.data.some(s => s._id?.toString() === id?.toString());
-            setIsLeader(leadingThis);
-          }
         }
       } catch (err) {
         console.error("Error checking leader access:", err);
+      } finally {
+        setAccessChecked(true);
       }
     };
     checkAccess();
   }, [id, API_URL]);
 
   useEffect(() => {
+    if (!accessChecked) return;
+
     fetch(`${API_URL}/api/societies/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
           setSociety(data.data.society);
           setEvents(data.data.events);
+
+          if (isAdmin) return;
+
+          if (currentUserId) {
+            const leaderRaw = data.data.society?.leader;
+            const leaderId = (typeof leaderRaw === 'object' && leaderRaw?._id)
+              ? leaderRaw._id.toString()
+              : (leaderRaw || '').toString();
+            setIsLeader(leaderId && leaderId === currentUserId);
+          } else {
+            setIsLeader(false);
+          }
         }
       })
       .catch(err => {
         console.error("Backend unreachable:", err);
       });
-  }, [id, API_URL]);
+  }, [id, API_URL, currentUserId, isAdmin, accessChecked]);
 
   return (
     <div className="manager-page">

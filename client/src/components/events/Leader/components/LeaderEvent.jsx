@@ -86,12 +86,35 @@ export const LeaderSidebar = ({ title }) => {
 };
 
 // 4. Admin Society Card
-export const LeaderSocietyCard = ({ name, id, logo, canManage = true }) => {
+export const LeaderSocietyCard = ({ name, id, shortName, logo, canManage = true }) => {
   const slug = name ? name.toLowerCase().replace(/\\s+/g, '-') : '';
   const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'S')}&background=e2e8f0&color=64748b&bold=true`;
+  const pathParam = id || shortName || slug;
+
+  if (!pathParam) {
+    return (
+      <div className="leader-card-link">
+        <div className="leader-card">
+          <img
+            src={logo || `/images-e/societies/${slug}.png`}
+            alt={name}
+            className="leader-card-logo"
+            onError={(e) => { 
+              e.target.onerror = null; 
+              e.target.src = avatarFallback;
+            }}
+          />
+          <span className="leader-card-name">{name}</span>
+          <div className="leader-manage-tag">{canManage ? '✏️ Manage' : 'View'}</div>
+        </div>
+      </div>
+    );
+  }
+
+  const linkTo = `/admin/society/${pathParam}`;
 
   return (
-    <Link to={`/admin/society/${id}`} state={{ tab: 'leader' }} className="leader-card-link">
+    <Link to={linkTo} state={{ tab: 'leader' }} className="leader-card-link">
       <div className="leader-card">
         <img
           src={logo || `/images-e/societies/${slug}.png`}
