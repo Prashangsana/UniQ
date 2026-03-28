@@ -104,6 +104,7 @@ exports.getMe = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        isPeerMentor: user.isPeerMentor,
         photo: user.photo
       }
     });
@@ -118,7 +119,7 @@ exports.localEmailLogin = async (req, res) => {
     const email = String(req.body?.email || '').trim().toLowerCase();
 
     if (!email || !email.endsWith('@iit.ac.lk')) {
-      return res.status(400).json({ success: false, message: 'Invalid email. Please log in with university email.' });
+      return res.status(400).json({ success: false, message: 'Invalid email. Please log in with a university email.' });
     }
     const isAdmin = getAdminEmails().includes(email.toLowerCase());
     let role = '';
@@ -142,14 +143,20 @@ exports.localEmailLogin = async (req, res) => {
         role = 'lecturer';
         firstNameRaw = lecturerMatch[1];
       } else {
-        return res.status(400).json({
-          success: false,
+        return res.status(400).cookie("token", token, options).json({
+          success: true,
+          user: {
+            _id: user._id,
+            name: user.name,
+            role: user.role,
+          },
           message: 'Invalid email format. Use name.studentid@iit.ac.lk or name.initial@iit.ac.lk'
         });
       }
 
     }
-
+    
+    // Format Names
     const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
     const lastName = 'LastName';
     const fullName = `${firstName} ${lastName}`;
@@ -183,7 +190,11 @@ exports.localEmailLogin = async (req, res) => {
 
     res.status(200).cookie("token", token, options).json({
       success: true,
-      user: { role: user.role }
+      user: {
+        _id: user._id,
+        name: user.name,
+        role: user.role,
+       }
     });
 
   } catch (error) {

@@ -37,7 +37,6 @@ function App() {
   });
   
   const [isLoading, setIsLoading] = useState<boolean>(true); 
-
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
@@ -89,7 +88,13 @@ function App() {
       try {
         const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const data = await response.json();
+
         if (data.authenticated) {
+          localStorage.setItem('user_id', data.user._id);
+          localStorage.setItem('user_name', data.user.name);
+          localStorage.setItem('user_role', data.user.role);
+          localStorage.setItem('is_peer_mentor', data.user.isPeerMentor ? 'true' : 'false');
+          
           handleLogin(data.user?.role || 'student', { redirect: false });
         } else {
           handleLogout();
@@ -188,7 +193,6 @@ function App() {
               <Footer />
             </div>
           } />
-          <Route path="/profile/:id" element={<PublicProfile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       )}

@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
 
   password: { type: String, required: false },
   role: { type: String, enum: ['student', 'lecturer', 'admin', 'society_leader'], default: 'student' },
+  isPeerMentor: {type: Boolean, default: false},
   authProvider: { type: String, default: 'local' },
   providerId: { type: String },
   photo: { type: String }, 

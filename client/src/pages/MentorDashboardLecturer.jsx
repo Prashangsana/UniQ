@@ -1,39 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
-import './Mentoring.css'; 
+import './Mentoring.css';
 import MiniCalendar from '../components/MiniCalendar';
 
+// FIX 1: use environment variable instead of hardcoded localhost
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const MentorDashboardLecturer = () => {
-  const today = new Date();
+  const [sessions, setSessions] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const currentUserId = localStorage.getItem('user_id');
 
-  // Added hidden 'dateObj' to track the actual dates on the calendar
-  const [requests, setRequests] = useState([
-    { id: 1, student: 'Alex Johnson', topic: 'Final Year Project Review', time: 'Wed, 2:00 PM', dateObj: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2) }
-  ]);
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        // FIX 2: added credentials: 'include' so the session cookie is sent
+        const res = await fetch(`${API_URL}/api/mentoring/appointments?mentorId=${currentUserId}`, {
+          credentials: 'include'
+        });
+        const data = await res.json();
 
-  const [sessions, setSessions] = useState([
-    { 
-      id: 2, 
-      student: 'Taylor Swift', 
-      topic: 'System Architecture Consultation', 
-      time: 'Today at 3:30 PM',
-      link: 'https://zoom.us/j/5544332211',
-      dateObj: new Date(today.getFullYear(), today.getMonth(), today.getDate()) // Today
+        const formattedData = data.map(app => ({
+          ...app,
+          dateObj: new Date(app.date)
+        }));
+
+        setSessions(formattedData.filter(app => app.status === 'Accepted'));
+        setRequests(formattedData.filter(app => app.status === 'Pending'));
+      } catch (err) {
+        console.error("Failed to load lecturer data:", err);
+      }
+    };
+    fetchAppointments();
+  }, [currentUserId]);
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      // FIX 2: added credentials: 'include'
+      const res = await fetch(`${API_URL}/api/mentoring/status/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        const updatedApp = await res.json();
+        if (newStatus === 'Accepted') {
+          setSessions(prev => [...prev, { ...updatedApp, dateObj: new Date(updatedApp.date) }]);
+          setRequests(prev => prev.filter(req => req._id !== id));
+        } else {
+          setRequests(prev => prev.filter(req => req._id !== id));
+        }
+      }
+    } catch (err) {
+      alert("Error updating appointment status");
     }
-  ]);
+  };
 
-  // DYNAMIC CALENDAR: Reads directly from the confirmed sessions state
   const bookedDates = sessions.map(session => session.dateObj);
-
-  const handleAccept = (request) => {
-    // Moves the request to sessions, taking the dateObj with it!
-    setSessions([...sessions, { ...request, time: 'Scheduled: ' + request.time, link: 'https://zoom.us/j/9988776655' }]);
-    setRequests(requests.filter(req => req.id !== request.id));
-  };
-
-  const handleDeny = (id) => {
-    setRequests(requests.filter(req => req.id !== id));
-  };
 
   return (
     <div className="mentoring-layout">
@@ -44,19 +68,19 @@ const MentorDashboardLecturer = () => {
         <div className="requests-section" style={{ marginBottom: '40px' }}>
           <h3>Pending Consultations ({requests.length})</h3>
           {requests.length === 0 ? <p style={{ color: '#666', marginTop: '10px' }}>No new requests at the moment.</p> : null}
-          
+
           {requests.map((req) => (
-            <div key={req.id} className="booking-item" style={{ background: '#fff', border: '1px solid #ffeeba', borderLeft: '4px solid #ffc107' }}>
+            <div key={req._id} className="booking-item" style={{ background: '#fff', border: '1px solid #ffeeba', borderLeft: '4px solid #ffc107' }}>
               <div className="lecturer-meta">
                 <div className="lecturer-details">
-                  <p className="lecturer-name">{req.student}</p>
+                  <p className="lecturer-name">{req.studentName}</p>
                   <p style={{ fontSize: '13px', color: '#666', margin: '4px 0' }}>Reason: {req.topic}</p>
-                  <small className="date-text">{req.time}</small>
+                  <small className="date-text">{req.date} at {req.time}</small>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <button onClick={() => handleAccept(req)} style={{ background: '#28a745', color: 'white', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Approve</button>
-                <button onClick={() => handleDeny(req.id)} style={{ background: '#dc3545', color: 'white', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Decline</button>
+                <button onClick={() => handleUpdateStatus(req._id, 'Accepted')} style={{ background: '#28a745', color: 'white', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Approve</button>
+                <button onClick={() => handleUpdateStatus(req._id, 'Declined')} style={{ background: '#dc3545', color: 'white', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Decline</button>
               </div>
             </div>
           ))}
@@ -64,27 +88,28 @@ const MentorDashboardLecturer = () => {
 
         <div className="bookings-list">
           <h3>Confirmed Appointments</h3>
+          {sessions.length === 0 ? <p style={{ color: '#666', marginTop: '10px' }}>No confirmed sessions yet.</p> : null}
           {sessions.map((session) => (
-            <div key={session.id} className="booking-item" style={{ background: '#f8f9fa', borderLeft: '4px solid var(--deep-navy)' }}>
+            <div key={session._id} className="booking-item" style={{ background: '#f8f9fa', borderLeft: '4px solid var(--deep-navy)' }}>
               <div className="lecturer-meta">
                 <div className="lecturer-details">
-                  <p className="lecturer-name">{session.student}</p>
+                  <p className="lecturer-name">{session.studentName}</p>
                   <span className="tag-pill">{session.topic}</span>
                 </div>
               </div>
               <div className="status-info">
                 <p className="status-text" style={{ color: 'var(--deep-navy)', fontWeight: 'bold' }}>Confirmed</p>
-                <small className="date-text">{session.time}</small>
+                <small className="date-text">{session.date} at {session.time}</small>
               </div>
-              
-              <button 
-                className="calendar-link" 
-                onClick={() => window.open(session.link, '_blank', 'noopener,noreferrer')}
-                style={{ background: '#2D8CFF', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-              >
-                <Icon icon="lucide:video" width="16" /> Start Meeting
-              </button>
-              
+              {session.link && session.link !== '#' && (
+                <button
+                  className="calendar-link"
+                  onClick={() => window.open(session.link, '_blank', 'noopener,noreferrer')}
+                  style={{ background: '#2D8CFF', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  <Icon icon="lucide:video" width="16" /> Join
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -92,7 +117,7 @@ const MentorDashboardLecturer = () => {
 
       <aside className="mentoring-sidebar">
         <div className="sidebar-section">
-          <h3>Office Hours Calendar</h3>
+          <h3>Consultation Calendar</h3>
           <div style={{ marginTop: '15px' }}>
             <MiniCalendar bookedDates={bookedDates} />
           </div>

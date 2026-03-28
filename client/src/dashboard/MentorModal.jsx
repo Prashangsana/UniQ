@@ -2,6 +2,9 @@ import React from "react";
 import {Icon} from "@iconify/react";
 
 const MentorModal = ({ onClose, onSelectRole }) => {
+    const userRole = localStorage.getItem('user_role');
+    const isPeerMentor = localStorage.getItem('is_peer_mentor') === 'true';
+
     return (
         <div className="modal-overlay">
         <div className="modal-content size-sm">
@@ -10,8 +13,8 @@ const MentorModal = ({ onClose, onSelectRole }) => {
             </button>
         
         <div className="modal-header">
-            <h2>Join as a Mentor</h2>
-            <p>How would you like to register to share your knowledge?</p>
+            <h2>{userRole === 'lecturer' || isPeerMentor ? "Mentor Dashboards" : "Join as a Mentor"}</h2>
+            <p>{userRole === 'lecturer' || isPeerMentor ? "Select your dashboard" : "How would you like to register to share your knowledge?"}</p>
         </div>
 
         <div className="modal-form">
@@ -20,7 +23,7 @@ const MentorModal = ({ onClose, onSelectRole }) => {
                 onClick={() => onSelectRole('peer')}
             >
                 <Icon icon="lucide:users" width="20" />
-                Register as Peer Mentor
+                {isPeerMentor ? "Peer Mentor Dashboard" : "Register as Peer Mentor"}
             </button>
             
             <div className="modal-divider">
@@ -34,7 +37,7 @@ const MentorModal = ({ onClose, onSelectRole }) => {
                 onClick={() => onSelectRole('lecturer')}
             >
                 <Icon icon="lucide:graduation-cap" width="20" />
-                Register as Lecturer
+                {userRole === 'lecturer' ? "Lecturer Dashboard" : "Register as Lecturer"}
             </button>
         </div>
         </div>

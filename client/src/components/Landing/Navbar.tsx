@@ -31,7 +31,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
     const emailInput = (document.getElementById("signup-email") as HTMLInputElement).value;
 
     try {
-      const response = await fetch(`${API_URL}/auth/local`, {
+      const response = await fetch(`${API_URL}/auth/local-login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,6 +45,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
       if (response.ok && data.success) {
 
         localStorage.setItem('is_logged_in', 'true');
+        localStorage.setItem('user_id', data.user._id);
 
         console.log("User Data from Server:", data.user);
 

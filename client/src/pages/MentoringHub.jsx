@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
+import './Mentoring.css'; // FIX 6: was missing — .mentoring-layout and other classes were unstyled
 
 const MentoringHub = ({ onSelectCategory }) => {
   return (
@@ -9,14 +10,13 @@ const MentoringHub = ({ onSelectCategory }) => {
         <p style={{ color: 'var(--body-text-gray)', fontSize: '1.1rem', marginBottom: '50px' }}>
           Who would you like to connect with today?
         </p>
-        
+
         <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          
-          {/* Peer Mentor Selection Card */}
-          <div 
+
+          <div
             onClick={() => onSelectCategory('peer-mentoring')}
-            style={{ 
-              background: '#fff', border: '2px solid #e5e7eb', borderRadius: '20px', padding: '50px 30px', 
+            style={{
+              background: '#fff', border: '2px solid #e5e7eb', borderRadius: '20px', padding: '50px 30px',
               width: '320px', cursor: 'pointer', transition: 'all 0.3s ease',
               boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
             }}
@@ -32,11 +32,10 @@ const MentoringHub = ({ onSelectCategory }) => {
             </p>
           </div>
 
-          {/* Lecturer Selection Card */}
-          <div 
+          <div
             onClick={() => onSelectCategory('lecturer-mentoring')}
-            style={{ 
-              background: '#fff', border: '2px solid #e5e7eb', borderRadius: '20px', padding: '50px 30px', 
+            style={{
+              background: '#fff', border: '2px solid #e5e7eb', borderRadius: '20px', padding: '50px 30px',
               width: '320px', cursor: 'pointer', transition: 'all 0.3s ease',
               boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
             }}

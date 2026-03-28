@@ -82,7 +82,7 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
                 return <DashboardView 
                     onSeeAll={() => setActiveTab('groups')} 
                     onSeeEvents={() => setActiveTab('society')}
-                    onMentorSelect={(role) => setActiveTab(role === 'peer' ? 'peer-mentoring' : 'lecturer-mentoring')}
+                    onMentorSelect={(tab) => setActiveTab(tab)}
                 />;
             case 'profile':   return <Profile />;
             case 'society':   return <EventsPage myEventsList={myEventsList} onAddEvent={onAddEvent} onRemoveEvent={onRemoveEvent} />;
