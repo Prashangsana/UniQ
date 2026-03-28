@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-/* EDITED: Removed 'BrowserRouter' from here; it must only be in main.tsx */
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 
@@ -42,7 +41,6 @@ function App() {
   });
   
   const [isLoading, setIsLoading] = useState<boolean>(true); 
-
   const [myEventsList, setMyEventsList] = useState<string[]>([]);
   const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
 
@@ -80,7 +78,13 @@ function App() {
       try {
         const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         const data = await response.json();
+
         if (data.authenticated) {
+          localStorage.setItem('user_id', data.user._id);
+          localStorage.setItem('user_name', data.user.name);
+          localStorage.setItem('user_role', data.user.role);
+          localStorage.setItem('is_peer_mentor', data.user.isPeerMentor ? 'true' : 'false');
+          
           handleLogin(data.user?.role || 'student');
         } else {
           handleLogout();
@@ -115,12 +119,10 @@ function App() {
   }
 
   return (
-
     <Routes>
       {isLoggedIn ? (
         /* --- AUTHENTICATED VIEW --- */
         <>
-          {/* Default Dashboards based on role */}
           <Route 
             path="/" 
             element={
@@ -130,7 +132,6 @@ function App() {
             } 
           />
 
-          
           <Route 
             path="/dashboard" 
             element={
@@ -147,10 +148,8 @@ function App() {
 
           {/* Role-Based Event Logic */}
           {userRole === 'society_leader' ? (
-            /* Leader sees Editor for CRUD operations */
             <Route path="/event/:eventId" element={<LeaderEventEditor />} />
           ) : (
-            /* Students see Event Details */
             <Route
               path="/event/:eventId"
               element={
@@ -187,7 +186,6 @@ function App() {
               <Footer />
             </div>
           } />
-          <Route path="/profile/:id" element={<PublicProfile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       )}

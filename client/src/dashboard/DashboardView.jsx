@@ -4,9 +4,11 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import MentorModal from "./MentorModal";
 
-const DashboardView = ({ onSeeAll, onSeeEvents }) => {
+const DashboardView = ({ onSeeAll, onSeeEvents, onMentorSelect }) => {
   const navigate = useNavigate();
   const [showMentorModal, setShowMentorModal] = React.useState(false);
+  const userRole = localStorage.getItem('user_role');
+  const isPeerMentor = localStorage.getItem('is_peer_mentor') === 'true';
 
   const [myGroups, setMyGroups] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
@@ -32,42 +34,61 @@ const DashboardView = ({ onSeeAll, onSeeEvents }) => {
     fetchMyGroups();
   }, [API_URL]);
 
-  const handleSelectRole = (role) => {
+  const handleSelectRole = async (role) => {
     setShowMentorModal(false);
-    navigate(`/mentor-auth/${role}`);
+
+    if (role === 'peer' && !isPeerMentor) {
+      try {
+        // FIX 8: credentials: 'include' was missing — req.user was always undefined on the backend
+        const response = await fetch(`${API_URL}/api/mentoring/register-peer`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await response.json();
+        if (data.success) {
+          console.log("Peer Mentor status activated.");
+          localStorage.setItem('is_peer_mentor', 'true');
+        } else {
+          console.error("Registration failed:", data.message);
+        }
+      } catch (err) {
+        console.error("Failed to register peer mentor status:", err);
+      }
+    }
+
+    if (onMentorSelect) {
+      onMentorSelect(role === 'peer' ? 'peer-dashboard-view' : 'lecturer-dashboard-view');
+    } else {
+      navigate(`/mentor-auth/${role}`);
+    }
+  };
+
+  const getMentorButtonText = () => {
+    if (userRole === 'lecturer') return "Lecturer Dashboard";
+    if (isPeerMentor) return "Peer Mentor Dashboard";
+    return "Register as a Mentor";
   };
 
   return (
     <div className="app-inner-container">
-      {/* Hero Banner */}
       <header className="hero-banner">
         <div className="qr-code-placeholder">
-          <div
-            style={{ background: "white", padding: "8px", borderRadius: "8px" }}
-          >
-            <img
-              src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=Ticket"
-              alt="QR"
-            />
+          <div style={{ background: "white", padding: "8px", borderRadius: "8px" }}>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=Ticket" alt="QR" />
           </div>
         </div>
-
         <div className="hero-content">
-          <p className="hero-subtitle">
-            Phase 02 tickets available on spotseeker.lk
-          </p>
+          <p className="hero-subtitle">Phase 02 tickets available on spotseeker.lk</p>
           <h1 className="event-title">Sally's Manor</h1>
         </div>
       </header>
 
-      {/* Main Content Grid */}
       <div className="dashboard-grid">
-        {/* LEFT COLUMN: Groups */}
         <section className="content-panel groups-panel">
           <div className="section-header">
             <h3>My Groups</h3>
-            <button className="see-all" onClick={onSeeAll}>
-              See All &gt;</button>
+            <button className="see-all" onClick={onSeeAll}>See All &gt;</button>
           </div>
 
           <div className="dashboard-quick-stats">
@@ -85,7 +106,6 @@ const DashboardView = ({ onSeeAll, onSeeEvents }) => {
             </div>
           </div>
 
-          {/* Updated Grid for bigger cards */}
           <div className="gf-grid main-dash-grid">
             {loadingGroups ? (
               <div className="loading-shimmer">Loading...</div>
@@ -107,7 +127,6 @@ const DashboardView = ({ onSeeAll, onSeeEvents }) => {
                 </div>
               ))
             ) : (
-              /* Improved Empty State */
               <div className="empty-state-card">
                 <Icon icon="lucide:plus-circle" width="40" color="#cbd5e1" />
                 <p>No groups yet? Start your journey here.</p>
@@ -117,39 +136,26 @@ const DashboardView = ({ onSeeAll, onSeeEvents }) => {
           </div>
         </section>
 
-        {/* RIGHT COLUMN: Sidebar */}
         <aside className="content-panel sidebar-panel">
           <div className="tiles-grid">
             <button className="tile-btn blue">
-              <span className="icon">
-                <Icon icon="lucide:calendar-days" width="32" />
-              </span>{" "}
-              Bookings
+              <span className="icon"><Icon icon="lucide:calendar-days" width="32" /></span> Bookings
             </button>
             <button className="tile-btn blue">
-              <span className="icon">
-                <Icon icon="lucide:users" width="32" />
-              </span>{" "}
-              Community
+              <span className="icon"><Icon icon="lucide:users" width="32" /></span> Community
             </button>
             <button className="tile-btn blue">
-              <span className="icon">
-                <Icon icon="lucide:trophy" width="32" />
-              </span>{" "}
-              Rankings
+              <span className="icon"><Icon icon="lucide:trophy" width="32" /></span> Rankings
             </button>
             <button className="tile-btn blue" onClick={onSeeEvents}>
-              <span className="icon">
-                <Icon icon="lucide:ticket" width="32" />
-              </span>{" "}
-              Events
+              <span className="icon"><Icon icon="lucide:ticket" width="32" /></span> Events
             </button>
           </div>
 
           <div className="register-stack">
             <button className="register-btn" onClick={() => setShowMentorModal(true)}>
               <div className="reg-content">
-                <span className="reg-title">Register as a Mentor</span>
+                <span className="reg-title">{getMentorButtonText()}</span>
                 <span className="reg-sub">Share your knowledge</span>
               </div>
               <span className="arrow">→</span>

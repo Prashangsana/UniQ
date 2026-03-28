@@ -2,7 +2,10 @@
 .react-calendar__tile.booked-day {
   position: relative;
   font-weight: bold;
-  color: var(--deep-banner-blue, #3b4e7a);
+  color: var(--deep-banner-blue, #3b4e7a) !important;
+  background-color: rgba(217, 192, 134, 0.1) !important; /* Soft gold background */
+  border: 2px solid var(--accent-gold, #d9c086) !important; /* Square border around the date */
+  border-radius: 8px; /* Slightly rounded square */
 }
 
 /* Force the calendar and all its internal buttons/text to use the UniQ global font */
@@ -13,23 +16,9 @@
   font-family: var(--font-family, 'Outfit', sans-serif) !important;
 }
 
-/* The indicator dot */
-.react-calendar__tile.booked-day::after {
-  content: '';
-  position: absolute;
-  bottom: 4px; /* Position it just under the number */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background-color: var(--accent-gold, #d9c086); /* Using your UniQ gold accent! */
-  border-radius: 50%;
-}
-
-/* Make sure the dot turns white if the user clicks on that exact day */
-.react-calendar__tile--active.booked-day::after,
-.react-calendar__tile--active:enabled:hover.booked-day::after,
-.react-calendar__tile--active:enabled:focus.booked-day::after {
-  background-color: white;
+/* Make sure the text turns white if the user clicks on that exact day */
+.react-calendar__tile--active.booked-day {
+  background-color: var(--accent-gold, #d9c086) !important;
+  color: white !important;
 }
 
