@@ -3,6 +3,7 @@ import './groups.css';
 import FullProfileWrapper from './FullProfileWrapper';
 
 const UserProfileView = ({ user: initialUser, type, onBack }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [user, setUser] = useState(initialUser);
   // 'type' can be 'member' or 'requester' to determine buttons
   const [processing, setProcessing] = useState(false);
@@ -11,7 +12,7 @@ const UserProfileView = ({ user: initialUser, type, onBack }) => {
   useEffect(() => {
     const fetchFullUser = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/public-profile/${initialUser._id || initialUser.id}`);
+        const response = await fetch(`${API_URL}/api/users/public-profile/${initialUser._id || initialUser.id}`);
         const result = await response.json();
         if (result.success) {
           // Merge the existing data (like requestId) with the new profile data
@@ -22,14 +23,14 @@ const UserProfileView = ({ user: initialUser, type, onBack }) => {
       }
     };
     fetchFullUser();
-  }, [initialUser]);
+  }, [initialUser, API_URL]);
 
   const userAvatar = user.profileImage || user.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name || user.student}`;
 
   const handleRequestAction = async (action) => {
     try {
       // action will be either 'approve' or 'reject'
-      const response = await fetch(`http://localhost:5000/api/requests/requests/${user.requestId}/${action}`, {
+      const response = await fetch(`${API_URL}/api/requests/requests/${user.requestId}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -56,7 +57,7 @@ const UserProfileView = ({ user: initialUser, type, onBack }) => {
   const handleSendInvite = async () => {
     setProcessing(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/invites/groups/${user.targetGroupId}/invite`, {
+      const response = await fetch(`${API_URL}/api/invites/groups/${user.targetGroupId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

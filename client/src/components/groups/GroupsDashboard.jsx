@@ -3,6 +3,7 @@ import './groups.css';
 import GroupsSidebar from './GroupsSidebar';
 
 const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   // State to hold our fetched invites
   const [invites, setInvites] = useState([]);
 
@@ -19,7 +20,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
   useEffect(() => {
     const fetchInvites = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/invites/my', {
+        const response = await fetch(`${API_URL}/api/invites/my`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -37,7 +38,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     const fetchMyGroups = async () => {
       try {
         setLoadingGroups(true);
-        const response = await fetch('http://localhost:5000/api/groups/my', {
+        const response = await fetch(`${API_URL}/api/groups/my`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -52,7 +53,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     // Fetch only modules that have an Open Group Project
     const fetchOpenModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/groups/modules/open', {
+        const response = await fetch(`${API_URL}/api/groups/modules/open`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -68,7 +69,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
 
     const fetchAllDeadlines = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/groups/my-deadlines', {
+        const response = await fetch(`${API_URL}/api/groups/my-deadlines`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -84,7 +85,7 @@ const GroupsDashboard = ({ onSelectModule, onSelectGroup, onSelectInvite }) => {
     fetchMyGroups();
     fetchOpenModules();
     fetchAllDeadlines();
-  }, []);
+  }, [API_URL]);
 
   return (
     <div className="gf-layout">

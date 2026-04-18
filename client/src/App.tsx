@@ -47,7 +47,7 @@ function App() {
     setIsLoggedIn(true);
     setUserRole(role);
 
-    fetch(`${API_URL}/api/events/my`, { credentials: 'include' })
+    fetch(`${API_URL}/api/events/my-events/list`, { credentials: 'include' })
       .then(res => res.json())
       .then(eventData => {
         if (eventData.success) {

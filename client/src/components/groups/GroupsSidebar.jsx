@@ -3,6 +3,7 @@ import './groups.css';
 import { deadlines as mockDeadlines } from '../../data/mockGroups';
 
 const GroupsSidebar = ({ type, invites, groupId, moduleId, onSelectInvite, onViewProfile, deadlines }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +17,7 @@ const GroupsSidebar = ({ type, invites, groupId, moduleId, onSelectInvite, onVie
     // (Someone wanting to join the user's current group)
     if ((type === 'group' || type === 'module') && groupId) {
       setLoading(true);
-      fetch(`http://localhost:5000/api/requests/groups/${groupId}/requests`, {
+      fetch(`${API_URL}/api/requests/groups/${groupId}/requests`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -26,7 +27,7 @@ const GroupsSidebar = ({ type, invites, groupId, moduleId, onSelectInvite, onVie
         })
         .catch(() => setLoading(false));
     }
-  }, [type, groupId]);
+  }, [type, groupId, API_URL]);
 
   useEffect(() => {
     // Sync localDeadlines whenever the parent 'deadlines' prop changes
@@ -37,7 +38,7 @@ const GroupsSidebar = ({ type, invites, groupId, moduleId, onSelectInvite, onVie
 
   const handleSaveDeadlines = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/groups/groups/${groupId}/deadlines`, {
+      const res = await fetch(`${API_URL}/api/groups/groups/${groupId}/deadlines`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

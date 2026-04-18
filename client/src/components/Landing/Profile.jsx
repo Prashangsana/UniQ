@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import './Profile.css';
 
 const Profile = () => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +37,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfileAndModules = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/users/profile', { credentials: 'include' });
+        const response = await fetch(`${API_URL}/api/users/profile`, { credentials: 'include' });
         const result = await response.json();
 
 
@@ -55,7 +56,7 @@ const Profile = () => {
           setError(result.message);
         }
 
-        const moduleRes = await fetch('http://localhost:5000/api/modules', { credentials: 'include' });
+        const moduleRes = await fetch(`${API_URL}/api/modules`, { credentials: 'include' });
         const moduleResult = await moduleRes.json();
         if (moduleResult.success) {
           setAvailableModules(moduleResult.modules);
@@ -70,7 +71,7 @@ const Profile = () => {
     };
 
     fetchProfileAndModules();
-  }, []);
+  }, [API_URL]);
 
       
      
@@ -134,7 +135,7 @@ const Profile = () => {
         setUser(prev => ({ ...prev, profileImage: base64Image }));
 
         try {
-          const response = await fetch('http://localhost:5000/api/users/profile', {
+          const response = await fetch(`${API_URL}/api/users/profile`, {
             credentials: 'include',
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -163,7 +164,7 @@ const Profile = () => {
     setUser(updatedUser);
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/profile', {
+      const response = await fetch(`${API_URL}/api/users/profile`, {
         credentials: 'include',
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -189,7 +190,7 @@ const Profile = () => {
      };
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/profile', {
+      const response = await fetch(`${API_URL}/api/users/profile`, {
         credentials: 'include',
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

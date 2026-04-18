@@ -3,6 +3,7 @@ import './groups.css';
 import GroupsSidebar from './GroupsSidebar';
 
 const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFindMembers, onFinalise, currentUser }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
@@ -16,7 +17,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const handleLeaveGroup = async () => {
     if (window.confirm(`Are you sure you want to leave ${group.name}?`)) {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/groups/${group._id}/leave`, {
+        const response = await fetch(`${API_URL}/api/groups/groups/${group._id}/leave`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
@@ -38,7 +39,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   const handleRequestJoin = async () => {
     setRequesting(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/requests/groups/${group._id}/request`, {
+      const response = await fetch(`${API_URL}/api/requests/groups/${group._id}/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -68,7 +69,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
       const base64Image = reader.result;
 
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/groups/${group._id}/update`, {
+        const response = await fetch(`${API_URL}/api/groups/groups/${group._id}/update`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -83,7 +84,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
           alert("Error: " + data.message);
         }
       } catch (error) {
-        aconsole.error("Upload Error:", error); // This will show the actual error in the Browser Console (F12)
+        console.error("Upload Error:", error); // This will show the actual error in the Browser Console (F12)
         alert("Failed to upload image. Check console for details.");
       }
     };
@@ -91,7 +92,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
 
   const handleUpdateName = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/groups/groups/${group._id}/update`, {
+      const response = await fetch(`${API_URL}/api/groups/groups/${group._id}/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -113,7 +114,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
   useEffect(() => {
     const fetchGroupDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/groups/${initialGroupData._id}`, {
+        const response = await fetch(`${API_URL}/api/groups/groups/${initialGroupData._id}`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -133,7 +134,7 @@ const GroupDetailsView = ({ group: initialGroupData, onBack, onViewProfile, onFi
     } else {
       setLoading(false);
     }
-  }, [initialGroupData]);
+  }, [initialGroupData, API_URL]);
 
   if (loading) return <div className="gf-main">Loading group details...</div>;
   if (!group) return <div className="gf-main">Group not found.</div>;

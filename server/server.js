@@ -1,4 +1,24 @@
-require('dotenv').config({ debug: false, override: false });
+const path = require('path');
+
+// If a variable exists but is an empty string, allow dotenv to populate it from .env.
+for (const key of [
+  'PORT',
+  'BACKEND_URL',
+  'FRONTEND_URL',
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
+  'ORG_DOMAIN',
+  'SESSION_SECRET',
+  'MONGO_URI',
+  'JWT_SECRET',
+  'ADMIN_EMAILS',
+]) {
+  if (process.env[key] === '') {
+    delete process.env[key];
+  }
+}
+
+require('dotenv').config({ path: path.join(__dirname, '.env'), debug: false, override: false });
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');

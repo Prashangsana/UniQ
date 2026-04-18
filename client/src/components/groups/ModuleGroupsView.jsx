@@ -3,6 +3,7 @@ import './groups.css';
 import GroupsSidebar from './GroupsSidebar';
 
 const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, currentUser, onViewProfile, onSelectInvite }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [moduleGroups, setModuleGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [invites, setInvites] = useState([]);
@@ -10,7 +11,7 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, curren
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/modules/${module._id}/groups`, {
+        const response = await fetch(`${API_URL}/api/groups/modules/${module._id}/groups`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -30,18 +31,18 @@ const ModuleGroupsView = ({ module, onBack, onSelectGroup, onCreateGroup, curren
     } else {
       setLoading(false); // Failsafe
     }
-  }, [module._id]);
+  }, [module._id, API_URL]);
 
   useEffect(() => {
     const fetchInvites = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/invites/my', { credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/invites/my`, { credentials: 'include' });
         const data = await res.json();
         if (data.success) setInvites(data.data);
       } catch (err) { console.error(err); }
     };
     fetchInvites();
-  }, []);
+  }, [API_URL]);
 
   if (!module || !module._id) {
     return <div className="gf-main" style={{ textAlign: 'center', padding: '3rem' }}>Loading module...</div>;

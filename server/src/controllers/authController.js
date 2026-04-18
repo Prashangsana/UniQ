@@ -117,11 +117,17 @@ exports.getMe = async (req, res) => {
 exports.localEmailLogin = async (req, res) => {
   try {
     const email = String(req.body?.email || '').trim().toLowerCase();
+    const isAdmin = getAdminEmails().includes(email);
 
-    if (!email || !email.endsWith('@iit.ac.lk')) {
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required.' });
+    }
+
+    // Allow configured admin emails even when they are outside the university domain.
+    if (!isAdmin && !email.endsWith('@iit.ac.lk')) {
       return res.status(400).json({ success: false, message: 'Invalid email. Please log in with a university email.' });
     }
-    const isAdmin = getAdminEmails().includes(email.toLowerCase());
+
     let role = '';
     let firstNameRaw = '';
 
@@ -143,13 +149,8 @@ exports.localEmailLogin = async (req, res) => {
         role = 'lecturer';
         firstNameRaw = lecturerMatch[1];
       } else {
-        return res.status(400).cookie("token", token, options).json({
-          success: true,
-          user: {
-            _id: user._id,
-            name: user.name,
-            role: user.role,
-          },
+        return res.status(400).json({
+          success: false,
           message: 'Invalid email format. Use name.studentid@iit.ac.lk or name.initial@iit.ac.lk'
         });
       }

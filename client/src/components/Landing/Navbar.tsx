@@ -6,6 +6,17 @@ interface NavbarProps {
   onSignUpSuccess?: (role?: string) => void;
 }
 
+interface LocalLoginResponse {
+  success: boolean;
+  message?: string;
+  user?: {
+    _id: string;
+    role: string;
+    name: string;
+    photo?: string;
+  };
+}
+
 const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
@@ -31,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
     const emailInput = (document.getElementById("signup-email") as HTMLInputElement).value;
 
     try {
-      const response = await fetch(`${API_URL}/auth/local-login`, {
+      const response = await fetch(`${API_URL}/auth/local`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,9 +51,17 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
         credentials: "include",
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") ?? "";
 
-      if (response.ok && data.success) {
+      if (!contentType.includes("application/json")) {
+        const responseText = await response.text();
+        console.error("Non-JSON login response:", responseText.slice(0, 200));
+        throw new Error("Server returned an unexpected response. Please check API URL and auth route.");
+      }
+
+      const data = (await response.json()) as LocalLoginResponse;
+
+      if (response.ok && data.success && data.user) {
 
         localStorage.setItem('is_logged_in', 'true');
         localStorage.setItem('user_id', data.user._id);
@@ -59,11 +78,11 @@ const Navbar: React.FC<NavbarProps> = ({ onSignUpSuccess }) => {
 
         window.location.reload();
       } else {
-        setErrorMessage(data.message);
+        setErrorMessage(data.message || "Login failed. Please try again.");
       }
     } catch (error) {
       console.error("Login request failed", error);
-      setErrorMessage("An error occurred connecting to the server.");
+      setErrorMessage(error instanceof Error ? error.message : "An error occurred connecting to the server.");
     }
   };
 

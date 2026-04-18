@@ -4,6 +4,7 @@ import './groups.css';
 const domains = ['Machine Learning', 'Web Development', 'Mobile App', 'Cyber Security', 'UI/UX Design', 'Data Science'];
 
 const CreateGroupView = ({ module, onBack, onSuccess }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [groupName, setGroupName] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('');
   const [maxMembers, setMaxMembers] = useState(5); // Added maxMembers state
@@ -16,7 +17,7 @@ const CreateGroupView = ({ module, onBack, onSuccess }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/groups/groups', {
+      const response = await fetch(`${API_URL}/api/groups/groups`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

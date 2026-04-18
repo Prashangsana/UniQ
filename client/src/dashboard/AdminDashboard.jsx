@@ -80,7 +80,7 @@ const AdminDashboard = () => {
 
   const handleAddSociety = async (e) => {
     e.preventDefault();
-    const response = await fetch(`${API_URL}/api/societies/create`, {
+    const response = await fetch(`${API_URL}/api/societies`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
 
   const handleUpdateSociety = async (e) => {
     e.preventDefault();
-    const response = await fetch(`${API_URL}/api/societies/leader/${editingSociety.originalId}`, {
+    const response = await fetch(`${API_URL}/api/societies/admin/societies/${editingSociety.originalId}/assign-leader`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './groups.css';
 
 const LecturerDashboard = () => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [activeTab, setActiveTab] = useState('setup');
 
   const [myModules, setMyModules] = useState([]);
@@ -38,7 +39,7 @@ const LecturerDashboard = () => {
       };
 
       // Fetch Lecturer's Modules
-      const modRes = await fetch('http://localhost:5000/api/lecturer/modules/my-modules', {
+      const modRes = await fetch(`${API_URL}/api/lecturer/modules/my-modules`, {
         credentials: 'include',
         headers: headers
       });
@@ -49,7 +50,7 @@ const LecturerDashboard = () => {
       }
 
       // Fetch Groups
-      const grpRes = await fetch('http://localhost:5000/api/lecturer/module-groups', {
+      const grpRes = await fetch(`${API_URL}/api/lecturer/module-groups`, {
         credentials: 'include',
         headers: headers
       });
@@ -63,7 +64,7 @@ const LecturerDashboard = () => {
     } finally {
       setIsLoadingModules(false);
     }
-  }, [moduleId]);
+  }, [moduleId, API_URL]);
 
   useEffect(() => {
     fetchData();
@@ -82,7 +83,7 @@ const LecturerDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:5000/api/lecturer/modules/${moduleId}/group-project`, {
+      const response = await fetch(`${API_URL}/api/lecturer/modules/${moduleId}/group-project`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -132,7 +133,7 @@ const LecturerDashboard = () => {
   // Extracted logic to keep code clean
   const processReview = async (groupId, action, feedback) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/review`, {
+      const response = await fetch(`${API_URL}/api/lecturer/groups/${groupId}/review`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

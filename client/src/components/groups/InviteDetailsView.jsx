@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './groups.css';
 
 const InviteDetailsView = ({ invite, onBack }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [loading, setLoading] = useState(false);
 
   // Generic handler for both Accept and Reject actions
@@ -14,7 +15,7 @@ const InviteDetailsView = ({ invite, onBack }) => {
     setLoading(true);
     try {
       // Action will be either 'accept' or 'reject'
-      const response = await fetch(`http://localhost:5000/api/invites/invites/${invite._id}/${action}`, {
+      const response = await fetch(`${API_URL}/api/invites/invites/${invite._id}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
