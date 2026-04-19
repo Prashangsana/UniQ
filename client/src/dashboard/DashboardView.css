@@ -250,7 +250,6 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  flex: 1;
 }
 
 .register-btn {
@@ -266,7 +265,9 @@
   box-shadow: 0 4px 15px rgba(30, 41, 59, 0.3);
   text-align: left;
   transition: transform 0.2s;
-  height: 100%;
+  height: 85px;
+  flex: none;
+  margin-bottom: 25px;
 }
 
 .register-btn:hover {

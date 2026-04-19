@@ -10,11 +10,40 @@ const MentorLogin = () => {
 
   const isPeer = role === 'peer';
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const targetTab = isPeer ? 'peer-dashboard-view' : 'lecturer-dashboard-view';
-    navigate('/', { state: { tab: targetTab } });
-  };
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || 'Login failed.');
+        return;
+      }
+
+      // Save user info to localStorage (same keys the rest of the app uses)
+      localStorage.setItem('user_id', data.user._id);
+      localStorage.setItem('user_name', data.user.name);
+      localStorage.setItem('user_role', data.user.role);
+      localStorage.setItem('is_peer_mentor', data.user.isPeerMentor ? 'true' : 'false');
+
+      // Navigate to the correct dashboard based on the role from the URL param
+      if (isPeer) {
+        navigate('/mentoring/peer-dashboard', { replace: true });
+      } else {
+        navigate('/mentoring/lecturer-dashboard', { replace: true });
+      }
+
+    } catch (err) {
+      alert('Something went wrong. Please try again.');
+    }
+  } ;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: '#f4f5f7', fontFamily: 'var(--font-family, inherit)' }}>

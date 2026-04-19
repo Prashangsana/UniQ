@@ -17,9 +17,12 @@ import { SocietyProfilePage, EventDetailsPage } from './pages/Event';
 import { LeaderDashboard, LeaderEventEditor, LeaderSocietyEditor, LeaderSocietyManager } from './components/events/Leader/pages/Leader';
 import AdminDashboard from './dashboard/AdminDashboard';
 
+import MentoringHub from './pages/MentoringHub';
+import MentorDashboardLecturer from './pages/MentorDashboardLecturer';
+import MentorDashboardPeer from './pages/MentorDashboardPeer';
 import LecturerMentoring from './pages/LecturerMentoring';
 import PeerMentoring from './pages/PeerMentoring';
-import MentorLogin from './pages/MentorLogin';
+// import MentorLogin from './pages/MentorLogin';
 
 const MentoringWrapper = ({ Component }: { Component: any }) => {
   const navigate = useNavigate();
@@ -47,7 +50,7 @@ function App() {
     setIsLoggedIn(true);
     setUserRole(role);
 
-    fetch(`${API_URL}/api/events/my`, { credentials: 'include' })
+    fetch(`${API_URL}/api/events/my-events/list`, { credentials: 'include' })
       .then(res => res.json())
       .then(eventData => {
         if (eventData.success) {
@@ -56,10 +59,9 @@ function App() {
         }
       });
 
-    // Only redirect if options.redirect isn't explicitly false and user is on a landing path
     if (options.redirect !== false) {
       if (window.location.pathname === '/' || window.location.pathname === '/login' || window.location.pathname === '') {
-        navigate('/'); 
+        navigate('/', { replace: true }); 
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
@@ -174,9 +176,12 @@ function App() {
           <Route path="/admin/society/:id/edit" element={<LeaderSocietyEditor />} />
           <Route path="/admin/society/:id" element={<LeaderSocietyManager />} />
 
+          <Route path="/mentoring" element={<MentoringHub onSelectCategory={(cat: string) => navigate(`/mentoring/${cat}`)} />} />
+          <Route path='/mentor-dashboard/lecturer' element={<MentorDashboardLecturer />} />
+          <Route path='/mentor-dashboard/peer' element={<MentorDashboardPeer />} />
           <Route path="/mentoring/lecturers" element={<MentoringWrapper Component={LecturerMentoring} />} />
           <Route path="/mentoring/peers" element={<MentoringWrapper Component={PeerMentoring} />} />
-          <Route path="/mentor-auth/:role" element={<MentorLogin />} />
+          {/* <Route path="/mentor-auth/:role" element={<MentorLogin />} /> */}
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </>      

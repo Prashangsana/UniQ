@@ -151,14 +151,24 @@ exports.updateStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: "Invalid appointment ID format." });
+        }
+
         let updateData = { status };
         if (status === 'Accepted') {
             updateData.link = `https://zoom.us/j/${Math.floor(Math.random() * 9000000000)}`;
         }
         const updatedApp = await Appointment.findByIdAndUpdate(id, updateData, { new: true });
-        res.json(updatedApp);
+
+        if (!updatedApp) {
+            return res.status(404).json({ success: false, message: "Appointment not found." });
+        }
+        res.status(200).json({ success: true, message: "Status updated successfully.", data: updatedApp });
     } catch (error) {
-        res.status(500).json({ message: "Update failed", error });
+        console.error("Status Update Error:", error);
+        res.status(500).json({ success: false, message: "Server failed to update status.", error: error.message });
     }
 };
 

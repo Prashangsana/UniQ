@@ -29,18 +29,25 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
     const location = useLocation();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-
     const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
     const [userPhoto, setUserPhoto] = useState(localStorage.getItem('user_photo') || '');
     const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'student');
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState(() => {
+        return sessionStorage.getItem('current_tab') || 'dashboard';
+    });
     const [showContactModal, setShowContactModal] = useState(false);
+    const [isPeerMentor, setIsPeerMentor] = useState(localStorage.getItem('is_peer_mentor') === 'true');
+
+    useEffect(() => {
+        sessionStorage.setItem('current_tab', activeTab);
+    }, [activeTab]);
 
     useEffect(() => {
         const syncUserData = () => {
             setUserName(localStorage.getItem('user_name') || 'User');
             setUserPhoto(localStorage.getItem('user_photo') || '');
             setUserRole(localStorage.getItem('user_role') || 'student');
+            setIsPeerMentor(localStorage.getItem('is_peer_mentor') === 'true');
         };
 
         if (location.state && location.state.tab) {
@@ -51,7 +58,6 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
         return () => window.removeEventListener('storage', syncUserData);
     }, [location.state]);
 
-    /* 3. FRIEND'S CHANGES: Sidebar Profile Fetch */
     useEffect(() => {
         const fetchUserForSidebar = async () => {
             try {
@@ -75,7 +81,6 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
 
     const avatarSrc = userPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${userName !== 'User' ? userName : 'Guest'}`;
 
-    /* Integrated Mentoring & Leader Views */
     const renderContent = () => {
         switch(activeTab) {
             case 'dashboard': 
@@ -90,8 +95,6 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
             case 'groups':    return <GroupsPage userRole={userRole}/>;
             case 'skills':    return <SkillsView />;
             case 'settings':  return <SettingsView />;
-            
-            // Mentoring Views (Your Work)
             case 'mentoring-hub': 
                 return <MentoringHub onSelectCategory={(category) => setActiveTab(category)} />;
             case 'peer-mentoring': 
@@ -102,7 +105,8 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
                 return <MentorDashboardPeer />;
             case 'lecturer-dashboard-view': 
                 return <MentorDashboardLecturer />;
-                
+            case 'sessions':
+                return userRole === 'lecturer' ? <MentorDashboardLecturer /> : <MentorDashboardPeer />;
             default: return <DashboardView onSeeAll={() => setActiveTab('groups')} />;
         }
     };
@@ -152,6 +156,13 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
                                 <Icon icon="lucide:book-open" width="20" /> <span>Mentoring</span>
                             </a>
                         </li>
+                        {(userRole === 'lecturer' || isPeerMentor) && (
+                        <li className={activeTab === 'sessions' ? 'active' : ''}>
+                            <a href="#sessions" onClick={(e) => { e.preventDefault(); setActiveTab('sessions'); }}>
+                            <Icon icon="lucide:calendar-check" width="20" /> <span>Sessions</span>
+                            </a>
+                        </li>
+                        )}
                     </ul>
 
                     <div className="nav-divider"></div>

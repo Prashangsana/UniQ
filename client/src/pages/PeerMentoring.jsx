@@ -2,10 +2,81 @@ import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import './Mentoring.css';
-import MiniCalendar from '../components/MiniCalendar';
 
-// FIX 1: use environment variable instead of hardcoded localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// ─── Inline Calendar Component ────────────────────────────────────────────────
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const SessionCalendar = ({ allSessions, onDayClick, selectedDate }) => {
+  const [viewDate, setViewDate] = useState(new Date());
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const bookedSet = new Set(allSessions.map(s => s.date).filter(Boolean));
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const makeDateStr = (d) => `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+  return (
+    <div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
+        <button onClick={() => setViewDate(new Date(year, month-1, 1))} style={navBtnStyle}>
+          <Icon icon="lucide:chevron-left" width="16" />
+        </button>
+        <span style={{ fontWeight:700, fontSize:'15px', color:'var(--deep-navy)' }}>
+          {MONTHS[month]} {year}
+        </span>
+        <button onClick={() => setViewDate(new Date(year, month+1, 1))} style={navBtnStyle}>
+          <Icon icon="lucide:chevron-right" width="16" />
+        </button>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:'6px' }}>
+        {DAYS.map(d => <div key={d} style={{ textAlign:'center', fontSize:'11px', fontWeight:700, color:'#aaa', padding:'4px 0' }}>{d}</div>)}
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:'3px' }}>
+        {cells.map((d, i) => {
+          if (!d) return <div key={`e-${i}`} />;
+          const dateStr = makeDateStr(d);
+          const isBooked = bookedSet.has(dateStr);
+          const isToday = dateStr === todayStr;
+          const isSelected = selectedDate === dateStr;
+
+          return (
+            <button
+              key={dateStr}
+              onClick={() => onDayClick(isSelected ? null : dateStr)}
+              style={{
+                position:'relative', aspectRatio:'1', border:'none', borderRadius:'10px',
+                background: isSelected ? 'var(--deep-navy)' : isToday ? '#eef2ff' : 'transparent',
+                color: isSelected ? '#fff' : isToday ? '#4f46e5' : '#333',
+                fontWeight: isBooked || isToday ? 700 : 400, fontSize:'13px',
+                cursor: isBooked ? 'pointer' : 'default', transition:'all 0.15s ease',
+                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'2px',
+              }}
+            >
+              {d}
+              {isBooked && <span style={{ width:'5px', height:'5px', borderRadius:'50%', background: isSelected ? '#a5b4fc' : '#0d214f', display:'block' }} />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const navBtnStyle = {
+  background:'#f4f5f7', border:'none', borderRadius:'8px', padding:'6px 10px', cursor:'pointer', display:'flex', alignItems:'center', color:'#555', transition:'background 0.15s'
+};
+// ──────────────────────────────────────────────────────────────────────────────
 
 const PeerMentoring = ({ onBack }) => {
   const navigate = useNavigate();
@@ -16,13 +87,14 @@ const PeerMentoring = ({ onBack }) => {
   const [bookings, setBookings] = useState([]);
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // FIX 7: booking modal state
   const [bookingMentor, setBookingMentor] = useState(null);
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('');
   const [bookingTopic, setBookingTopic] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const daySessionsToShow = selectedDate ? bookings.filter(b => b.date === selectedDate) : [];
 
   const currentUserId = localStorage.getItem('user_id');
   const currentUserName = localStorage.getItem('user_name') || 'User';
@@ -31,7 +103,6 @@ const PeerMentoring = ({ onBack }) => {
     const fetchPeerData = async () => {
       try {
         setLoading(true);
-        // FIX 2: added credentials: 'include' so the session cookie is sent
         const mentorRes = await fetch(`${API_URL}/api/mentoring/mentors?role=peer-mentor`, {
           credentials: 'include'
         });
@@ -42,7 +113,10 @@ const PeerMentoring = ({ onBack }) => {
           credentials: 'include'
         });
         const apptData = await apptRes.json();
-        setBookings(apptData);
+        const peerAppts = apptData.filter(appt => 
+          mentorData.some(mentor => String(mentor._id) === String(appt.mentorId))
+        );
+        setBookings(peerAppts);
       } catch (err) {
         console.error("Failed to load peer mentoring data:", err);
       } finally {
@@ -52,7 +126,6 @@ const PeerMentoring = ({ onBack }) => {
     fetchPeerData();
   }, [currentUserId]);
 
-  // FIX 7: actually POST a booking to the backend instead of just opening Google Calendar
   const handleBookSlot = (mentor) => {
     setBookingMentor(mentor);
     setBookingTopic(Array.isArray(mentor.expertise) ? mentor.expertise[0] : mentor.expertise || '');
@@ -69,7 +142,7 @@ const PeerMentoring = ({ onBack }) => {
       setBookingLoading(true);
       const res = await fetch(`${API_URL}/api/mentoring/book`, {
         method: 'POST',
-        credentials: 'include',                           // FIX 2
+        credentials: 'include',                           
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mentorId: bookingMentor._id,
@@ -98,7 +171,6 @@ const PeerMentoring = ({ onBack }) => {
     navigate(`/profile/${id}`);
   };
 
-  // FIX 3: convert both sides to string before comparing — mentorId is an ObjectId in the DB
   const isAlreadyBooked = (mentorId) => {
     return bookings.some(
       b => b.mentorId?.toString() === mentorId?.toString() &&
@@ -116,12 +188,21 @@ const PeerMentoring = ({ onBack }) => {
   const pastMentorsList = mentors.slice(0, 4);
   const displayedMentors = isExpanded ? pastMentorsList : pastMentorsList.slice(0, 2);
 
-  const filteredMentors = mentors.filter(mentor =>
-    mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (Array.isArray(mentor.expertise)
-      ? mentor.expertise.some(e => e.toLowerCase().includes(searchTerm.toLowerCase()))
-      : mentor.expertise?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+const filteredMentors = mentors.filter(mentor => {
+    const term = searchTerm?.toLowerCase().trim();
+    if (!term) return true;
+
+    const nameMatch = mentor.name && String(mentor.name).toLowerCase().includes(term);
+
+    let expMatch = false;
+    if (Array.isArray(mentor.expertise)) {
+      expMatch = mentor.expertise.some(e => e && String(e).toLowerCase().includes(term));
+    } else if (mentor.expertise) {
+      expMatch = String(mentor.expertise).toLowerCase().includes(term);
+    }
+
+    return nameMatch || expMatch;
+  });
 
   const handleSmartBack = () => {
     if (selectedCategory) {
@@ -134,7 +215,10 @@ const PeerMentoring = ({ onBack }) => {
   };
 
   const mentorListToShow = selectedCategory
-    ? mentors.filter(m => Array.isArray(m.expertise) ? m.expertise.includes(selectedCategory) : m.expertise === selectedCategory)
+    ? mentors.filter(m => {
+        if (Array.isArray(m.expertise)) return m.expertise.includes(selectedCategory);
+        return m.expertise === selectedCategory;
+      })
     : filteredMentors;
 
   if (loading) return <div className="loading-spinner">Loading Peer Mentors...</div>;
@@ -189,7 +273,11 @@ const PeerMentoring = ({ onBack }) => {
               </div>
             ))}
             {mentorListToShow.length === 0 && (
-              <p className="no-data-text">No mentors found matching your criteria.</p>
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #cbd5e1', gridColumn: '1 / -1' }}>
+                <Icon icon="lucide:search-x" width="48" style={{ color: '#94a3b8', marginBottom: '12px' }} />
+                <h3 style={{ margin: '0 0 8px 0', color: 'var(--deep-navy)', fontSize: '1.2rem' }}>No Matches Found</h3>
+                <p style={{ margin: 0, color: '#64748b' }}>We couldn't find any peer mentors matching "{searchTerm || selectedCategory}". Try a different keyword.</p>
+              </div>
             )}
           </div>
         ) : (
@@ -219,7 +307,6 @@ const PeerMentoring = ({ onBack }) => {
                 bookings.map((booking) => (
                   <div key={booking._id} className="booking-item">
                     <div className="lecturer-meta">
-                      {/* FIX 5: mentorName is now stored in the DB and returned in the response */}
                       <p className="lecturer-name">{booking.mentorName || 'Mentor'}</p>
                       <span className="tag-pill">{booking.topic}</span>
                     </div>
@@ -246,32 +333,56 @@ const PeerMentoring = ({ onBack }) => {
 
       <aside className="mentoring-sidebar">
         <div className="sidebar-section">
-          <h3>Recent Mentors</h3>
-          <div className="past-mentors">
-            {displayedMentors.map((mentor) => (
-              <div key={mentor._id} className="mini-mentor-card">
-                <div className="avatar-small">
-                  <Icon icon="lucide:user" width="20" />
-                </div>
-                <div className="mini-details">
-                  <p className="mini-name">{mentor.name}</p>
-                  <p className="mini-tag">{Array.isArray(mentor.expertise) ? mentor.expertise[0] : mentor.expertise}</p>
-                </div>
-              </div>
-            ))}
+          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'18px' }}>
+            <Icon icon="lucide:calendar-days" width="18" style={{ color:'var(--deep-navy)' }} />
+            <h3 style={{ margin:0, fontSize:'14px', fontWeight:800, color:'var(--deep-navy)' }}>Your Booked Dates</h3>
           </div>
-          <button className="expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
-            {isExpanded ? 'Show Less' : 'View More'}
-          </button>
-        </div>
 
-        <div className="sidebar-section">
-          <h3>Availability</h3>
-          <MiniCalendar bookedDates={bookings.map(b => new Date(b.date))} />
+          <SessionCalendar
+            allSessions={bookings}
+            onDayClick={setSelectedDate}
+            selectedDate={selectedDate}
+          />
+
+          <div style={{ display:'flex', alignItems:'center', gap:'6px', marginTop:'16px', paddingTop:'14px', borderTop:'1px solid #f0f0f0' }}>
+            <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#0d214f', display:'inline-block' }} />
+            <span style={{ fontSize:'11px', color:'#999', fontWeight:600 }}>= session booked</span>
+          </div>
+
+          {/* Day Detail Panel */}
+          {selectedDate && (
+            <div style={{ marginTop:'16px', borderTop:'1px solid #f0f0f0', paddingTop:'16px' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
+                <span style={{ fontSize:'13px', fontWeight:800, color:'var(--deep-navy)' }}>
+                  {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })}
+                </span>
+                <button onClick={() => setSelectedDate(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#aaa', padding:'2px' }}>
+                  <Icon icon="lucide:x" width="14" />
+                </button>
+              </div>
+
+              {daySessionsToShow.length === 0 ? (
+                <p style={{ fontSize:'12px', color:'#bbb', textAlign:'center', padding:'10px 0' }}>No sessions booked on this day.</p>
+              ) : (
+                <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                  {daySessionsToShow.map(s => (
+                    <div key={s._id} style={{ background:'#f9fafb', borderRadius:'10px', padding:'10px 12px', borderLeft:'3px solid var(--deep-navy)' }}>
+                      <div style={{ fontSize:'12px', fontWeight:700, color:'var(--deep-navy)' }}>{s.mentorName || 'Mentor'}</div>
+                      <div style={{ fontSize:'11px', color:'#888', marginTop:'2px' }}>{s.topic}</div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'4px', marginTop:'6px', flexWrap:'wrap' }}>
+                        <Icon icon="lucide:clock" width="11" style={{ color:'#0d214f' }} />
+                        <span style={{ fontSize:'11px', color:'#0d214f', fontWeight:700 }}>{s.time}</span>
+                        <span style={{ fontSize:'10px', padding:'2px 6px', background:'#eee', borderRadius:'10px', marginLeft:'auto', fontWeight:600 }}>{s.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </aside>
 
-      {/* FIX 7: Booking modal — collects date/time/topic and POSTs to backend */}
       {bookingMentor && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '35px', width: '420px', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>

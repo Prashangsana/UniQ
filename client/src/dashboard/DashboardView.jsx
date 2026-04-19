@@ -64,12 +64,6 @@ const DashboardView = ({ onSeeAll, onSeeEvents, onMentorSelect }) => {
     }
   };
 
-  const getMentorButtonText = () => {
-    if (userRole === 'lecturer') return "Lecturer Dashboard";
-    if (isPeerMentor) return "Peer Mentor Dashboard";
-    return "Register as a Mentor";
-  };
-
   return (
     <div className="app-inner-container">
       <header className="hero-banner">
@@ -153,13 +147,15 @@ const DashboardView = ({ onSeeAll, onSeeEvents, onMentorSelect }) => {
           </div>
 
           <div className="register-stack">
-            <button className="register-btn" onClick={() => setShowMentorModal(true)}>
-              <div className="reg-content">
-                <span className="reg-title">{getMentorButtonText()}</span>
-                <span className="reg-sub">Share your knowledge</span>
-              </div>
-              <span className="arrow">→</span>
-            </button>
+            {!isPeerMentor && userRole !== 'lecturer' && (
+              <button className="register-btn" onClick={() => setShowMentorModal(true)}>
+                <div className="reg-content">
+                  <span className="reg-title">Register as a Mentor</span>
+                  <span className="reg-sub">Share your knowledge</span>
+                </div>
+                <span className="arrow">→</span>
+              </button>
+            )}
 
             <button className="register-btn">
               <div className="reg-content">
