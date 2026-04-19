@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './groups.css';
 
 const ModuleStudentsView = ({ moduleId, groupId, onBack, onViewProfile }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,7 +11,7 @@ const ModuleStudentsView = ({ moduleId, groupId, onBack, onViewProfile }) => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/groups/modules/${moduleId}/available-students`, {
+        const response = await fetch(`${API_URL}/api/groups/modules/${moduleId}/available-students`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -27,7 +28,7 @@ const ModuleStudentsView = ({ moduleId, groupId, onBack, onViewProfile }) => {
     };
 
     if (moduleId) fetchStudents();
-  }, [moduleId]);
+  }, [moduleId, API_URL]);
 
   // NEW: Handle filtering logic
   useEffect(() => {

@@ -10,6 +10,7 @@ import LecturerDashboard from '../components/groups/LecturerDashboard';
 import FinalisationFormView from '../components/groups/FinalisationFormView';
 
 const GroupsPage = ({ userRole, initialSelectedGroup = null, onClearSelection = () => {} }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +30,7 @@ const GroupsPage = ({ userRole, initialSelectedGroup = null, onClearSelection = 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch('http://localhost:5000/auth/me', {
+        const res = await fetch(`${API_URL}/auth/me`, {
           credentials: 'include'
         });
 
@@ -52,7 +53,7 @@ const GroupsPage = ({ userRole, initialSelectedGroup = null, onClearSelection = 
       }
     };
     fetchProfile();
-  }, []);
+  }, [API_URL]);
 
   if (loading) return <div className="loading-screen">Loading Profile...</div>;
 
@@ -82,7 +83,7 @@ const GroupsPage = ({ userRole, initialSelectedGroup = null, onClearSelection = 
 
   const handleFinalisationSubmit = async (groupId, data) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/lecturer/groups/${groupId}/submit-finalisation`, {
+      const response = await fetch(`${API_URL}/api/lecturer/groups/${groupId}/submit-finalisation`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
