@@ -4,7 +4,6 @@ import './Mentoring.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// ─── Google Calendar URL builder ─────────────────────────────────────────────
 const buildGCalURL = (session) => {
   const [year, month, day] = (session.date || '').split('-');
   const [hour, minute] = (session.time || '00:00').split(':');
@@ -25,7 +24,6 @@ const buildGCalURL = (session) => {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
-// ─── Inline Calendar ──────────────────────────────────────────────────────────
 const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -114,7 +112,6 @@ const navBtnStyle = {
   color:'#555',
 };
 
-// ─── Status Badge ─────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const map = {
     Pending:  { bg:'#fff8e1', color:'#f59e0b' },
@@ -129,7 +126,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 const MentorDashboardLecturer = () => {
   const [sessions,  setSessions]  = useState([]);
   const [requests,  setRequests]  = useState([]);
@@ -168,11 +164,9 @@ const handleStatus = async (id, newStatus) => {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      // Try to parse the response, whether it succeeded or failed
       const data = await res.json(); 
 
       if (res.ok) {
-        // Handle differences in how your backend might structure the response
         const updatedObj = data.data ? data.data : data; 
         const fmt = { ...updatedObj, dateObj: new Date(updatedObj.date) };
         
@@ -182,11 +176,9 @@ const handleStatus = async (id, newStatus) => {
         }
         setRequests(prev => prev.filter(r => r._id !== id));
       } else {
-        // The backend returned a 400 or 500 status code
         alert(`Backend Error: ${data.message || 'Something went wrong on the server'}`);
       }
     } catch (err) {
-      // It couldn't connect, CORS blocked it, or it failed to parse JSON
       console.error("Fetch error details:", err);
       alert(`Network or Parsing Error: check your browser console (F12).`);
     } finally {
@@ -209,20 +201,13 @@ const handleStatus = async (id, newStatus) => {
 
   return (
     <div style={{ padding:'4px 0' }}>
-
-      {/* ── Header ── */}
       <div style={{ marginBottom:'28px' }}>
         <h2 style={{ fontSize:'1.75rem', fontWeight:800, color:'var(--deep-navy)', margin:0 }}>Faculty Dashboard</h2>
         <p style={{ color:'#888', marginTop:'6px', fontSize:'14px' }}>Review student consultation requests and manage your schedule.</p>
       </div>
 
-      {/* ── Two-column layout ── */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:'24px', alignItems:'start' }}>
-
-        {/* LEFT */}
         <div style={{ display:'flex', flexDirection:'column', gap:'28px' }}>
-
-          {/* ── MOVED STATS ROW HERE ── */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px' }}>
             {[
               { label:'Total Consultations', value: allAppts.filter(a=>a.status!=='Declined').length, icon:'lucide:calendar', color:'#0d214f', bg:'#eef2ff' },
@@ -241,7 +226,6 @@ const handleStatus = async (id, newStatus) => {
             ))}
           </div>
 
-          {/* Pending Requests */}
           <section>
             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'16px' }}>
               <h3 style={{ margin:0, fontSize:'1.1rem', fontWeight:800, color:'var(--deep-navy)' }}>Pending Consultations</h3>
@@ -271,7 +255,6 @@ const handleStatus = async (id, newStatus) => {
             )}
           </section>
 
-          {/* Confirmed Appointments */}
           <section>
             <h3 style={{ margin:'0 0 16px', fontSize:'1.1rem', fontWeight:800, color:'var(--deep-navy)' }}>Confirmed Appointments</h3>
             {sessions.length === 0 ? (
@@ -286,7 +269,6 @@ const handleStatus = async (id, newStatus) => {
           </section>
         </div>
 
-        {/* RIGHT: Calendar */}
         <div style={{ position:'sticky', top:'20px' }}>
           <div style={{ background:'#fff', borderRadius:'20px', padding:'22px', border:'1px solid #f0f0f0', boxShadow:'0 2px 12px rgba(0,0,0,0.05)' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'18px' }}>
@@ -305,7 +287,6 @@ const handleStatus = async (id, newStatus) => {
               <span style={{ fontSize:'11px', color:'#999', fontWeight:600 }}>= consultation booked</span>
             </div>
 
-            {/* Day Detail Panel */}
             {selectedDate && (
               <div style={{ marginTop:'16px', borderTop:'1px solid #f0f0f0', paddingTop:'16px' }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
@@ -342,8 +323,6 @@ const handleStatus = async (id, newStatus) => {
     </div>
   );
 };
-
-// ─── Shared Sub-components ────────────────────────────────────────────────────
 
 const EmptyState = ({ icon, text }) => (
   <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'40px 20px', background:'#fafafa', borderRadius:'16px', border:'1px dashed #e5e7eb', gap:'10px' }}>

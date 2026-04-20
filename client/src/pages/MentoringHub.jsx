@@ -20,7 +20,6 @@ const MentoringHub = ({ onSelectCategory }) => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        // Update localStorage and notify all listeners (e.g. Home.jsx sidebar)
         localStorage.setItem('is_peer_mentor', 'true');
         window.dispatchEvent(new Event('storage'));
         setIsPeerMentor(true);

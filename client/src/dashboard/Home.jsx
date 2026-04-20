@@ -10,8 +10,6 @@ import GroupsPage from '../pages/GroupsPage';
 import Profile from '../components/Landing/Profile';
 import { EventsPage } from '../pages/Event'; 
 import { LeaderDashboard } from '../components/events/Leader/pages/Leader';
-
-// Mentoring Imports (Preserved from your branch)
 import PeerMentoring from '../pages/PeerMentoring';
 import LecturerMentoring from '../pages/LecturerMentoring';
 import MentorDashboardPeer from '../pages/MentorDashboardPeer';
@@ -174,7 +172,6 @@ const Home = ({ myEventsList, onAddEvent, onRemoveEvent, onLogout, userRole: pro
                             </a>
                         </li>
                         <li className="logout-item">
-                            {/* 5. EDITED: Using localStorage.clear() for a clean logout */}
                             <a href={`${API_URL}/auth/logout`} onClick={() => localStorage.clear()}>
                                 <Icon icon="lucide:log-out" width="20" /> <span>Logout</span>
                             </a>

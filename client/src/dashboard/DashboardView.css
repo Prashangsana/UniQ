@@ -299,7 +299,6 @@
   border-radius: 50%;
 }
 
-/* Dashboard Grid Adjustment to allow the wider landscape cards */
 .gf-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -307,10 +306,9 @@
   padding: 1rem 0;
 }
 
-/* The exact visual style from your GroupsDashboard screenshot */
 .gf-card-visual {
   position: relative;
-  height: 180px; /* Landscape height instead of portrait */
+  height: 180px; 
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
@@ -352,18 +350,16 @@
   margin-top: 4px;
 }
 
-/* Increase Group Card Size for Main Dashboard */
 .main-dash-grid {
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important; /* Bigger cards */
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important; 
   gap: 2rem;
 }
 
 .gf-card-visual.dash-large {
-  height: 220px; /* Taller landscape height */
+  height: 220px; 
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Quick Stats Row - Fills the emptiness nicely */
 .dashboard-quick-stats {
   display: flex;
   gap: 1.5rem;
@@ -398,7 +394,6 @@
   letter-spacing: 0.05em;
 }
 
-/* Empty State Styling */
 .empty-state-card {
   grid-column: 1 / -1;
   background: white;

@@ -81,7 +81,6 @@ exports.getAppointments = async (req, res) => {
         let query = {};
 
         if (mentorId) {
-            // req.query values are always strings — must cast to ObjectId for the ref field
             if (!mongoose.Types.ObjectId.isValid(mentorId)) {
                 return res.status(400).json({ message: "Invalid mentorId" });
             }
@@ -96,21 +95,6 @@ exports.getAppointments = async (req, res) => {
     }
 };
 
-
-// exports.bookSession = (req, res) => {
-//     try {
-//         const { mentorId, date, time } = req.body;
-
-//         const isBusy = appointments.some(app => 
-//             app.mentorId === mentorId && app.date === date && app.time === time && app.status !== 'Declined'
-//         );
-
-//         if (isBusy) {
-//             return res.status(400).json({ 
-//                 message: "Slot unavailable. This mentor already has a session at this time." 
-//             });
-// =======
-// FIX 5 (backend side): Lookup mentor name and save it so the frontend can display it
 exports.bookSession = async (req, res) => {
     try {
         const { mentorId, date, time } = req.body;
@@ -129,8 +113,7 @@ exports.bookSession = async (req, res) => {
         if (isBusy) {
             return res.status(400).json({ message: "Slot unavailable." });
         }
-
-        // Resolve the mentor's name so booking cards can display it without a populate call
+        
         const mentor = await User.findById(mentorId).select('name');
         const mentorName = mentor ? mentor.name : 'Unknown Mentor';
 

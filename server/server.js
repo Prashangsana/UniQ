@@ -1,6 +1,5 @@
 const path = require('path');
 
-// If a variable exists but is an empty string, allow dotenv to populate it from .env.
 for (const key of [
   'PORT',
   'BACKEND_URL',
@@ -27,7 +26,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const connectDB = require('./src/config/db');
 
-connectDB();//connect to MongoDB
+connectDB();
 
 
 const app = express();
@@ -64,9 +63,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 require('./src/config/passport')(passport);
 
-
-//import all routes
-
 const authRoutes = require('./src/routes/authRoutes'); 
 const societyRoutes = require('./src/routes/societyRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
@@ -77,17 +73,13 @@ const mentoringRoutes = require('./src/routes/mentoringRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const moduleRoutes = require('./src/routes/moduleRoutes');
 
-//mount routes
-
 app.use('/auth', authRoutes);
-app.use('/api/users', userRoutes);//profile
+app.use('/api/users', userRoutes)
 app.use('/api/societies', societyRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/mentoring', mentoringRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/modules', moduleRoutes);
-
-// 6. Mount Grouping & Lecturer APIs
 app.use('/api/groups', groupRoutes);
 app.use('/api/requests', require('./src/routes/requestRoutes'));
 app.use('/api/invites', require('./src/routes/inviteRoutes'));

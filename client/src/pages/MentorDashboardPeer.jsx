@@ -4,16 +4,13 @@ import './Mentoring.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// ─── Google Calendar URL builder ────────────────────────────────────────────
 const buildGCalURL = (session) => {
-  // date = "2026-04-19", time = "14:30"
   const [year, month, day] = (session.date || '').split('-');
   const [hour, minute] = (session.time || '00:00').split(':');
   if (!year || !hour) return '#';
 
   const pad = (n) => String(n).padStart(2, '0');
   const start = `${year}${month}${day}T${pad(hour)}${pad(minute)}00`;
-  // default 1-hour session
   const endHour = String(Number(hour) + 1).padStart(2, '0');
   const end = `${year}${month}${day}T${endHour}${pad(minute)}00`;
 
@@ -27,7 +24,6 @@ const buildGCalURL = (session) => {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
-// ─── Tiny inline calendar ────────────────────────────────────────────────────
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -39,8 +35,6 @@ const SessionCalendar = ({ allSessions, onDayClick, selectedDate }) => {
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  // Build a Set of "YYYY-MM-DD" strings that have sessions
   const bookedSet = new Set(
     allSessions.map(s => s.date).filter(Boolean)
   );
@@ -57,7 +51,6 @@ const SessionCalendar = ({ allSessions, onDayClick, selectedDate }) => {
 
   return (
     <div>
-      {/* Month navigation */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
         <button
           onClick={() => setViewDate(new Date(year, month - 1, 1))}
@@ -76,14 +69,12 @@ const SessionCalendar = ({ allSessions, onDayClick, selectedDate }) => {
         </button>
       </div>
 
-      {/* Day headers */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:'6px' }}>
         {DAYS.map(d => (
           <div key={d} style={{ textAlign:'center', fontSize:'11px', fontWeight:700, color:'#aaa', padding:'4px 0' }}>{d}</div>
         ))}
       </div>
 
-      {/* Date grid */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:'3px' }}>
         {cells.map((d, i) => {
           if (!d) return <div key={`e-${i}`} />;
@@ -136,7 +127,6 @@ const navBtnStyle = {
   color:'#555', transition:'background 0.15s'
 };
 
-// ─── Status badge ────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const map = {
     Pending:  { bg:'#fff8e1', color:'#f59e0b', label:'Pending' },
@@ -151,7 +141,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
 const MentorDashboardPeer = () => {
   const [sessions, setSessions]   = useState([]);
   const [requests, setRequests]   = useState([]);
@@ -190,11 +179,9 @@ const handleStatus = async (id, newStatus) => {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      // Try to parse the response, whether it succeeded or failed
       const data = await res.json(); 
 
       if (res.ok) {
-        // Handle differences in how your backend might structure the response
         const updatedObj = data.data ? data.data : data; 
         const fmt = { ...updatedObj, dateObj: new Date(updatedObj.date) };
         
@@ -204,11 +191,9 @@ const handleStatus = async (id, newStatus) => {
         }
         setRequests(prev => prev.filter(r => r._id !== id));
       } else {
-        // The backend returned a 400 or 500 status code
         alert(`Backend Error: ${data.message || 'Something went wrong on the server'}`);
       }
     } catch (err) {
-      // It couldn't connect, CORS blocked it, or it failed to parse JSON
       console.error("Fetch error details:", err);
       alert(`Network or Parsing Error: check your browser console (F12).`);
     } finally {
@@ -216,7 +201,6 @@ const handleStatus = async (id, newStatus) => {
     }
   };
 
-  // Sessions on selected day
   const daySessionsToShow = selectedDate
     ? allAppts.filter(a => a.date === selectedDate && a.status !== 'Declined')
     : [];
@@ -232,20 +216,13 @@ const handleStatus = async (id, newStatus) => {
 
   return (
     <div style={{ padding:'4px 0' }}>
-
-      {/* ── Page header ── */}
       <div style={{ marginBottom:'28px' }}>
         <h2 style={{ fontSize:'1.75rem', fontWeight:800, color:'var(--deep-navy)', margin:0 }}>My Peer Mentor Hub</h2>
         <p style={{ color:'#888', marginTop:'6px', fontSize:'14px' }}>Manage incoming requests and track your confirmed sessions.</p>
       </div>
 
-      {/* ── Main two-column layout ── */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:'24px', alignItems:'start' }}>
-
-        {/* LEFT: Stats + Requests + Sessions */}
         <div style={{ display:'flex', flexDirection:'column', gap:'28px' }}>
-
-          {/* ── MOVED STATS ROW HERE ── */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px' }}>
             {[
               { label:'Total Sessions', value: allAppts.filter(a=>a.status!=='Declined').length, icon:'lucide:calendar', color:'#4f46e5', bg:'#eef2ff' },

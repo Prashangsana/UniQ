@@ -39,7 +39,6 @@ const DashboardView = ({ onSeeAll, onSeeEvents, onMentorSelect }) => {
 
     if (role === 'peer' && !isPeerMentor) {
       try {
-        // FIX 8: credentials: 'include' was missing — req.user was always undefined on the backend
         const response = await fetch(`${API_URL}/api/mentoring/register-peer`, {
           method: 'POST',
           credentials: 'include',

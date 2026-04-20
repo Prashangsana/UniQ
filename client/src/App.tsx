@@ -151,7 +151,6 @@ function App() {
             } 
           />
 
-          {/* Core Routes with userRole passed to both */}
           <Route path="/society/:id" element={<SocietyProfilePage userRole={userRole} />} />
           <Route path="/groups" element={<GroupsPage userRole={userRole} />} />
           <Route path="/profile/:id" element={<PublicProfile />} />
@@ -181,7 +180,6 @@ function App() {
           <Route path='/mentor-dashboard/peer' element={<MentorDashboardPeer />} />
           <Route path="/mentoring/lecturers" element={<MentoringWrapper Component={LecturerMentoring} />} />
           <Route path="/mentoring/peers" element={<MentoringWrapper Component={PeerMentoring} />} />
-          {/* <Route path="/mentor-auth/:role" element={<MentorLogin />} /> */}
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </>      
